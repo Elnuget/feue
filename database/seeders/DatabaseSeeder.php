@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             MetodosPagoTableSeeder::class,
             EstadosAcademicosTableSeeder::class,
             CursosTableSeeder::class,
+            UserProfileSeeder::class,
         ]);
     }
 }

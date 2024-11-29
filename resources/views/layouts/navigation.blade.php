@@ -36,6 +36,9 @@
                     <x-nav-link :href="route('cursos.index')" :active="request()->routeIs('cursos.index')">
                         {{ __('Cursos') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('user_profiles.show', ['user' => Auth::user()->id])" :active="request()->routeIs('user_profiles.show')">
+                        {{ __('User Profiles') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -111,6 +114,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('cursos.index')" :active="request()->routeIs('cursos.index')">
                 {{ __('Cursos') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('user_profiles.show', ['user' => Auth::user()->id])" :active="request()->routeIs('user_profiles.show')">
+                {{ __('User Profiles') }}
             </x-responsive-nav-link>
         </div>
 

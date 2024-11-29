@@ -8,6 +8,7 @@ use App\Http\Controllers\UniversidadController;
 use App\Http\Controllers\TipoCursoController;
 use App\Http\Controllers\MetodoPagoController;
 use App\Http\Controllers\CursoController;
+use App\Http\Controllers\UserProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -61,6 +62,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/cursos', [CursoController::class, 'index'])->name('cursos.index');
     Route::get('/cursos/create', [CursoController::class, 'create'])->name('cursos.create');
     Route::get('/cursos/{curso}/edit', [CursoController::class, 'edit'])->name('cursos.edit');
+    Route::resource('user_profiles', UserProfileController::class)->only(['create', 'store', 'show', 'edit', 'update', 'destroy']);
+    Route::get('/user_profiles/{user}', [UserProfileController::class, 'show'])->name('user_profiles.show');
 });
 
 require __DIR__.'/auth.php';
