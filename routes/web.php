@@ -61,6 +61,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('user_profiles', UserProfileController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
     Route::get('/user_profiles/{user}', [UserProfileController::class, 'show'])->name('user_profiles.show');
     Route::resource('user_academicos', \App\Http\Controllers\UserAcademicoController::class);
+    Route::resource('user_aspiraciones', \App\Http\Controllers\UserAspiracionController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
 });
 
 require __DIR__.'/auth.php';

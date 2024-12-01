@@ -42,6 +42,9 @@
                     <x-nav-link :href="route('user_academicos.index')" :active="request()->routeIs('user_academicos.index')">
                         {{ __('User Academicos') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('user_aspiraciones.index')" :active="request()->routeIs('user_aspiraciones.index')">
+                        {{ __('User Aspiraciones') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -123,6 +126,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('user_academicos.index')" :active="request()->routeIs('user_academicos.index')">
                 {{ __('User Academicos') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('user_aspiraciones.index')" :active="request()->routeIs('user_aspiraciones.index')">
+                {{ __('User Aspiraciones') }}
             </x-responsive-nav-link>
         </div>
 

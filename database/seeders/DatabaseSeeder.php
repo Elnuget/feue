@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             CursosTableSeeder::class,
             UserProfileSeeder::class,
             UserAcademicosTableSeeder::class,
+            UserAspiracionesTableSeeder::class,
         ]);
     }
 }
