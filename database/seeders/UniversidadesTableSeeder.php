@@ -3,16 +3,19 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\Universidad;
 
 class UniversidadesTableSeeder extends Seeder
 {
     public function run()
     {
-        DB::table('universidades')->insert([
-            ['nombre' => 'Universidad Nacional', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'Universidad Internacional', 'created_at' => now(), 'updated_at' => now()],
-            // ...other seed data...
-        ]);
+        $universidades = [
+            ['nombre' => 'Universidad Nacional'],
+            ['nombre' => 'Universidad Internacional'],
+        ];
+
+        foreach ($universidades as $universidad) {
+            Universidad::firstOrCreate(['nombre' => $universidad['nombre']]);
+        }
     }
 }

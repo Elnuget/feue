@@ -36,8 +36,11 @@
                     <x-nav-link :href="route('cursos.index')" :active="request()->routeIs('cursos.index')">
                         {{ __('Cursos') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('user_profiles.show', ['user' => Auth::user()->id])" :active="request()->routeIs('user_profiles.show')">
+                    <x-nav-link :href="route('user_profiles.index')" :active="request()->routeIs('user_profiles.index')">
                         {{ __('User Profiles') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('user_academicos.index')" :active="request()->routeIs('user_academicos.index')">
+                        {{ __('User Academicos') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -115,8 +118,11 @@
             <x-responsive-nav-link :href="route('cursos.index')" :active="request()->routeIs('cursos.index')">
                 {{ __('Cursos') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('user_profiles.show', ['user' => Auth::user()->id])" :active="request()->routeIs('user_profiles.show')">
+            <x-responsive-nav-link :href="route('user_profiles.index')" :active="request()->routeIs('user_profiles.index')">
                 {{ __('User Profiles') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('user_academicos.index')" :active="request()->routeIs('user_academicos.index')">
+                {{ __('User Academicos') }}
             </x-responsive-nav-link>
         </div>
 

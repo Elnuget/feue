@@ -16,9 +16,9 @@
                             <label class="block font-medium text-sm text-gray-700 dark:text-gray-300">{{ __('Are you sure you want to delete this profile?') }}</label>
                         </div>
                         <div class="flex items-center justify-end mt-4">
-                            <x-button class="ml-4">
+                            <button type="submit" class="ml-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded shadow">
                                 {{ __('Delete') }}
-                            </x-button>
+                            </button>
                         </div>
                     </form>
                 </div>

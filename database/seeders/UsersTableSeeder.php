@@ -20,6 +20,15 @@ class UsersTableSeeder extends Seeder
                 'updated_at' => now(),
                 'email_verified_at' => now(), // Added line
             ],
+            [
+                'name' => 'User 2',
+                'email' => 'user2@example.com',
+                'password' => Hash::make('password2'),
+                'role_id' => 2,
+                'created_at' => now(),
+                'updated_at' => now(),
+                'email_verified_at' => now(),
+            ],
             // ...other seed data...
         ]);
     }

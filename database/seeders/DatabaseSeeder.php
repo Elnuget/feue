@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             EstadosAcademicosTableSeeder::class,
             CursosTableSeeder::class,
             UserProfileSeeder::class,
+            UserAcademicosTableSeeder::class,
         ]);
     }
 }

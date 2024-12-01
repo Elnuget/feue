@@ -56,4 +56,10 @@ class UserProfileController extends Controller
 
         return redirect()->route('users.index');
     }
+
+    public function index()
+    {
+        $profiles = UserProfile::with('user')->get();
+        return view('user_profiles.index', compact('profiles'));
+    }
 }

@@ -42,13 +42,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/users', [\App\Http\Controllers\UserController::class, 'index'])->name('users.index');
     Route::get('/users/create', [\App\Http\Controllers\UserController::class, 'create'])->name('users.create');
     Route::get('/users/{user}/edit', [\App\Http\Controllers\UserController::class, 'edit'])->name('users.edit');
-    Route::resource('estados_academicos', EstadoAcademicoController::class);
-    Route::get('/estados_academicos', [EstadoAcademicoController::class, 'index'])->name('estados_academicos.index');
-    Route::get('/estados_academicos/create', [EstadoAcademicoController::class, 'create'])->name('estados_academicos.create');
-    Route::post('/estados_academicos', [EstadoAcademicoController::class, 'store'])->name('estados_academicos.store');
-    Route::get('/estados_academicos/{estado_academico}/edit', [EstadoAcademicoController::class, 'edit'])->name('estados_academicos.edit');
-    Route::patch('/estados_academicos/{estado_academico}', [EstadoAcademicoController::class, 'update'])->name('estados_academicos.update');
-    Route::delete('/estados_academicos/{estado_academico}', [EstadoAcademicoController::class, 'destroy'])->name('estados_academicos.destroy');
+    Route::resource('estados_academicos', EstadoAcademicoController::class)->parameters([
+        'estados_academicos' => 'estado_academico'
+    ]);
     Route::resource('universidades', UniversidadController::class)->parameters([
         'universidades' => 'universidad'
     ]);
@@ -62,8 +58,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/cursos', [CursoController::class, 'index'])->name('cursos.index');
     Route::get('/cursos/create', [CursoController::class, 'create'])->name('cursos.create');
     Route::get('/cursos/{curso}/edit', [CursoController::class, 'edit'])->name('cursos.edit');
-    Route::resource('user_profiles', UserProfileController::class)->only(['create', 'store', 'show', 'edit', 'update', 'destroy']);
+    Route::resource('user_profiles', UserProfileController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
     Route::get('/user_profiles/{user}', [UserProfileController::class, 'show'])->name('user_profiles.show');
+    Route::resource('user_academicos', \App\Http\Controllers\UserAcademicoController::class);
 });
 
 require __DIR__.'/auth.php';
