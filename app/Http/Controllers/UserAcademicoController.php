@@ -23,10 +23,15 @@ class UserAcademicoController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'estado_academico_id' => 'required|exists:estados_academicos,id',
-            'acta_grado' => 'nullable|string|max:255',
+            'acta_grado' => 'nullable|file|mimes:pdf,jpeg,png|max:2048',
         ]);
 
-        UserAcademico::create($request->all());
+        $data = $request->all();
+        if ($request->hasFile('acta_grado')) {
+            $data['acta_grado'] = $request->file('acta_grado')->store('actas', 'public');
+        }
+
+        UserAcademico::create($data);
 
         return redirect()->route('user_academicos.index');
     }
@@ -46,10 +51,18 @@ class UserAcademicoController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'estado_academico_id' => 'required|exists:estados_academicos,id',
-            'acta_grado' => 'nullable|string|max:255',
+            'acta_grado' => 'nullable|file|mimes:pdf,jpeg,png|max:2048',
         ]);
 
-        $userAcademico->update($request->all());
+        $data = $request->all();
+        if ($request->hasFile('acta_grado')) {
+            if (isset($userAcademico->acta_grado)) {
+                \Storage::disk('public')->delete($userAcademico->acta_grado);
+            }
+            $data['acta_grado'] = $request->file('acta_grado')->store('actas', 'public');
+        }
+
+        $userAcademico->update($data);
 
         return redirect()->route('user_academicos.index');
     }
