@@ -51,6 +51,9 @@
                     <x-nav-link :href="route('matriculas.index')" :active="request()->routeIs('matriculas.index')">
                         {{ __('Matriculas') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('pagos.index')" :active="request()->routeIs('pagos.index')">
+                        {{ __('Pagos') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -141,6 +144,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('matriculas.index')" :active="request()->routeIs('matriculas.index')">
                 {{ __('Matriculas') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('pagos.index')" :active="request()->routeIs('pagos.index')">
+                {{ __('Pagos') }}
             </x-responsive-nav-link>
         </div>
 

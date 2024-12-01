@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             UserAspiracionesTableSeeder::class,
             DocumentoSeeder::class,
             MatriculaSeeder::class, // Add this line
+            PagosTableSeeder::class, // Add this line
         ]);
     }
 }

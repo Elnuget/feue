@@ -11,6 +11,7 @@ use App\Http\Controllers\CursoController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\MatriculaController;
+use App\Http\Controllers\PagoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,6 +66,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('user_aspiraciones', \App\Http\Controllers\UserAspiracionController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
     Route::resource('documentos', DocumentoController::class)->only(['index', 'create', 'store', 'destroy']);
     Route::resource('matriculas', MatriculaController::class);
+    Route::resource('pagos', PagoController::class);
 });
 
 require __DIR__.'/auth.php';
