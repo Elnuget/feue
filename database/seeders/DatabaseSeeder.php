@@ -27,10 +27,12 @@ class DatabaseSeeder extends Seeder
             UsersTableSeeder::class,
             MetodosPagoTableSeeder::class,
             EstadosAcademicosTableSeeder::class,
-            CursosTableSeeder::class,
+            CursosTableSeeder::class, // Ensure this runs before MatriculaSeeder
             UserProfileSeeder::class,
             UserAcademicosTableSeeder::class,
             UserAspiracionesTableSeeder::class,
+            DocumentoSeeder::class,
+            MatriculaSeeder::class, // Add this line
         ]);
     }
 }

@@ -9,6 +9,8 @@ use App\Http\Controllers\TipoCursoController;
 use App\Http\Controllers\MetodoPagoController;
 use App\Http\Controllers\CursoController;
 use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\DocumentoController;
+use App\Http\Controllers\MatriculaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,9 +61,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/cursos/create', [CursoController::class, 'create'])->name('cursos.create');
     Route::get('/cursos/{curso}/edit', [CursoController::class, 'edit'])->name('cursos.edit');
     Route::resource('user_profiles', UserProfileController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
-    Route::get('/user_profiles/{user}', [UserProfileController::class, 'show'])->name('user_profiles.show');
     Route::resource('user_academicos', \App\Http\Controllers\UserAcademicoController::class);
     Route::resource('user_aspiraciones', \App\Http\Controllers\UserAspiracionController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+    Route::resource('documentos', DocumentoController::class)->only(['index', 'create', 'store', 'destroy']);
+    Route::resource('matriculas', MatriculaController::class);
 });
 
 require __DIR__.'/auth.php';

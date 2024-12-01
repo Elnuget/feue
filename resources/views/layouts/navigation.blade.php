@@ -45,6 +45,12 @@
                     <x-nav-link :href="route('user_aspiraciones.index')" :active="request()->routeIs('user_aspiraciones.index')">
                         {{ __('User Aspiraciones') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('documentos.index')" :active="request()->routeIs('documentos.index')">
+                        {{ __('Documentos') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('matriculas.index')" :active="request()->routeIs('matriculas.index')">
+                        {{ __('Matriculas') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -129,6 +135,12 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('user_aspiraciones.index')" :active="request()->routeIs('user_aspiraciones.index')">
                 {{ __('User Aspiraciones') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('documentos.index')" :active="request()->routeIs('documentos.index')">
+                {{ __('Documentos') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('matriculas.index')" :active="request()->routeIs('matriculas.index')">
+                {{ __('Matriculas') }}
             </x-responsive-nav-link>
         </div>
 
