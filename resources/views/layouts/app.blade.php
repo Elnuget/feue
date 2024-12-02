@@ -98,6 +98,12 @@
                     </div>
                 @endif
 
+                @if(Auth::check() && Auth::user()->profile && !Auth::user()->profile->isComplete())
+                    <div class="bg-yellow-500 text-white p-4 rounded mb-4">
+                        Por favor, completa tu perfil. <a href="{{ url('/complete-profile') }}" class="underline">Completar perfil</a>
+                    </div>
+                @endif
+
                 {{ $slot }}
             </main>
         </div>
@@ -130,6 +136,12 @@
                 console.error('Error al subir el archivo:', error);
             });
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(Auth::check() && Auth::user()->profile)
+                console.log('Profile is complete:', {{ Auth::user()->profile->isComplete() ? 'true' : 'false' }});
+            @endif
+        });
     </script>
 </body>
 

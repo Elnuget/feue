@@ -19,25 +19,35 @@
     </div>
     <!-- Navegación -->
     <nav class="mt-5 flex flex-col space-y-1 px-2">
-        @foreach([
-            ['route' => 'dashboard', 'label' => __('Dashboard')],
-            ['route' => 'roles.index', 'label' => __('Roles')],
-            ['route' => 'users.index', 'label' => __('Users')],
-            ['route' => 'estados_academicos.index', 'label' => __('Estados Académicos')],
-            ['route' => 'universidades.index', 'label' => __('Universidades')],
-            ['route' => 'tipos_cursos.index', 'label' => __('Tipos de Cursos')],
-            ['route' => 'metodos_pago.index', 'label' => __('Métodos de Pago')],
-            ['route' => 'cursos.index', 'label' => __('Cursos')],
-            ['route' => 'user_profiles.index', 'label' => __('User Profiles')],
-            ['route' => 'user_academicos.index', 'label' => __('User Académicos')],
-            ['route' => 'user_aspiraciones.index', 'label' => __('User Aspiraciones')],
-            ['route' => 'documentos.index', 'label' => __('Documentos')],
-            ['route' => 'matriculas.index', 'label' => __('Matrículas')],
-            ['route' => 'pagos.index', 'label' => __('Pagos')],
-        ] as $item)
-            <x-nav-link :href="route($item['route'])" :active="request()->routeIs($item['route'])">
-                {{ $item['label'] }}
-            </x-nav-link>
-        @endforeach
+        <div x-data="{ open: false }">
+            <button @click="open = !open" class="flex items-center justify-between w-full text-gray-500 dark:text-gray-400 focus:outline-none">
+                <span>{{ __('General') }}</span>
+                <svg :class="{'rotate-180': open, 'rotate-0': !open}" class="h-5 w-5 transform transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.293 9.293a1 1 0 011.414 0L10 12.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+            <div x-show="open" class="mt-2 space-y-1 pl-4">
+                @foreach([
+                    ['route' => 'dashboard', 'label' => __('Dashboard')],
+                    ['route' => 'roles.index', 'label' => __('Roles')],
+                    ['route' => 'users.index', 'label' => __('Users')],
+                    ['route' => 'estados_academicos.index', 'label' => __('Estados Académicos')],
+                    ['route' => 'universidades.index', 'label' => __('Universidades')],
+                    ['route' => 'tipos_cursos.index', 'label' => __('Tipos de Cursos')],
+                    ['route' => 'metodos_pago.index', 'label' => __('Métodos de Pago')],
+                    ['route' => 'cursos.index', 'label' => __('Cursos')],
+                    ['route' => 'user_profiles.index', 'label' => __('User Profiles')],
+                    ['route' => 'user_academicos.index', 'label' => __('User Académicos')],
+                    ['route' => 'user_aspiraciones.index', 'label' => __('User Aspiraciones')],
+                    ['route' => 'documentos.index', 'label' => __('Documentos')],
+                    ['route' => 'matriculas.index', 'label' => __('Matrículas')],
+                    ['route' => 'pagos.index', 'label' => __('Pagos')],
+                ] as $item)
+                    <x-nav-link :href="route($item['route'])" :active="request()->routeIs($item['route'])">
+                        {{ $item['label'] }}
+                    </x-nav-link>
+                @endforeach
+            </div>
+        </div>
     </nav>
 </div>

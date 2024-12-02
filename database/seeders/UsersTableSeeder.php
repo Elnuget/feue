@@ -15,21 +15,29 @@ class UsersTableSeeder extends Seeder
                 'name' => 'Carlos',
                 'email' => 'cangulo009@outlook.es',
                 'password' => Hash::make('faplol13'),
-                'role_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
-                'email_verified_at' => now(), // Added line
+                'email_verified_at' => now(),
             ],
             [
                 'name' => 'User 2',
                 'email' => 'user2@example.com',
                 'password' => Hash::make('password2'),
-                'role_id' => 2,
                 'created_at' => now(),
                 'updated_at' => now(),
                 'email_verified_at' => now(),
             ],
             // ...other seed data...
         ]);
+
+        $users = DB::table('users')->get();
+
+        foreach ($users as $user) {
+            DB::table('model_has_roles')->insert([
+                'role_id' => $user->email === 'cangulo009@outlook.es' ? 1 : 2,
+                'model_type' => 'App\Models\User',
+                'model_id' => $user->id,
+            ]);
+        }
     }
 }

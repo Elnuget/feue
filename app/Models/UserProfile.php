@@ -16,4 +16,9 @@ class UserProfile extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function isComplete()
+    {
+        return $this->phone && $this->birth_date && $this->gender && $this->cedula && $this->direccion_calle && $this->direccion_ciudad && $this->direccion_provincia && $this->codigo_postal && $this->numero_referencia;
+    }
 }
