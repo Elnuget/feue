@@ -41,26 +41,32 @@
                 <!-- Título o Logo (opcional) -->
                 <div class="flex-1 text-center sm:text-left">
                     <a href="{{ route('dashboard') }}" class="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                        {{ config('app.name', 'Laravel') }}
+                        {{ Auth::user()->roles->pluck('name')->first() ?? 'No Role' }}
                     </a>
                 </div>
 
                 <!-- Menú de Usuario -->
                 <div class="flex items-center ml-auto">
-                    <!-- Menú de Usuario -->
+                    <!-- Mensaje de Bienvenida -->
+                    <span class="hidden sm:block text-gray-800 dark:text-gray-200 mr-4">
+                        Bienvenido, {{ Auth::user()->name }}.
+                    </span>
+
+                    <!-- Foto de Usuario -->
                     <x-dropdown align="right" width="48">
                         <x-slot name="trigger">
                             <button
-                                class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition duration-150">
-                                <div>{{ Auth::user()->name }}</div>
-                                <div class="ml-1">
-                                    <svg class="fill-current h-4 w-4" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414 1.414l-4
-                                            4a1 1 0 01-1.414 0l-4-4a1 1 0
-                                            010-1.414z" clip-rule="evenodd"/>
-                                    </svg>
-                                </div>
+                                class="inline-flex items-center focus:outline-none transition duration-150">
+                                @if(Auth::user()->profile && Auth::user()->profile->photo)
+                                    <img src="{{ asset('storage/' . Auth::user()->profile->photo) }}" alt="User Photo"
+                                         class="h-8 w-8 rounded-full object-cover">
+                                @else
+                                    <img src="{{ asset('images/default-avatar.png') }}" alt="Default User Photo"
+                                         class="h-8 w-8 rounded-full object-cover">
+                                @endif
+                                <svg class="ml-2 h-4 w-4 text-gray-800 dark:text-gray-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
                             </button>
                         </x-slot>
 
@@ -96,6 +102,35 @@
             </main>
         </div>
     </div>
+    <script>
+        function uploadFile(inputId) {
+            const input = document.getElementById(inputId);
+            const formData = new FormData();
+            formData.append(inputId, input.files[0]);
+
+            fetch('{{ route('profile.storeComplete') }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.success) {
+                    console.error('Error al subir el archivo:', data);
+                }
+            })
+            .catch(error => {
+                console.error('Error al subir el archivo:', error);
+            });
+        }
+    </script>
 </body>
 
 </html>
