@@ -1,36 +1,101 @@
+<!-- resources/views/layouts/app.blade.php -->
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+<head>
+    <!-- Metatags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ config('app.name', 'Laravel') }}</title>
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <!-- Scripts -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+<body class="font-sans antialiased">
+    <div x-data="{ open: false }" class="flex h-screen bg-gray-100 dark:bg-gray-900">
+        <!-- Sidebar -->
+        @include('layouts.navigation')
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            @include('layouts.navigation')
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <header
+                class="flex items-center px-4 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 relative z-10">
+                <!-- Botón de Toggle (solo para pantallas pequeñas) -->
+                <button @click="open = !open" class="sm:hidden text-gray-500 dark:text-gray-400 focus:outline-none">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <!-- Ícono de menú (tres líneas) -->
+                        <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16" />
+                        <!-- Ícono de cerrar (X) -->
+                        <path x-show="open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
 
-            <!-- Page Heading -->
-            @if (isset($header))
-                <header class="bg-white dark:bg-gray-800 shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endif
+                <!-- Título o Logo (opcional) -->
+                <div class="flex-1 text-center sm:text-left">
+                    <a href="{{ route('dashboard') }}" class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                        {{ config('app.name', 'Laravel') }}
+                    </a>
+                </div>
+
+                <!-- Menú de Usuario -->
+                <div class="flex items-center ml-auto">
+                    <!-- Menú de Usuario -->
+                    <x-dropdown align="right" width="48">
+                        <x-slot name="trigger">
+                            <button
+                                class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition duration-150">
+                                <div>{{ Auth::user()->name }}</div>
+                                <div class="ml-1">
+                                    <svg class="fill-current h-4 w-4" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414 1.414l-4
+                                            4a1 1 0 01-1.414 0l-4-4a1 1 0
+                                            010-1.414z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                            </button>
+                        </x-slot>
+
+                        <!-- Contenido del Dropdown -->
+                        <x-dropdown-link :href="route('profile.edit')">
+                            {{ __('Perfil') }}
+                        </x-dropdown-link>
+
+                        <!-- Autenticación -->
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <x-dropdown-link :href="route('logout')"
+                                             onclick="event.preventDefault();
+                                             this.closest('form').submit();">
+                                {{ __('Cerrar Sesión') }}
+                            </x-dropdown-link>
+                        </form>
+                    </x-dropdown>
+                </div>
+            </header>
 
             <!-- Page Content -->
-            <main>
+            <main class="flex-1 overflow-y-auto p-4">
+                @if (isset($header))
+                    <div class="bg-white dark:bg-gray-800 shadow mb-4">
+                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                            {{ $header }}
+                        </div>
+                    </div>
+                @endif
+
                 {{ $slot }}
             </main>
         </div>
-    </body>
+    </div>
+</body>
+
 </html>
