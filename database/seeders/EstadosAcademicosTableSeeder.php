@@ -10,8 +10,8 @@ class EstadosAcademicosTableSeeder extends Seeder
     public function run()
     {
         DB::table('estados_academicos')->insert([
-            ['nombre' => 'Activo', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'Inactivo', 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'Bachiller', 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'Otro', 'created_at' => now(), 'updated_at' => now()],
             // ...other seed data...
         ]);
     }

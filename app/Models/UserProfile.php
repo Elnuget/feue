@@ -19,6 +19,26 @@ class UserProfile extends Model
 
     public function isComplete()
     {
-        return $this->phone && $this->birth_date && $this->gender && $this->cedula && $this->direccion_calle && $this->direccion_ciudad && $this->direccion_provincia && $this->codigo_postal && $this->numero_referencia;
+        $requiredFields = [
+            'phone',
+            'birth_date',
+            'gender',
+            'cedula',
+        ];
+
+        foreach ($requiredFields as $field) {
+            if (!isset($this->$field) || empty($this->$field)) {
+                \Log::info("Campo vacío o no definido: {$field}");
+                return false;
+            }
+        }
+
+        if (!$this->user) {
+            \Log::info("Usuario no encontrado para el perfil ID: {$this->id}");
+            return false;
+        }
+
+        \Log::info("Perfil completo para el usuario ID: {$this->user_id}");
+        return true;
     }
 }

@@ -112,6 +112,6 @@ class UserProfileController extends Controller
             $data
         );
 
-        return response()->json(['success' => true]);
+        return redirect()->route('dashboard')->with('success', 'Perfil completado');
     }
 }
