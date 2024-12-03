@@ -26,8 +26,8 @@
             <!-- Header -->
             <header
                 class="flex items-center px-4 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 relative z-10">
-                <!-- Botón de Toggle (solo para pantallas pequeñas) -->
-                <button @click="open = !open" class="sm:hidden text-gray-500 dark:text-gray-400 focus:outline-none">
+                <!-- Botón de Toggle -->
+                <button @click="open = !open" class="text-gray-500 dark:text-gray-400 focus:outline-none">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <!-- Ícono de menú (tres líneas) -->
                         <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -39,9 +39,9 @@
                 </button>
 
                 <!-- Título o Logo (opcional) -->
-                <div class="flex-1 text-center sm:text-left">
+                <div class="flex-1 text-center">
                     <a href="{{ route('dashboard') }}" class="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                        {{ Auth::user()->roles->pluck('name')->first() ?? 'No Role' }}
+                        Cap: {{ Auth::user()->roles->pluck('name')->first() ?? 'No Role' }}
                     </a>
                 </div>
 
@@ -116,6 +116,16 @@
                 @if(session('success'))
                     <div class="bg-green-500 text-white p-4 rounded mb-4 dark:bg-green-700">
                         {{ session('success') }}
+                    </div>
+                @endif
+                @if(session('updated'))
+                    <div class="bg-blue-500 text-white p-4 rounded mb-4 dark:bg-blue-700">
+                        {{ session('updated') }}
+                    </div>
+                @endif
+                @if(session('deleted'))
+                    <div class="bg-red-500 text-white p-4 rounded mb-4 dark:bg-red-700">
+                        {{ session('deleted') }}
                     </div>
                 @endif
             </div>

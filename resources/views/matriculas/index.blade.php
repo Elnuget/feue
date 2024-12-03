@@ -5,34 +5,39 @@
         </h2>
     </x-slot>
 
+    <head>
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    </head>
+
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <a href="{{ route('matriculas.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Crear Matricula</a>
-                    <div class="mt-4">
-                        <table class="min-w-full bg-white dark:bg-gray-800">
-                            <thead>
+                    <div class="mt-4 overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 border">
+                            <thead class="bg-blue-500">
                                 <tr>
-                                    <th class="py-2 px-4 border-b border-gray-200 dark:border-gray-700">ID</th>
-                                    <th class="py-2 px-4 border-b border-gray-200 dark:border-gray-700">Usuario</th>
-                                    <th class="py-2 px-4 border-b border-gray-200 dark:border-gray-700">Curso</th>
-                                    <th class="py-2 px-4 border-b border-gray-200 dark:border-gray-700">Fecha</th>
-                                    <th class="py-2 px-4 border-b border-gray-200 dark:border-gray-700">Monto Total</th>
-                                    <th class="py-2 px-4 border-b border-gray-200 dark:border-gray-700">Estado</th>
-                                    <th class="py-2 px-4 border-b border-gray-200 dark:border-gray-700">Acciones</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">ID</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Usuario</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Curso</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Fecha</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Monto Total</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Estado</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200">
                                 @foreach ($matriculas as $matricula)
-                                    <tr>
-                                        <td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700">{{ $matricula->id }}</td>
-                                        <td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700">{{ $matricula->usuario->name }}</td>
-                                        <td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700">{{ $matricula->curso->nombre }}</td>
-                                        <td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700">{{ $matricula->fecha_matricula }}</td>
-                                        <td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700">{{ $matricula->monto_total }}</td>
-                                        <td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700">{{ $matricula->estado_matricula }}</td>
-                                        <td class="py-2 px-4 border-b border-gray-200 dark:border-gray-700">
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-600">
+                                        <td class="px-4 py-2 text-sm font-medium text-gray-900 dark:text-gray-200">{{ $matricula->id }}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $matricula->usuario->name }}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $matricula->curso->nombre }}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $matricula->fecha_matricula }}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $matricula->monto_total }}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $matricula->estado_matricula }}</td>
+                                        <td class="px-4 py-2 text-sm font-medium flex items-center justify-center space-x-2">
                                             <a href="{{ route('matriculas.show', $matricula) }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">Ver</a>
                                             <a href="{{ route('matriculas.edit', $matricula) }}" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded">Editar</a>
                                             <form action="{{ route('matriculas.destroy', $matricula) }}" method="POST" class="inline-block">

@@ -19,6 +19,7 @@ class CursosTableSeeder extends Seeder
                 'tipo_curso_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
+                'imagen' => 'default.jpg',
             ],
             [
                 'id' => 2, // Ensure this ID exists
@@ -29,6 +30,7 @@ class CursosTableSeeder extends Seeder
                 'tipo_curso_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
+                'imagen' => 'default.jpg',
             ],
             // ...other seed data...
         ]);

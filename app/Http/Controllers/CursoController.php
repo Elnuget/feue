@@ -28,10 +28,17 @@ class CursoController extends Controller
             'precio' => 'required|numeric',
             'estado' => 'required|in:Activo,Inactivo',
             'tipo_curso_id' => 'required|exists:tipos_cursos,id',
+            'imagen' => 'nullable|image|mimes:jpeg,png|max:2048',
         ]);
 
-        Curso::create($request->all());
-        return redirect()->route('cursos.index');
+        $data = $request->except(['imagen']);
+
+        if ($request->hasFile('imagen')) {
+            $data['imagen'] = $request->file('imagen')->store('cursos', 'public');
+        }
+
+        Curso::create($data);
+        return redirect()->route('cursos.index')->with('success', 'Curso creado correctamente');
     }
 
     public function edit(Curso $curso)
@@ -48,10 +55,20 @@ class CursoController extends Controller
             'precio' => 'required|numeric',
             'estado' => 'required|in:Activo,Inactivo',
             'tipo_curso_id' => 'required|exists:tipos_cursos,id',
+            'imagen' => 'nullable|image|mimes:jpeg,png|max:2048',
         ]);
 
-        $curso->update($request->all());
-        return redirect()->route('cursos.index');
+        $data = $request->except(['imagen']);
+
+        if ($request->hasFile('imagen')) {
+            if ($curso->imagen) {
+                \Storage::disk('public')->delete($curso->imagen);
+            }
+            $data['imagen'] = $request->file('imagen')->store('cursos', 'public');
+        }
+
+        $curso->update($data);
+        return redirect()->route('cursos.index')->with('updated', 'Curso actualizado correctamente');
     }
 
     public function destroy(Curso $curso)
@@ -61,7 +78,11 @@ class CursoController extends Controller
             return redirect()->route('cursos.index')->withErrors('No se puede eliminar el curso porque tiene dependencias.');
         }
 
+        if ($curso->imagen) {
+            \Storage::disk('public')->delete($curso->imagen);
+        }
+
         $curso->delete();
-        return redirect()->route('cursos.index');
+        return redirect()->route('cursos.index')->with('deleted', 'Curso eliminado correctamente');
     }
 }
