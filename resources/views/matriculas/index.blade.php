@@ -24,6 +24,7 @@
                                     <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Curso</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Fecha</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Monto Total</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Valor Pendiente</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Estado</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Acciones</th>
                                 </tr>
@@ -36,15 +37,18 @@
                                         <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $matricula->curso->nombre }}</td>
                                         <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $matricula->fecha_matricula }}</td>
                                         <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $matricula->monto_total }}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $matricula->valor_pendiente }}</td>
                                         <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $matricula->estado_matricula }}</td>
                                         <td class="px-4 py-2 text-sm font-medium flex items-center justify-center space-x-2">
                                             <a href="{{ route('matriculas.show', $matricula) }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">Ver</a>
-                                            <a href="{{ route('matriculas.edit', $matricula) }}" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded">Editar</a>
-                                            <form action="{{ route('matriculas.destroy', $matricula) }}" method="POST" class="inline-block">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">Eliminar</button>
-                                            </form>
+                                            @if(auth()->user()->hasRole(1))
+                                                <a href="{{ route('matriculas.edit', $matricula) }}" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded">Editar</a>
+                                                <form action="{{ route('matriculas.destroy', $matricula) }}" method="POST" class="inline-block">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">Eliminar</button>
+                                                </form>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach

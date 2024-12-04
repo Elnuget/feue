@@ -9,13 +9,23 @@ class MatriculaController extends Controller
 {
     public function index()
     {
-        $matriculas = Matricula::all();
+        if (auth()->user()->hasRole(1)) {
+            $matriculas = Matricula::all();
+        } else {
+            $matriculas = Matricula::where('usuario_id', auth()->id())->get();
+        }
         return view('matriculas.index', compact('matriculas'));
     }
 
     public function create()
     {
-        return view('matriculas.create');
+        if (auth()->user()->hasRole(1)) {
+            $usuarios = \App\Models\User::all();
+        } else {
+            $usuarios = \App\Models\User::where('id', auth()->id())->get();
+        }
+        $cursos = \App\Models\Curso::all();
+        return view('matriculas.create', compact('usuarios', 'cursos'));
     }
 
     public function store(Request $request)
@@ -29,19 +39,45 @@ class MatriculaController extends Controller
             'estado_matricula' => 'required|in:Pendiente,Aprobada,Completada,Rechazada',
         ]);
 
-        Matricula::create($request->all());
+        if (!auth()->user()->hasRole(1) && $request->usuario_id != auth()->id()) {
+            return redirect()->route('matriculas.index')->with('error', 'No tienes permiso para crear esta matrícula.');
+        }
+
+        $data = $request->all();
+        $data['valor_pendiente'] = $data['monto_total'];
+
+        if (!auth()->user()->hasRole(1)) {
+            $data['estado_matricula'] = 'Pendiente';
+        }
+
+        Matricula::create($data);
 
         return redirect()->route('matriculas.index')->with('success', 'Matricula creada exitosamente.');
     }
 
     public function show(Matricula $matricula)
     {
+        if (!auth()->user()->hasRole(1) && $matricula->usuario_id != auth()->id()) {
+            return redirect()->route('matriculas.index')->with('error', 'No tienes permiso para ver esta matrícula.');
+        }
         return view('matriculas.show', compact('matricula'));
     }
 
     public function edit(Matricula $matricula)
     {
-        return view('matriculas.edit', compact('matricula'));
+        if (!auth()->user()->hasRole(1) && $matricula->usuario_id != auth()->id()) {
+            return redirect()->route('matriculas.index')->with('error', 'No tienes permiso para editar esta matrícula.');
+        }
+
+        if (auth()->user()->hasRole(1)) {
+            $usuarios = \App\Models\User::all();
+        } else {
+            $usuarios = \App\Models\User::where('id', auth()->id())->get();
+        }
+
+        $cursos = \App\Models\Curso::all();
+
+        return view('matriculas.edit', compact('matricula', 'usuarios', 'cursos'));
     }
 
     public function update(Request $request, Matricula $matricula)
@@ -55,6 +91,10 @@ class MatriculaController extends Controller
             'estado_matricula' => 'required|in:Pendiente,Aprobada,Completada,Rechazada',
         ]);
 
+        if (!auth()->user()->hasRole(1) && $matricula->usuario_id != auth()->id()) {
+            return redirect()->route('matriculas.index')->with('error', 'No tienes permiso para actualizar esta matrícula.');
+        }
+
         $matricula->update($request->all());
 
         return redirect()->route('matriculas.index')->with('success', 'Matricula actualizada exitosamente.');
@@ -62,6 +102,10 @@ class MatriculaController extends Controller
 
     public function destroy(Matricula $matricula)
     {
+        if (!auth()->user()->hasRole(1) && $matricula->usuario_id != auth()->id()) {
+            return redirect()->route('matriculas.index')->with('error', 'No tienes permiso para eliminar esta matrícula.');
+        }
+
         $matricula->delete();
 
         return redirect()->route('matriculas.index')->with('success', 'Matricula eliminada exitosamente.');

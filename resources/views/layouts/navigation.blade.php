@@ -24,6 +24,7 @@
     </div>
     <!-- Navegación -->
     <nav class="mt-5 flex flex-col space-y-1 px-2">
+        @if(auth()->user()->hasRole(1))
         <div x-data="{ open: false }">
             <button @click="open = !open" class="flex items-center justify-between w-full text-gray-500 dark:text-gray-400 focus:outline-none">
                 <span>{{ __('General') }}</span>
@@ -70,9 +71,10 @@
                 @endforeach
             </div>
         </div>
+        @endif
         <x-nav-link :href="route('matriculas.index')" :active="request()->routeIs('matriculas.index')">
             <i class="fas fa-boxes mr-2 text-gray-500 dark:text-gray-400"></i>
-            {{ __('Gestión de Matrículas') }}
+            {{ __('Matrículas') }}
         </x-nav-link>
     </nav>
 </div>
