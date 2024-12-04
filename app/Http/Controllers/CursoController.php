@@ -91,4 +91,10 @@ class CursoController extends Controller
         $cursos = Curso::all();
         return view('dashboard', compact('cursos'));
     }
+
+    public function welcome()
+    {
+        $cursos = Curso::all();
+        return view('welcome', compact('cursos'));
+    }
 }

@@ -24,9 +24,7 @@ use App\Http\Controllers\PagoController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [CursoController::class, 'welcome']);
 
 Route::get('/dashboard', [CursoController::class, 'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
 

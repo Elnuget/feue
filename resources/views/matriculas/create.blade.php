@@ -42,7 +42,9 @@
                                 </span>
                                 <select name="curso_id" id="curso_id" required class="flex-1 block w-full rounded-none rounded-r-md border-gray-300 dark:bg-gray-700 dark:text-gray-300" onchange="updateCoursePrice()">
                                     @foreach($cursos as $curso)
-                                        <option value="{{ $curso->id }}" data-precio="{{ $curso->precio }}">{{ $curso->nombre }}</option>
+                                        <option value="{{ $curso->id }}" data-precio="{{ $curso->precio }}" {{ isset($cursoSeleccionado) && $cursoSeleccionado == $curso->id ? 'selected' : '' }}>
+                                            {{ $curso->nombre }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>

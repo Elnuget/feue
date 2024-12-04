@@ -17,7 +17,7 @@ class MatriculaController extends Controller
         return view('matriculas.index', compact('matriculas'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         if (auth()->user()->hasRole(1)) {
             $usuarios = \App\Models\User::all();
@@ -25,7 +25,8 @@ class MatriculaController extends Controller
             $usuarios = \App\Models\User::where('id', auth()->id())->get();
         }
         $cursos = \App\Models\Curso::all();
-        return view('matriculas.create', compact('usuarios', 'cursos'));
+        $cursoSeleccionado = $request->input('curso_id');
+        return view('matriculas.create', compact('usuarios', 'cursos', 'cursoSeleccionado'));
     }
 
     public function store(Request $request)
