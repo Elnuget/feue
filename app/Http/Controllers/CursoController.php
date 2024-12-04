@@ -85,4 +85,10 @@ class CursoController extends Controller
         $curso->delete();
         return redirect()->route('cursos.index')->with('deleted', 'Curso eliminado correctamente');
     }
+
+    public function dashboard()
+    {
+        $cursos = Curso::all();
+        return view('dashboard', compact('cursos'));
+    }
 }
