@@ -71,37 +71,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/complete-profile', [UserProfileController::class, 'storeCompleteProfile'])->name('profile.storeComplete');
 });
 
-Route::middleware(['auth', 'verified', 'role:1'])->group(function () {
-    Route::resource('roles', RoleController::class);
-    Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
-    Route::resource('users', \App\Http\Controllers\UserController::class);
-    Route::get('/users', [\App\Http\Controllers\UserController::class, 'index'])->name('users.index');
-    Route::get('/users/create', [\App\Http\Controllers\UserController::class, 'create'])->name('users.create');
-    Route::get('/users/{user}/edit', [\App\Http\Controllers\UserController::class, 'edit'])->name('users.edit');
-    Route::resource('estados_academicos', EstadoAcademicoController::class)->parameters([
-        'estados_academicos' => 'estado_academico'
-    ]);
-    Route::resource('universidades', UniversidadController::class)->parameters([
-        'universidades' => 'universidad'
-    ]);
-    Route::resource('tipos_cursos', TipoCursoController::class)->parameters([
-        'tipos_cursos' => 'tipoCurso'
-    ]);
-    Route::resource('metodos_pago', MetodoPagoController::class)->parameters([
-        'metodos_pago' => 'metodoPago'
-    ]);
-    Route::resource('cursos', CursoController::class);
-    Route::get('/cursos', [CursoController::class, 'index'])->name('cursos.index');
-    Route::get('/cursos/create', [CursoController::class, 'create'])->name('cursos.create');
-    Route::get('/cursos/{curso}/edit', [CursoController::class, 'edit'])->name('cursos.edit');
-    Route::resource('user_profiles', UserProfileController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
-    Route::resource('user_academicos', \App\Http\Controllers\UserAcademicoController::class);
-    Route::resource('user_aspiraciones', \App\Http\Controllers\UserAspiracionController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
-    Route::resource('documentos', DocumentoController::class)->only(['index', 'create', 'store', 'destroy']);
-    Route::resource('matriculas', MatriculaController::class);
-    Route::resource('pagos', PagoController::class);
-    Route::get('/complete-profile', [UserProfileController::class, 'completeProfile'])->name('profile.complete');
-    Route::post('/complete-profile', [UserProfileController::class, 'storeCompleteProfile'])->name('profile.storeComplete');
-});
-
 require __DIR__.'/auth.php';
