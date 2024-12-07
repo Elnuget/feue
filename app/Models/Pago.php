@@ -17,6 +17,7 @@ class Pago extends Model
         'fecha_pago',
         'valor_pendiente',
         'fecha_proximo_pago',
+        'estado', // Add estado to fillable
     ];
 
     public function matricula()

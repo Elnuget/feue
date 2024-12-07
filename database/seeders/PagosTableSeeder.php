@@ -16,8 +16,17 @@ class PagosTableSeeder extends Seeder
                 'comprobante_pago' => 'comprobante1.jpg',
                 'monto' => 100.00,
                 'fecha_pago' => '2024-12-01',
-                'valor_pendiente' => 50.00,
-                'fecha_proximo_pago' => '2025-01-01',
+                'estado' => 'Pendiente', // Add estado field
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'matricula_id' => 2,
+                'metodo_pago_id' => 2,
+                'comprobante_pago' => 'comprobante2.jpg',
+                'monto' => 200.00,
+                'fecha_pago' => '2024-12-02',
+                'estado' => 'Aprobado', // Add estado field
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

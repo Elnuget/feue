@@ -13,6 +13,7 @@
                     <p><strong>Metodo Pago ID:</strong> {{ $pago->metodo_pago_id }}</p>
                     <p><strong>Monto:</strong> {{ $pago->monto }}</p>
                     <p><strong>Fecha Pago:</strong> {{ $pago->fecha_pago }}</p>
+                    <p><strong>Estado:</strong> {{ $pago->estado }}</p>
                     <a href="{{ route('pagos.index') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                         Back to Pagos
                     </a>

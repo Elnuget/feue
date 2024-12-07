@@ -11,12 +11,11 @@ class CreatePagosTable extends Migration
         Schema::create('pagos', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('matricula_id');
-            $table->unsignedBigInteger('metodo_pago_id'); // Change to unsignedBigInteger
+            $table->unsignedBigInteger('metodo_pago_id');
             $table->string('comprobante_pago', 255)->nullable();
             $table->decimal('monto', 10, 2);
             $table->date('fecha_pago');
-            $table->decimal('valor_pendiente', 10, 2)->nullable();
-            $table->date('fecha_proximo_pago')->nullable();
+            $table->enum('estado', ['Pendiente', 'Aprobado', 'Rechazado']); // New enum field
             $table->timestamps();
 
             $table->foreign('matricula_id')->references('id')->on('matriculas')->onDelete('cascade');

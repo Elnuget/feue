@@ -15,4 +15,9 @@ class Curso extends Model
     {
         return $this->belongsTo(TipoCurso::class);
     }
+
+    public function matriculas()
+    {
+        return $this->hasMany(Matricula::class);
+    }
 }

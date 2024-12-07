@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pago;
+use App\Models\Matricula;
 use Illuminate\Http\Request;
 
 class PagoController extends Controller
@@ -61,5 +62,18 @@ class PagoController extends Controller
         $pago->delete();
 
         return redirect()->route('pagos.index')->with('success', 'Pago deleted successfully.');
+    }
+
+    public function aprobar($id)
+    {
+        $pago = Pago::findOrFail($id);
+        $pago->estado = 'Aprobado';
+        $pago->save();
+
+        $matricula = $pago->matricula;
+        $matricula->valor_pendiente -= $pago->monto;
+        $matricula->save();
+
+        return redirect()->route('pagos.index')->with('success', 'Pago aprobado y valor pendiente actualizado.');
     }
 }
