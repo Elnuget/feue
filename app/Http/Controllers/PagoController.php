@@ -16,7 +16,9 @@ class PagoController extends Controller
 
     public function create()
     {
-        return view('pagos.create');
+        $matriculas = Matricula::with('curso')->get();
+        $metodosPago = \App\Models\MetodoPago::all();
+        return view('pagos.create', compact('matriculas', 'metodosPago'));
     }
 
     public function store(Request $request)

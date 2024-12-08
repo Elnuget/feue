@@ -12,20 +12,28 @@
                     <form action="{{ route('pagos.store') }}" method="POST">
                         @csrf
                         <div class="mb-4">
-                            <label for="matricula_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Matricula ID:</label>
-                            <input type="text" name="matricula_id" id="matricula_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                            <label for="matricula_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Matricula:</label>
+                            <select name="matricula_id" id="matricula_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                                @foreach($matriculas as $matricula)
+                                    <option value="{{ $matricula->id }}" data-pendiente="{{ $matricula->valor_pendiente }}">{{ $matricula->curso->nombre }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="mb-4">
-                            <label for="metodo_pago_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Metodo Pago ID:</label>
-                            <input type="text" name="metodo_pago_id" id="metodo_pago_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                            <label for="metodo_pago_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Metodo Pago:</label>
+                            <select name="metodo_pago_id" id="metodo_pago_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                                @foreach($metodosPago as $metodo)
+                                    <option value="{{ $metodo->id }}">{{ $metodo->nombre }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="mb-4">
                             <label for="monto" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Monto:</label>
-                            <input type="text" name="monto" id="monto" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                            <input type="text" name="monto" id="monto" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" readonly>
                         </div>
                         <div class="mb-4">
                             <label for="fecha_pago" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Fecha Pago:</label>
-                            <input type="date" name="fecha_pago" id="fecha_pago" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                            <input type="date" name="fecha_pago" id="fecha_pago" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" value="{{ now()->timezone('America/Guayaquil')->toDateString() }}">
                         </div>
                         <div class="mb-4">
                             <label for="estado" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Estado:</label>
@@ -44,3 +52,11 @@
         </div>
     </div>
 </x-app-layout>
+
+<script>
+    document.getElementById('matricula_id').addEventListener('change', function() {
+        var selectedOption = this.options[this.selectedIndex];
+        var pendiente = selectedOption.getAttribute('data-pendiente');
+        document.getElementById('monto').value = pendiente;
+    });
+</script>
