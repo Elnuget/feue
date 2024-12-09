@@ -85,6 +85,19 @@
                                 @endif
                             </div>
                         </div>
+                        <div class="relative" id="universidad-container">
+                            <label for="universidad_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Universidad</label>
+                            <div class="mt-1 flex rounded-md shadow-sm">
+                                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                                    <i class="fas fa-university"></i>
+                                </span>
+                                <select name="universidad_id" id="universidad_id" class="flex-1 block w-full rounded-none rounded-r-md border-gray-300 dark:bg-gray-700 dark:text-gray-300">
+                                    @foreach($universidades as $universidad)
+                                        <option value="{{ $universidad->id }}">{{ $universidad->nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="flex justify-end">
                         <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:border-blue-700 dark:focus:border-blue-600 focus:ring focus:ring-blue-200 dark:focus:ring-blue-500 active:bg-blue-700 dark:active:bg-blue-600 disabled:opacity-25 transition">
@@ -101,7 +114,6 @@
             const selectedOption = cursoSelect.options[cursoSelect.selectedIndex];
             const precio = selectedOption.getAttribute('data-precio');
             document.getElementById('monto_total').value = precio;
-            document.getElementById('valor_pendiente').value = precio;
         }
 
         // Initialize the price fields on page load

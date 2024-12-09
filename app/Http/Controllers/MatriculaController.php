@@ -26,7 +26,8 @@ class MatriculaController extends Controller
         }
         $cursos = \App\Models\Curso::all();
         $cursoSeleccionado = $request->input('curso_id');
-        return view('matriculas.create', compact('usuarios', 'cursos', 'cursoSeleccionado'));
+        $universidades = \App\Models\Universidad::all();
+        return view('matriculas.create', compact('usuarios', 'cursos', 'cursoSeleccionado', 'universidades'));
     }
 
     public function store(Request $request)
@@ -38,6 +39,7 @@ class MatriculaController extends Controller
             'monto_total' => 'required|numeric',
             'valor_pendiente' => 'nullable|numeric',
             'estado_matricula' => 'required|in:Pendiente,Aprobada,Completada,Rechazada',
+            'universidad_id' => 'required_if:curso_id,1,2,3|exists:universidades,id',
         ]);
 
         if (!auth()->user()->hasRole(1) && $request->usuario_id != auth()->id()) {
@@ -52,6 +54,20 @@ class MatriculaController extends Controller
         }
 
         Matricula::create($data);
+
+        // Check for existing record before saving the university selection
+        if (in_array($request->curso_id, [1, 2, 3])) {
+            $existingAspiracion = \App\Models\UserAspiracion::where('user_id', $request->usuario_id)
+                ->where('universidad_id', $request->universidad_id)
+                ->first();
+
+            if (!$existingAspiracion) {
+                \App\Models\UserAspiracion::create([
+                    'user_id' => $request->usuario_id,
+                    'universidad_id' => $request->universidad_id,
+                ]);
+            }
+        }
 
         return redirect()->route('matriculas.index')->with('success', 'Matricula creada exitosamente.');
     }

@@ -38,19 +38,21 @@
                                         <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $pago->fecha_pago }}</td>
                                         <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $pago->estado }}</td>
                                         <td class="px-4 py-2 text-sm font-medium flex items-center justify-center space-x-2">
-                                            @if($pago->estado == 'Pendiente')
-                                                <form action="{{ route('pagos.aprobar', $pago) }}" method="POST" class="inline">
+                                            @if(auth()->user()->hasRole(1))
+                                                @if($pago->estado == 'Pendiente')
+                                                    <form action="{{ route('pagos.aprobar', $pago) }}" method="POST" class="inline">
+                                                        @csrf
+                                                        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">Aprobar</button>
+                                                    </form>
+                                                @endif
+                                                <a href="{{ route('pagos.edit', $pago) }}" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded">Editar</a>
+                                                <form action="{{ route('pagos.destroy', $pago) }}" method="POST" class="inline-block">
                                                     @csrf
-                                                    <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">Aprobar</button>
+                                                    @method('DELETE')
+                                                    <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">Eliminar</button>
                                                 </form>
                                             @endif
                                             <a href="{{ route('pagos.show', $pago) }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">Ver</a>
-                                            <a href="{{ route('pagos.edit', $pago) }}" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded">Editar</a>
-                                            <form action="{{ route('pagos.destroy', $pago) }}" method="POST" class="inline-block">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">Eliminar</button>
-                                            </form>
                                         </td>
                                     </tr>
                                 @endforeach

@@ -10,8 +10,8 @@ class MetodosPagoTableSeeder extends Seeder
     public function run()
     {
         DB::table('metodos_pago')->insert([
-            ['nombre' => 'Tarjeta de Crédito', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'PayPal', 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'Efectivo', 'created_at' => now(), 'updated_at' => now()],
+            ['nombre' => 'Depósito', 'created_at' => now(), 'updated_at' => now()],
             // ...other seed data...
         ]);
     }

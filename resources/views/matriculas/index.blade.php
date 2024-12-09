@@ -48,6 +48,8 @@
                                                     @method('DELETE')
                                                     <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">Eliminar</button>
                                                 </form>
+                                            @else
+                                                <a href="{{ route('pagos.create', ['matricula_id' => $matricula->id]) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded">Pagar</a>
                                             @endif
                                         </td>
                                     </tr>
