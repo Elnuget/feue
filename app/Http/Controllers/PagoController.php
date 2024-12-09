@@ -14,7 +14,9 @@ class PagoController extends Controller
             $pagos = Pago::with(['matricula.usuario', 'matricula.curso', 'metodoPago'])->get();
         } else {
             $pagos = Pago::with(['matricula.usuario', 'matricula.curso', 'metodoPago'])
-                         ->where('user_id', auth()->id())
+                         ->whereHas('matricula', function($query) {
+                             $query->where('usuario_id', auth()->id());
+                         })
                          ->get();
         }
         return view('pagos.index', compact('pagos'));
@@ -22,7 +24,9 @@ class PagoController extends Controller
 
     public function create()
     {
-        $matriculas = Matricula::with('curso')->get();
+        $matriculas = Matricula::with('curso')
+                      ->where('usuario_id', auth()->id())
+                      ->get();
         $metodosPago = \App\Models\MetodoPago::all();
         return view('pagos.create', compact('matriculas', 'metodosPago'));
     }
@@ -42,7 +46,6 @@ class PagoController extends Controller
                               ->firstOrFail();
 
         $data = $request->all();
-        $data['user_id'] = auth()->id(); // Associate the payment with the authenticated user
 
         if ($request->hasFile('comprobante_pago')) {
             $data['comprobante_pago'] = $request->file('comprobante_pago')->store('comprobantes', 'public');
@@ -50,10 +53,7 @@ class PagoController extends Controller
 
         $pago = Pago::create($data);
 
-        // Debug statement to log the created payment
-        \Log::info('Pago created: ', $pago->toArray());
-
-        return redirect()->route('pagos.index')->with('success', 'Pago created successfully.');
+        return redirect()->route('pagos.index')->with('success', 'Pago creado exitosamente.');
     }
 
     public function show(Pago $pago)
@@ -77,14 +77,14 @@ class PagoController extends Controller
 
         $pago->update($request->all());
 
-        return redirect()->route('pagos.index')->with('success', 'Pago updated successfully.');
+        return redirect()->route('pagos.index')->with('success', 'Pago actualizado exitosamente.');
     }
 
     public function destroy(Pago $pago)
     {
         $pago->delete();
 
-        return redirect()->route('pagos.index')->with('success', 'Pago deleted successfully.');
+        return redirect()->route('pagos.index')->with('success', 'Pago eliminado exitosamente.');
     }
 
     public function aprobar($id)
@@ -98,5 +98,14 @@ class PagoController extends Controller
         $matricula->save();
 
         return redirect()->route('pagos.index')->with('success', 'Pago aprobado y valor pendiente actualizado.');
+    }
+
+    public function rechazar($id)
+    {
+        $pago = Pago::findOrFail($id);
+        $pago->estado = 'Rechazado';
+        $pago->save();
+
+        return redirect()->route('pagos.index')->with('success', 'Pago rechazado.');
     }
 }

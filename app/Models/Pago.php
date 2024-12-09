@@ -15,9 +15,7 @@ class Pago extends Model
         'comprobante_pago',
         'monto',
         'fecha_pago',
-        'valor_pendiente',
-        'fecha_proximo_pago',
-        'estado', // Add estado to fillable
+        'estado',
     ];
 
     public function matricula()

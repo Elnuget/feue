@@ -22,55 +22,49 @@
                     @endif
                     <form action="{{ route('pagos.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                         @csrf
-                        <input type="hidden" name="user_id" value="{{ auth()->id() }}"> <!-- Hidden input to store the authenticated user's ID -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="matricula_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">🎓 Matricula:</label>
-                                <select name="matricula_id" id="matricula_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition ease-in-out">
-                                    @foreach($matriculas->where('usuario_id', auth()->id()) as $matricula)
+                                <select name="matricula_id" id="matricula_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700">
+                                    @foreach($matriculas as $matricula)
                                         <option value="{{ $matricula->id }}" data-pendiente="{{ $matricula->valor_pendiente }}">{{ $matricula->curso->nombre }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div>
-                                <label for="metodo_pago_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">💳 Metodo Pago:</label>
-                                <select name="metodo_pago_id" id="metodo_pago_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition ease-in-out">
+                                <label for="metodo_pago_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">💳 Método de Pago:</label>
+                                <select name="metodo_pago_id" id="metodo_pago_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700">
                                     @foreach($metodosPago as $metodo)
                                         <option value="{{ $metodo->id }}">{{ $metodo->nombre }}</option>
                                     @endforeach
                                 </select>
                             </div>
-
                             <div class="col-span-1 md:col-span-2 hidden" id="comprobante_pago_container">
                                 <label for="comprobante_pago" class="block text-sm font-medium text-gray-700 dark:text-gray-300">📎 Comprobante de Pago:</label>
-                                <input type="file" name="comprobante_pago" id="comprobante_pago" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition ease-in-out" accept=".png, .jpg, .jpeg, .pdf">
+                                <input type="file" name="comprobante_pago" id="comprobante_pago" accept=".png, .jpg, .jpeg, .pdf" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700">
                             </div>
-
                             <div>
                                 <label for="valor_pendiente" class="block text-sm font-medium text-gray-700 dark:text-gray-300">💰 Valor Pendiente:</label>
                                 <span id="valor_pendiente" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mt-1"></span>
                             </div>
-
                             <div>
                                 <label for="monto" class="block text-sm font-medium text-gray-700 dark:text-gray-300">💲 Pago:</label>
-                                <input type="number" name="monto" id="monto" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition ease-in-out">
+                                <input type="number" name="monto" id="monto" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700">
                             </div>
-
                             <div>
-                                <label for="fecha_pago" class="block text-sm font-medium text-gray-700 dark:text-gray-300">📅 Fecha Pago:</label>
-                                <input type="date" name="fecha_pago" id="fecha_pago" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition ease-in-out" value="{{ now()->timezone('America/Guayaquil')->toDateString() }}">
+                                <label for="fecha_pago" class="block text-sm font-medium text-gray-700 dark:text-gray-300">📅 Fecha de Pago:</label>
+                                <input type="date" name="fecha_pago" id="fecha_pago" value="{{ now()->timezone('America/Guayaquil')->toDateString() }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700">
                             </div>
-
                             <div>
                                 <label for="estado" class="block text-sm font-medium text-gray-700 dark:text-gray-300">🔄 Estado:</label>
-                                <select name="estado" id="estado" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition ease-in-out" {{ auth()->user()->hasRole(1) ? '' : 'disabled' }}>
+                                <select name="estado" id="estado" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700" {{ auth()->user()->hasRole(1) ? '' : 'disabled' }}>
                                     <option value="Pendiente" {{ auth()->user()->hasRole(1) ? '' : 'selected' }}>Pendiente</option>
                                     <option value="Aprobado">Aprobado</option>
                                     <option value="Rechazado">Rechazado</option>
                                 </select>
                             </div>
                         </div>
-                        <button type="submit" class="w-full mt-6 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-bold py-2 px-4 rounded-md shadow-lg transition-transform transform hover:scale-105 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        <button type="submit" class="w-full mt-6 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-bold py-2 px-4 rounded-md shadow-lg">
                             💾 Pagar
                         </button>
                     </form>
