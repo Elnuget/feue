@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Pago;
 use App\Models\Matricula;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PagoAprobado;
 
 class PagoController extends Controller
 {
@@ -96,6 +98,9 @@ class PagoController extends Controller
         $matricula = $pago->matricula;
         $matricula->valor_pendiente -= $pago->monto;
         $matricula->save();
+
+        // Send email to the user
+        Mail::to($pago->matricula->usuario->email)->send(new PagoAprobado($pago));
 
         return redirect()->route('pagos.index')->with('success', 'Pago aprobado y valor pendiente actualizado.');
     }
