@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Crear Matricula') }}
+            {{ __('Añadir Matricula') }}
         </h2>
     </x-slot>
 
@@ -86,7 +86,7 @@
                             </div>
                         </div>
                         <div class="relative" id="universidad-container">
-                            <label for="universidad_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Universidad</label>
+                            <label for="universidad_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Universidad a postular</label>
                             <div class="mt-1 flex rounded-md shadow-sm">
                                 <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
                                     <i class="fas fa-university"></i>

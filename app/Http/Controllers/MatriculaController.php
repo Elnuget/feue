@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Matricula;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\MatriculaAprobada;
 
 class MatriculaController extends Controller
 {
@@ -77,7 +79,8 @@ class MatriculaController extends Controller
         if (!auth()->user()->hasRole(1) && $matricula->usuario_id != auth()->id()) {
             return redirect()->route('matriculas.index')->with('error', 'No tienes permiso para ver esta matrícula.');
         }
-        return view('matriculas.show', compact('matricula'));
+        $pagos = $matricula->pagos; // Fetch associated payments
+        return view('matriculas.show', compact('matricula', 'pagos'));
     }
 
     public function edit(Matricula $matricula)
@@ -126,5 +129,30 @@ class MatriculaController extends Controller
         $matricula->delete();
 
         return redirect()->route('matriculas.index')->with('success', 'Matricula eliminada exitosamente.');
+    }
+
+    public function aprobar(Matricula $matricula)
+    {
+        if (!auth()->user()->hasRole(1)) {
+            return redirect()->route('matriculas.index')->with('error', 'No tienes permiso para aprobar esta matrícula.');
+        }
+
+        $matricula->update(['estado_matricula' => 'Aprobada']);
+
+        // Send email to the user
+        Mail::to($matricula->usuario->email)->send(new MatriculaAprobada($matricula));
+
+        return redirect()->route('matriculas.index')->with('success', 'Matricula aprobada exitosamente.');
+    }
+
+    public function rechazar(Matricula $matricula)
+    {
+        if (!auth()->user()->hasRole(1)) {
+            return redirect()->route('matriculas.index')->with('error', 'No tienes permiso para rechazar esta matrícula.');
+        }
+
+        $matricula->update(['estado_matricula' => 'Rechazada']);
+
+        return redirect()->route('matriculas.index')->with('success', 'Matricula rechazada exitosamente.');
     }
 }

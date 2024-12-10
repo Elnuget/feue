@@ -81,7 +81,34 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex justify-end">
+                    <div class="relative">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pagos Asociados</label>
+                        <div class="mt-1 flex flex-col space-y-2">
+                            @forelse ($pagos as $pago)
+                                <div class="flex justify-between items-center p-2 bg-gray-100 dark:bg-gray-700 rounded-md shadow-sm">
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">Monto: {{ $pago->monto }}</span>
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">Fecha: {{ $pago->fecha_pago }}</span>
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">Estado: {{ $pago->estado }}</span>
+                                    <a href="{{ route('pagos.show', $pago) }}" class="text-blue-500 dark:text-blue-300">Ver Detalles</a>
+                                    @if(auth()->user()->hasRole(1) && $pago->estado == 'Pendiente')
+                                        <form action="{{ route('pagos.aprobar', $pago) }}" method="POST" class="inline-block">
+                                            @csrf
+                                            <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">✔️ Aprobar</button>
+                                        </form>
+                                    @endif
+                                </div>
+                            @empty
+                                <span class="text-sm text-gray-700 dark:text-gray-300">No hay pagos asociados.</span>
+                            @endforelse
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-2">
+                        @if(auth()->user()->hasRole(1) && $matricula->estado_matricula == 'Pendiente')
+                            <form action="{{ route('matriculas.aprobar', $matricula) }}" method="POST" class="inline-block">
+                                @csrf
+                                <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">✔️ Aprobar Matricula</button>
+                            </form>
+                        @endif
                         <a href="{{ route('matriculas.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 dark:bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-600 focus:outline-none focus:border-gray-700 dark:focus:border-gray-600 focus:ring focus:ring-gray-200 dark:focus:ring-gray-500 active:bg-gray-700 dark:active:bg-gray-600 disabled:opacity-25 transition">
                             <i class="fas fa-arrow-left mr-2"></i> Volver
                         </a>

@@ -65,6 +65,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('pagos', PagoController::class);
     Route::post('/pagos/{pago}/aprobar', [PagoController::class, 'aprobar'])->name('pagos.aprobar');
     Route::post('/pagos/{pago}/rechazar', [PagoController::class, 'rechazar'])->name('pagos.rechazar');
+    Route::post('/matriculas/{matricula}/aprobar', [MatriculaController::class, 'aprobar'])->name('matriculas.aprobar');
+    Route::post('/matriculas/{matricula}/rechazar', [MatriculaController::class, 'rechazar'])->name('matriculas.rechazar');
     Route::get('/complete-profile', [UserProfileController::class, 'completeProfile'])->name('profile.complete');
     Route::post('/complete-profile', [UserProfileController::class, 'storeCompleteProfile'])->name('profile.storeComplete');
 });

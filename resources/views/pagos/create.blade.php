@@ -27,7 +27,9 @@
                                 <label for="matricula_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">🎓 Matricula:</label>
                                 <select name="matricula_id" id="matricula_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700">
                                     @foreach($matriculas as $matricula)
-                                        <option value="{{ $matricula->id }}" data-pendiente="{{ $matricula->valor_pendiente }}">{{ $matricula->curso->nombre }}</option>
+                                        <option value="{{ $matricula->id }}" data-pendiente="{{ $matricula->valor_pendiente }}" {{ request('matricula_id') == $matricula->id ? 'selected' : '' }}>
+                                            {{ $matricula->curso->nombre }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
