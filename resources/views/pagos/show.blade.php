@@ -26,9 +26,15 @@
                         <div class="col-span-1 md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">📎 Comprobante de Pago:</label>
                             @if($pago->comprobante_pago)
-                                <a href="{{ asset('storage/' . $pago->comprobante_pago) }}" target="_blank" class="block text-sm font-semibold text-blue-500 dark:text-blue-300 mt-1">
-                                    Ver Comprobante
-                                </a>
+                                @if(in_array(pathinfo($pago->comprobante_pago, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png']))
+                                    <div class="mt-2">
+                                        <img src="{{ asset('storage/' . $pago->comprobante_pago) }}" alt="Comprobante de Pago" class="w-full h-auto rounded-md shadow-md">
+                                    </div>
+                                @else
+                                    <a href="{{ asset('storage/' . $pago->comprobante_pago) }}" target="_blank" class="block text-sm font-semibold text-blue-500 dark:text-blue-300 mt-1">
+                                        Ver Comprobante
+                                    </a>
+                                @endif
                             @else
                                 <span class="block text-sm font-semibold mt-1">No disponible</span>
                             @endif
@@ -60,7 +66,7 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-4">
-                        @if($pago->estado == 'Pendiente')
+                        @if($pago->estado == 'Pendiente' && auth()->user()->hasRole(1))
                             <form action="{{ route('pagos.aprobar', $pago) }}" method="POST" class="inline-block">
                                 @csrf
                                 <button type="submit" class="inline-flex items-center justify-center w-40 bg-green-500 hover:bg-green-600 text-white font-semibold text-sm py-2 px-4 rounded-md shadow-md">
