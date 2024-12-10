@@ -1,3 +1,4 @@
+para migraciones:
 php artisan migrate:fresh --seed
 
 
@@ -12,3 +13,10 @@ tienes que usar <x-app-layout> no @extends('layouts.app')
 Revertir cambios
 git fetch origin
 git reset --hard origin/main
+
+para imagenes:
+php artisan storage:link
+
+para ruta nueva creada o repo clonado:
+php artisan route:clear
+php artisan route:cache

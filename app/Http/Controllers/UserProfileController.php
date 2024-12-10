@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\UserProfile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
 
 class UserProfileController extends Controller
 {

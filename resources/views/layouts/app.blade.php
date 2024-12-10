@@ -54,7 +54,7 @@
                     <x-dropdown align="right" width="48">
                         <x-slot name="trigger">
                             <button class="inline-flex items-center focus:outline-none transition duration-150">
-                                @if(Auth::user()->profile && Auth::user()->profile->photo && file_exists(public_path('storage/' . Auth::user()->profile->photo)))
+                                @if(Auth::user()->profile && Auth::user()->profile->photo && file_exists(storage_path('app/public/' . Auth::user()->profile->photo)))
                                     <img src="{{ asset('storage/' . Auth::user()->profile->photo) }}" alt="User Photo"
                                         class="h-8 w-8 rounded-full object-cover">
                                 @else
