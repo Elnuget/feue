@@ -6,6 +6,12 @@ use App\Models\Matricula;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\MatriculaAprobada;
+use Barryvdh\DomPDF\Facade\Pdf as PDF; // Update the namespace
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\MatriculasExport;
+use App\Exports\UsersExport;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class MatriculaController extends Controller
 {
@@ -154,5 +160,70 @@ class MatriculaController extends Controller
         $matricula->update(['estado_matricula' => 'Rechazada']);
 
         return redirect()->route('matriculas.index')->with('success', 'Matricula rechazada exitosamente.');
+    }
+
+    public function listas(Request $request)
+    {
+        $cursoId = $request->input('curso_id');
+        $cursos = \App\Models\Curso::all();
+
+        $matriculas = Matricula::where('curso_id', $cursoId)
+                               ->where('estado_matricula', 'Aprobada')
+                               ->with('usuario')
+                               ->get()
+                               ->sortBy(function($matricula) {
+                                   return $matricula->usuario->name;
+                               });
+
+        return view('matriculas.listas', compact('cursos', 'matriculas', 'cursoId'));
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $cursoId = $request->input('curso_id');
+        $curso = \App\Models\Curso::findOrFail($cursoId);
+
+        $matriculas = Matricula::where('curso_id', $cursoId)
+                               ->where('estado_matricula', 'Aprobada')
+                               ->with('usuario')
+                               ->get()
+                               ->sortBy(function($matricula) {
+                                   return $matricula->usuario->name;
+                               });
+
+        $pdf = PDF::loadView('matriculas.pdf', compact('curso', 'matriculas'));
+
+        return $pdf->download('listas_matriculados_' . $curso->nombre . '.pdf');
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $cursoId = $request->input('curso_id');
+        $curso = \App\Models\Curso::findOrFail($cursoId);
+
+        $matriculas = Matricula::where('curso_id', $cursoId)
+                               ->where('estado_matricula', 'Aprobada')
+                               ->with('usuario')
+                               ->get()
+                               ->sortBy(function($matricula) {
+                                   return $matricula->usuario->name;
+                               });
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', '#');
+        $sheet->setCellValue('B1', 'Nombre del Matriculado');
+
+        foreach ($matriculas as $index => $matricula) {
+            $sheet->setCellValue('A' . ($index + 2), $index + 1);
+            $sheet->setCellValue('B' . ($index + 2), $matricula->usuario->name);
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $fileName = 'listas_matriculados_' . $curso->nombre . '.xlsx';
+        $temp_file = tempnam(sys_get_temp_dir(), $fileName);
+        $writer->save($temp_file);
+
+        return response()->download($temp_file, $fileName)->deleteFileAfterSend(true);
     }
 }

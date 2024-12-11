@@ -69,6 +69,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/matriculas/{matricula}/rechazar', [MatriculaController::class, 'rechazar'])->name('matriculas.rechazar');
     Route::get('/complete-profile', [UserProfileController::class, 'completeProfile'])->name('profile.complete');
     Route::post('/complete-profile', [UserProfileController::class, 'storeCompleteProfile'])->name('profile.storeComplete');
+    Route::get('/listas', [MatriculaController::class, 'listas'])->name('matriculas.listas');
+    Route::get('/listas/export-pdf', [MatriculaController::class, 'exportPdf'])->name('matriculas.exportPdf');
+    Route::get('/listas/export-excel', [MatriculaController::class, 'exportExcel'])->name('matriculas.exportExcel');
 });
 
 require __DIR__.'/auth.php';

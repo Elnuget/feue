@@ -6,7 +6,7 @@ para roles
 rutas protegidas con spatie
 
 para vistas
-tienes que usar <x-app-layout> no @extends('layouts.app')
+ tienes que usar <x-app-layout> no @extends('layouts.app')
 
 @section('content')
 
@@ -20,3 +20,7 @@ php artisan storage:link
 para ruta nueva creada o repo clonado:
 php artisan route:clear
 php artisan route:cache
+
+
+para excel:
+phpoffice/phpspreadsheet

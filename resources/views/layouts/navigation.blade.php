@@ -63,6 +63,9 @@
         <x-nav-link :href="route('matriculas.index')" :active="request()->routeIs('matriculas.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
             📝 {{ __('Matrículas') }}
         </x-nav-link>
+        <x-nav-link :href="route('matriculas.listas')" :active="request()->routeIs('matriculas.listas')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+            📋 {{ __('Listas') }}
+        </x-nav-link>
         <x-nav-link :href="route('pagos.index')" :active="request()->routeIs('pagos.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
             💳 {{ __('Pagos') }}
         </x-nav-link>
