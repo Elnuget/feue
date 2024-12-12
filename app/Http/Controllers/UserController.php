@@ -69,4 +69,10 @@ class UserController extends Controller
         $user->delete();
         return redirect()->route('users.index');
     }
+
+    public function showQR(User $user)
+    {
+        // Generate QR code logic here
+        return view('users.qr', compact('user'));
+    }
 }

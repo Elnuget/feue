@@ -12,6 +12,7 @@ use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\MatriculaController;
 use App\Http\Controllers\PagoController;
+use App\Http\Controllers\AsistenciaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +42,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/users', [\App\Http\Controllers\UserController::class, 'index'])->name('users.index');
     Route::get('/users/create', [\App\Http\Controllers\UserController::class, 'create'])->name('users.create');
     Route::get('/users/{user}/edit', [\App\Http\Controllers\UserController::class, 'edit'])->name('users.edit');
+    Route::get('/users/{user}/qr', [\App\Http\Controllers\UserController::class, 'showQR'])->name('users.qr');
     Route::resource('estados_academicos', EstadoAcademicoController::class)->parameters([
         'estados_academicos' => 'estado_academico'
     ]);
@@ -72,6 +74,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/listas', [MatriculaController::class, 'listas'])->name('matriculas.listas');
     Route::get('/listas/export-pdf', [MatriculaController::class, 'exportPdf'])->name('matriculas.exportPdf');
     Route::get('/listas/export-excel', [MatriculaController::class, 'exportExcel'])->name('matriculas.exportExcel');
+    Route::get('/asistencias/scan', [AsistenciaController::class, 'scanQR'])->name('asistencias.scan');
+    Route::post('/asistencias/register-scan', [AsistenciaController::class, 'registerScan'])->name('asistencias.registerScan');
+    Route::resource('asistencias', AsistenciaController::class);
 });
 
 require __DIR__.'/auth.php';
