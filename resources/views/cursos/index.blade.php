@@ -25,6 +25,7 @@
                                     <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Estado</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Tipo de Curso</th>
                                     <th class="px-4 py-2 text-center text-xs font-medium text-white uppercase tracking-wider">Imagen</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Horario</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider">Acciones</th>
                                 </tr>
                             </thead>
@@ -43,6 +44,7 @@
                                                 <i class="fas fa-book w-12 h-12 text-gray-500 dark:text-gray-300"></i>
                                             @endif
                                         </td>
+                                        <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $curso->horario }}</td>
                                         <td class="px-4 py-2 text-sm font-medium flex items-center justify-center space-x-2">
                                             <a href="{{ route('cursos.edit', $curso) }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">Editar</a>
                                             <form action="{{ route('cursos.destroy', $curso) }}" method="POST" class="inline-block">

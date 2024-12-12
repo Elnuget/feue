@@ -16,6 +16,7 @@ class CreateCursosTable extends Migration
             $table->enum('estado', ['Activo', 'Inactivo'])->default('Activo');
             $table->unsignedBigInteger('tipo_curso_id');
             $table->string('imagen')->default('default.jpg');
+            $table->string('horario')->nullable();
             $table->timestamps();
 
             $table->foreign('tipo_curso_id')->references('id')->on('tipos_cursos')->onDelete('cascade');

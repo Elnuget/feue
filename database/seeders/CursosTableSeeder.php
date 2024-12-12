@@ -29,6 +29,7 @@ class CursosTableSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
                 'imagen' => 'default.jpg',
+                'horario' => 'Lunes a Viernes, 8:00 AM - 12:00 PM',
             ],
             [
                 'nombre' => 'CURSO COMPLETO INGRESA A LA U 2025',
@@ -39,6 +40,7 @@ class CursosTableSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
                 'imagen' => 'default.jpg',
+                'horario' => 'Lunes a Viernes, 2:00 PM - 6:00 PM',
             ],
             [
                 'nombre' => 'CURSO COMPLETO INGRESA A LA U 2025 VIRTUAL',
@@ -49,6 +51,7 @@ class CursosTableSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
                 'imagen' => 'default.jpg',
+                'horario' => 'Sábados y Domingos, 9:00 AM - 1:00 PM',
             ],
         ]);
     }

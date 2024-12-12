@@ -38,6 +38,14 @@ class UsersTableSeeder extends Seeder
                 'model_type' => 'App\Models\User',
                 'model_id' => $user->id,
             ]);
+
+            // Seed data for asistencias table
+            DB::table('asistencias')->insert([
+                'user_id' => $user->id,
+                'fecha_hora' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
     }
 }

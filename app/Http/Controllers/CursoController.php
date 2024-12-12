@@ -29,6 +29,7 @@ class CursoController extends Controller
             'estado' => 'required|in:Activo,Inactivo',
             'tipo_curso_id' => 'required|exists:tipos_cursos,id',
             'imagen' => 'nullable|image|mimes:jpeg,png|max:2048',
+            'horario' => 'nullable|string|max:255',
         ]);
 
         $data = $request->except(['imagen']);
@@ -56,6 +57,7 @@ class CursoController extends Controller
             'estado' => 'required|in:Activo,Inactivo',
             'tipo_curso_id' => 'required|exists:tipos_cursos,id',
             'imagen' => 'nullable|image|mimes:jpeg,png|max:2048',
+            'horario' => 'nullable|string|max:255',
         ]);
 
         $data = $request->except(['imagen']);
