@@ -9,49 +9,81 @@ class CursosTableSeeder extends Seeder
 {
     public function run()
     {
-        // Disable foreign key checks
+        // Desactivar comprobación de claves foráneas
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
-        // Eliminate existing courses
+        // Vaciar la tabla cursos
         DB::table('cursos')->truncate();
 
-        // Re-enable foreign key checks
+        // Reactivar comprobación de claves foráneas
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // Insert new courses
         DB::table('cursos')->insert([
             [
-                'nombre' => 'CURSO COMPLETO INGRESA A LA U 2025 (3RO BACHILLERATO)',
-                'descripcion' => 'DICIEMBRE 2024 - NOVIEMBRE 2025\nACOMPAÑAMIENTO HASTA LA MATRICULACIÓN EN LA U',
-                'precio' => 389.00,
-                'estado' => 'Activo',
-                'tipo_curso_id' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-                'imagen' => 'default.jpg',
-                'horario' => 'Lunes a Viernes, 8:00 AM - 12:00 PM',
-            ],
-            [
-                'nombre' => 'CURSO COMPLETO INGRESA A LA U 2025',
-                'descripcion' => 'DICIEMBRE - MAYO\nACOMPAÑAMIENTO HASTA LA MATRICULACIÓN EN LA U\n0998436160',
+                'nombre' => 'Iñaquito Preuniversitario Paralelo B',
+                'descripcion' => 'Preuniversitario para ingreso a la U',
                 'precio' => 170.00,
                 'estado' => 'Activo',
-                'tipo_curso_id' => 1,
+                'tipo_curso_id' => 2, // Presencial, suponiendo que 2 es presencial
                 'created_at' => now(),
                 'updated_at' => now(),
                 'imagen' => 'default.jpg',
-                'horario' => 'Lunes a Viernes, 2:00 PM - 6:00 PM',
+                'horario' => 'Lunes a Viernes, 9:00 AM - 12:00 PM',
             ],
             [
-                'nombre' => 'CURSO COMPLETO INGRESA A LA U 2025 VIRTUAL',
-                'descripcion' => 'DICIEMBRE - MAYO\nACOMPAÑAMIENTO HASTA LA MATRICULACIÓN EN LA U\n0998436160',
-                'precio' => 100.00,
+                'nombre' => 'Iñaquito Preuniversitario Paralelo C',
+                'descripcion' => 'Preuniversitario para ingreso a la U',
+                'precio' => 170.00,
                 'estado' => 'Activo',
-                'tipo_curso_id' => 1,
+                'tipo_curso_id' => 2, // Presencial
                 'created_at' => now(),
                 'updated_at' => now(),
                 'imagen' => 'default.jpg',
-                'horario' => 'Sábados y Domingos, 9:00 AM - 1:00 PM',
+                'horario' => 'Lunes a Viernes, 9:00 AM - 12:00 PM',
+            ],
+            [
+                'nombre' => 'Ajavi Preuniversitario Paralelo A',
+                'descripcion' => 'Preuniversitario para ingreso a la U',
+                'precio' => 170.00,
+                'estado' => 'Activo',
+                'tipo_curso_id' => 2, // Presencial
+                'created_at' => now(),
+                'updated_at' => now(),
+                'imagen' => 'default.jpg',
+                'horario' => 'Lunes a Viernes, 9:00 AM - 12:00 PM',
+            ],
+            [
+                'nombre' => 'Virtual Preuniversitario Paralelo A',
+                'descripcion' => 'Preuniversitario para ingreso a la U (Virtual)',
+                'precio' => 100.00,
+                'estado' => 'Activo',
+                'tipo_curso_id' => 1, // Online
+                'created_at' => now(),
+                'updated_at' => now(),
+                'imagen' => 'default.jpg',
+                'horario' => 'Lunes a Viernes, 6:00 PM - 8:00 PM',
+            ],
+            [
+                'nombre' => 'Iñaquito Preuniversitario Intensivo',
+                'descripcion' => 'Preuniversitario intensivo para ingreso a la U',
+                'precio' => 160.00,
+                'estado' => 'Activo',
+                'tipo_curso_id' => 2, // Presencial
+                'created_at' => now(),
+                'updated_at' => now(),
+                'imagen' => 'default.jpg',
+                'horario' => 'Sábados, 9:00 AM - 4:00 PM',
+            ],
+            [
+                'nombre' => 'Ajavi Preuniversitario Intensivo',
+                'descripcion' => 'Preuniversitario intensivo para ingreso a la U',
+                'precio' => 160.00,
+                'estado' => 'Activo',
+                'tipo_curso_id' => 2, // Presencial
+                'created_at' => now(),
+                'updated_at' => now(),
+                'imagen' => 'default.jpg',
+                'horario' => 'Sábados, 9:00 AM - 4:00 PM',
             ],
         ]);
     }

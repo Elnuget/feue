@@ -12,19 +12,20 @@
                 @foreach ($cursos as $curso)
                     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                         @if($curso->imagen && file_exists(public_path('storage/' . $curso->imagen)))
-                            <img src="{{ asset('storage/' . $curso->imagen) }}" alt="{{ $curso->nombre }}" class="w-full h-48 object-cover">
+                            <img src="{{ asset('storage/' . $curso->imagen) }}" alt="{{ $curso->nombre }}" class="w-full h-32 object-cover">
                         @else
-                            <div class="w-full h-48 flex items-center justify-center bg-gray-200 dark:bg-gray-700">
+                            <div class="w-full h-32 flex items-center justify-center bg-gray-200 dark:bg-gray-700">
                                 <i class="fas fa-book text-6xl text-gray-500 dark:text-gray-300"></i>
                             </div>
                         @endif
-                        <div class="p-6">
+                        <div class="p-4">
                             <h3 class="text-lg font-bold text-gray-900 dark:text-gray-200 flex items-center">
                                 <i class="fas fa-graduation-cap mr-2 text-blue-500"></i>
                                 {{ $curso->nombre }} 🎓
                             </h3>
                             <p class="text-gray-500 dark:text-gray-300">{{ $curso->descripcion }}</p>
                             <p class="text-gray-900 dark:text-gray-200 font-bold">{{ $curso->precio }} $</p>
+                            <p class="text-gray-500 dark:text-gray-300"><i class="fas fa-clock mr-1"></i> {{ $curso->horario }}</p>
                             <a href="{{ route('matriculas.create', ['curso_id' => $curso->id]) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4 inline-block">
                                 <i class="fas fa-shopping-cart mr-2"></i> Comprar 🛒
                             </a>
