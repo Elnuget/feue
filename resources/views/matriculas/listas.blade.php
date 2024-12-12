@@ -20,6 +20,7 @@
                                 class="block w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 onchange="document.getElementById('cursoForm').submit();"
                             >
+                                <option value="" disabled selected>{{ __('Elegir curso') }}</option>
                                 @foreach($cursos as $curso)
                                     <option value="{{ $curso->id }}" {{ $cursoId == $curso->id ? 'selected' : '' }}>
                                         {{ $curso->nombre }}
