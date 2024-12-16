@@ -1,3 +1,14 @@
+Instalación:
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+npm install
+
+Para iniciar:
+npm run dev
+php artisan serve
+
 para migraciones:
 php artisan migrate:fresh --seed
 
@@ -24,3 +35,5 @@ php artisan route:cache
 
 para excel:
 phpoffice/phpspreadsheet
+
+

@@ -15,7 +15,15 @@ class UsersTableSeeder extends Seeder
             [
                 'name' => 'Carlos',
                 'email' => 'cangulo009@outlook.es',
-                'password' => Hash::make('faplol13'),
+                'password' => Hash::make('carlosangulo1234'),
+                'created_at' => now(),
+                'updated_at' => now(),
+                'email_verified_at' => now(),
+            ],
+            [
+                'name' => 'Ricardo',
+                'email' => 'ricarhidalgo2020@gmail.com',
+                'password' => Hash::make('ricardohidalgo1234'),
                 'created_at' => now(),
                 'updated_at' => now(),
                 'email_verified_at' => now(),
@@ -68,9 +76,9 @@ class UsersTableSeeder extends Seeder
         $cursos = DB::table('cursos')->get();
 
         foreach ($users as $user) {
-            // Asignar rol (Carlos administrador, resto usuarios)
+            // Asignar rol (Carlos y Ricardo administradores, resto usuarios)
             DB::table('model_has_roles')->insert([
-                'role_id' => $user->email === 'cangulo009@outlook.es' ? 1 : 2,
+                'role_id' => ($user->email === 'cangulo009@outlook.es' || $user->email === 'ricarhidalgo2020@gmail.com') ? 1 : 2,
                 'model_type' => 'App\Models\User',
                 'model_id' => $user->id,
             ]);

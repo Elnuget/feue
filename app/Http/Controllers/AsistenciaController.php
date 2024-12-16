@@ -65,25 +65,64 @@ class AsistenciaController extends Controller
 
     public function registerScan(Request $request)
     {
-        $data = $request->input('data');
+        try {
+            $data = $request->input('data');
+            
+            if (!$data) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se recibieron datos del código QR'
+                ], 400);
+            }
 
-        // Procesar el QR escaneado y registrar la asistencia
-        $userId = $this->decodeQRCodeData($data);
-        if ($userId) {
+            $userId = $this->decodeQRCodeData($data);
+            
+            // Verificar si el usuario existe
+            $user = User::find($userId);
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Usuario no encontrado'
+                ], 404);
+            }
+
+            // Verificar si ya existe una asistencia para hoy
+            $existingAttendance = Asistencia::where('user_id', $userId)
+                ->whereDate('fecha_hora', today())
+                ->first();
+
+            if ($existingAttendance) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ya se registró la asistencia para este usuario hoy'
+                ], 400);
+            }
+
+            // Registrar la asistencia
             Asistencia::create([
                 'user_id' => $userId,
                 'fecha_hora' => now(),
             ]);
-            return redirect()->route('asistencias.index')->with('success', 'Asistencia registrada correctamente.');
-        } else {
-            return redirect()->back()->with('error', 'Datos de QR inválidos.');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Asistencia registrada correctamente'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar la asistencia: ' . $e->getMessage()
+            ], 500);
         }
     }
 
     private function decodeQRCodeData($data)
     {
-        // Implementa la lógica para decodificar los datos del QR
-        // Por ejemplo, si el QR contiene el ID del usuario:
+        // Asegurarse de que el dato es un número válido
+        if (!is_numeric($data)) {
+            throw new \Exception('El código QR no contiene un ID de usuario válido');
+        }
         return intval($data);
     }
 
