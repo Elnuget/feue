@@ -93,24 +93,108 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
-                <div class="scanner-container">
-                    <div class="scanner-header">
-                        <select class="camera-select" id="cameras">
-                            <option value="">Seleccionar cámara...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="preview-container">
-                        <video id="preview"></video>
-                        <div class="scan-region-highlight" id="scanRegion"></div>
-                    </div>
-                    
-                    <div class="scanner-footer">
-                        <div id="result" style="display: none;"></div>
+            <!-- Scanner Card -->
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg mb-6">
+                <div class="p-6">
+                    <div class="scanner-container">
+                        <div class="scanner-header">
+                            <select class="camera-select" id="cameras">
+                                <option value="">Seleccionar cámara...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="preview-container">
+                            <video id="preview"></video>
+                            <div class="scan-region-highlight" id="scanRegion"></div>
+                        </div>
+                        
+                        <div class="scanner-footer">
+                            <div id="result" style="display: none;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Asistencias y Datos Card -->
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg mb-6">
+                <div class="p-6">
+                    <h2 class="text-xl font-semibold mb-4">Asistencias y Datos</h2>
+                    <div class="mb-4">
+                        <label for="usuario" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Seleccionar Usuario
+                        </label>
+                        <div class="flex items-center gap-4">
+                            <div id="user-photo" class="w-16 h-16 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                <span class="text-2xl text-gray-600 dark:text-gray-400">👤</span>
+                            </div>
+                            <select id="usuario" class="flex-1 rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:text-gray-300">
+                                <option value="">Seleccione un usuario</option>
+                                @foreach($users as $user)
+                                    <option value="{{ $user->id }}" 
+                                            data-photo="{{ $user->profile && $user->profile->photo ? asset('storage/' . $user->profile->photo) : '' }}">
+                                        {{ $user->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div id="datos-usuario" class="hidden space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Cursos Matriculados -->
+                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                    <i class="fas fa-graduation-cap mr-2"></i>Cursos Matriculados
+                                </h3>
+                                <div class="border-t border-gray-200 dark:border-gray-600 pt-2">
+                                    <ul id="cursos-matriculados" class="list-disc list-inside text-gray-600 dark:text-gray-300">
+                                        <li class="text-sm italic text-gray-400">No hay cursos registrados</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Número de Asistencias -->
+                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                    <i class="fas fa-check-circle mr-2"></i>Asistencias Registradas
+                                </h3>
+                                <div class="border-t border-gray-200 dark:border-gray-600 pt-2">
+                                    <div class="flex items-baseline">
+                                        <span class="text-3xl font-bold text-blue-600 dark:text-blue-400" id="numero-asistencias">0</span>
+                                        <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">asistencias totales</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Valores Pendientes -->
+                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                    <i class="fas fa-dollar-sign mr-2"></i>Valores Pendientes
+                                </h3>
+                                <div class="border-t border-gray-200 dark:border-gray-600 pt-2">
+                                    <div class="flex items-baseline">
+                                        <span class="text-2xl font-bold text-red-600 dark:text-red-400">$</span>
+                                        <span class="text-2xl font-bold text-red-600 dark:text-red-400" id="valores-pendientes">0.00</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">en matrículas</p>
+                                </div>
+                            </div>
+
+                            <!-- Estado de Matrículas -->
+                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                    <i class="fas fa-clipboard-check mr-2"></i>Estado de Matrículas
+                                </h3>
+                                <div class="border-t border-gray-200 dark:border-gray-600 pt-2">
+                                    <ul id="estado-matriculas" class="space-y-2 text-gray-600 dark:text-gray-300">
+                                        <li class="text-sm italic text-gray-400">No hay matrículas registradas</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End of Asistencias y Datos Card -->
         </div>
     </div>
 
@@ -210,6 +294,103 @@
                 console.error('Error al acceder a las cámaras:', error);
                 document.getElementById('result').innerHTML = 'Error al acceder a las cámaras.';
             });
+
+        // Add the user data update functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const users = @json($users);
+            const matriculas = @json($matriculas);
+            const asistencias = @json($asistencias);
+
+            // Reference to DOM elements
+            const usuarioSelect = document.getElementById('usuario');
+            const userPhotoDiv = document.getElementById('user-photo');
+            const datosUsuarioDiv = document.getElementById('datos-usuario');
+            const cursosMatriculadosUl = document.getElementById('cursos-matriculados');
+            const numeroAsistenciasP = document.getElementById('numero-asistencias');
+            const valoresPendientesP = document.getElementById('valores-pendientes');
+            const estadoMatriculasUl = document.getElementById('estado-matriculas');
+
+            usuarioSelect.addEventListener('change', function() {
+                const userId = parseInt(usuarioSelect.value);
+                if (userId) {
+                    // Update profile photo
+                    const selectedOption = usuarioSelect.options[usuarioSelect.selectedIndex];
+                    const photoUrl = selectedOption.dataset.photo;
+                    actualizarFotoPerfil(photoUrl);
+
+                    // Filter user enrollments
+                    const userMatriculas = matriculas.filter(m => m.usuario && m.usuario.id === userId);
+
+                    // Update enrolled courses
+                    cursosMatriculadosUl.innerHTML = '';
+                    if (userMatriculas.length > 0) {
+                        userMatriculas.forEach(matricula => {
+                            if (matricula.curso) {
+                                cursosMatriculadosUl.innerHTML += `
+                                    <li class="text-sm text-gray-600 dark:text-gray-300">${matricula.curso.nombre}</li>
+                                `;
+                            }
+                        });
+                    } else {
+                        cursosMatriculadosUl.innerHTML = `
+                            <li class="text-sm italic text-gray-400">No hay cursos registrados</li>
+                        `;
+                    }
+
+                    // Update attendance count
+                    const userAsistencias = asistencias.filter(a => a.user_id === userId);
+                    numeroAsistenciasP.textContent = userAsistencias.length;
+
+                    // Calculate and display pending amounts
+                    const totalPendiente = userMatriculas.reduce((total, matricula) => {
+                        return total + (parseFloat(matricula.valor_pendiente) || 0);
+                    }, 0);
+                    valoresPendientesP.textContent = totalPendiente.toFixed(2);
+
+                    // Update enrollment statuses
+                    estadoMatriculasUl.innerHTML = '';
+                    if (userMatriculas.length > 0) {
+                        userMatriculas.forEach(matricula => {
+                            if (matricula.curso) {
+                                const estadoClass = parseFloat(matricula.valor_pendiente) > 0 ? 'text-red-600' : 'text-green-600';
+                                const estadoText = parseFloat(matricula.valor_pendiente) > 0 ? 'Pendiente' : 'Pagado';
+                                estadoMatriculasUl.innerHTML += `
+                                    <li class="text-sm ${estadoClass}">${matricula.curso.nombre}: ${estadoText}</li>
+                                `;
+                            }
+                        });
+                    } else {
+                        estadoMatriculasUl.innerHTML = `
+                            <li class="text-sm italic text-gray-400">No hay matrículas registradas</li>
+                        `;
+                    }
+
+                    datosUsuarioDiv.classList.remove('hidden');
+                } else {
+                    actualizarFotoPerfil('');
+                    datosUsuarioDiv.classList.add('hidden');
+                }
+            });
+
+            function actualizarFotoPerfil(photoUrl) {
+                if (photoUrl) {
+                    // Check if the image exists
+                    fetch(photoUrl)
+                        .then(response => {
+                            if (response.ok) {
+                                userPhotoDiv.innerHTML = `<img src="${photoUrl}" alt="Foto de perfil" class="w-full h-full object-cover">`;
+                            } else {
+                                userPhotoDiv.innerHTML = `<span class="text-2xl text-gray-600 dark:text-gray-400">👤</span>`;
+                            }
+                        })
+                        .catch(() => {
+                            userPhotoDiv.innerHTML = `<span class="text-2xl text-gray-600 dark:text-gray-400">👤</span>`;
+                        });
+                } else {
+                    userPhotoDiv.innerHTML = `<span class="text-2xl text-gray-600 dark:text-gray-400">👤</span>`;
+                }
+            }
+        });
     </script>
     @endpush
 </x-app-layout>

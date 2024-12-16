@@ -60,7 +60,11 @@ class AsistenciaController extends Controller
 
     public function scanQR()
     {
-        return view('asistencias.scan');
+        $users = User::with('profile')->get();
+        $matriculas = Matricula::with(['curso', 'usuario'])->get();
+        $asistencias = Asistencia::with('user')->get();
+
+        return view('asistencias.scan', compact('users', 'matriculas', 'asistencias'));
     }
 
     public function registerScan(Request $request)
