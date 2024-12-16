@@ -12,7 +12,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS (asegúrate de tener darkMode: 'class' en tu tailwind.config.js) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- Font Awesome -->
