@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Escanear QR') }}
+            {{ __('Escanear QR y Asistencias') }}
         </h2>
     </x-slot>
 
@@ -9,7 +9,7 @@
         .scanner-container {
             position: relative;
             width: 100%;
-            max-width: 400px;
+            max-width: 320px;
             margin: 0 auto;
             background: white;
             border-radius: 8px;
@@ -19,7 +19,7 @@
         .preview-container {
             position: relative;
             width: 100%;
-            height: 300px;
+            height: 240px;
         }
         #preview {
             width: 100%;
@@ -31,8 +31,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 200px;
-            height: 200px;
+            width: 150px;
+            height: 150px;
             border: 2px solid #ff0000;
             border-radius: 8px;
             transition: border-color 0.3s ease;
@@ -64,7 +64,7 @@
         }
         #result {
             position: relative;
-            padding: 1rem;
+            padding: 0.5rem;
             text-align: center;
             background: rgba(0, 0, 0, 0.8);
             color: white;
@@ -73,30 +73,61 @@
         }
         .camera-select {
             width: 100%;
-            padding: 0.5rem;
-            margin: 0.5rem 0;
+            padding: 0.25rem;
+            margin-bottom: 0.5rem;
             border: 1px solid #e2e8f0;
             border-radius: 4px;
             background: white;
         }
-        .scanner-header {
-            padding: 1rem;
+        .scanner-header, .scanner-footer {
+            padding: 0.5rem;
             background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+        .scanner-header {
             border-bottom: 1px solid #e2e8f0;
         }
         .scanner-footer {
-            padding: 1rem;
-            background: #f8fafc;
             border-top: 1px solid #e2e8f0;
+        }
+        /* Update the image styling */
+        #user-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Remove border-radius if present */
         }
     </style>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Scanner Card -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <div class="scanner-container">
+            <!-- Tarjeta Unificada -->
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
+                
+                <!-- Primera fila: Combobox (arriba), Imagen (abajo), Escáner a la derecha -->
+                <div class="flex flex-col md:flex-row items-start justify-between gap-4">
+                    <!-- Contenedor Izquierdo: Combobox y debajo Imagen -->
+                    <div class="flex-1 flex flex-col gap-4">
+                        <!-- Combobox -->
+                        <div>
+                            <select id="usuario" class="w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:text-gray-300">
+                                <option value="">Seleccione un usuario</option>
+                                @foreach($users as $user)
+                                    <option value="{{ $user->id }}" 
+                                            data-photo="{{ $user->profile && $user->profile->photo ? asset('storage/' . $user->profile->photo) : '' }}">
+                                        {{ $user->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <!-- Imagen debajo del Combobox -->
+                        <div id="user-photo" class="w-32 h-32 overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center mx-auto">
+                            <span class="text-2xl text-gray-600 dark:text-gray-400">👤</span>
+                        </div>
+                    </div>
+
+                    <!-- Área del Escáner a la derecha -->
+                    <div class="scanner-container flex-shrink-0">
                         <div class="scanner-header">
                             <select class="camera-select" id="cameras">
                                 <option value="">Seleccionar cámara...</option>
@@ -113,88 +144,66 @@
                         </div>
                     </div>
                 </div>
-            </div>
+                <!-- Fin primera fila -->
 
-            <!-- Asistencias y Datos Card -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <h2 class="text-xl font-semibold mb-4">Asistencias y Datos</h2>
-                    <div class="mb-4">
-                        <label for="usuario" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Seleccionar Usuario
-                        </label>
-                        <div class="flex items-center gap-4">
-                            <div id="user-photo" class="w-16 h-16 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                                <span class="text-2xl text-gray-600 dark:text-gray-400">👤</span>
+                <!-- Datos del usuario debajo -->
+                <div id="datos-usuario" class="hidden mt-8 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <!-- Cursos Matriculados -->
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                <i class="fas fa-graduation-cap mr-2"></i>Cursos Matriculados
+                            </h3>
+                            <div class="border-t border-gray-200 dark:border-gray-600 pt-2">
+                                <ul id="cursos-matriculados" class="list-disc list-inside text-gray-600 dark:text-gray-300">
+                                    <li class="text-sm italic text-gray-400">No hay cursos registrados</li>
+                                </ul>
                             </div>
-                            <select id="usuario" class="flex-1 rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:text-gray-300">
-                                <option value="">Seleccione un usuario</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user->id }}" 
-                                            data-photo="{{ $user->profile && $user->profile->photo ? asset('storage/' . $user->profile->photo) : '' }}">
-                                        {{ $user->name }}
-                                    </option>
-                                @endforeach
-                            </select>
                         </div>
-                    </div>
-                    <div id="datos-usuario" class="hidden space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Cursos Matriculados -->
-                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                                    <i class="fas fa-graduation-cap mr-2"></i>Cursos Matriculados
-                                </h3>
-                                <div class="border-t border-gray-200 dark:border-gray-600 pt-2">
-                                    <ul id="cursos-matriculados" class="list-disc list-inside text-gray-600 dark:text-gray-300">
-                                        <li class="text-sm italic text-gray-400">No hay cursos registrados</li>
-                                    </ul>
+
+                        <!-- Número de Asistencias -->
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                <i class="fas fa-check-circle mr-2"></i>Asistencias Registradas
+                            </h3>
+                            <div class="border-t border-gray-200 dark:border-gray-600 pt-2">
+                                <div class="flex items-baseline">
+                                    <span class="text-3xl font-bold text-blue-600 dark:text-blue-400" id="numero-asistencias">0</span>
+                                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">asistencias totales</span>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Número de Asistencias -->
-                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                                    <i class="fas fa-check-circle mr-2"></i>Asistencias Registradas
-                                </h3>
-                                <div class="border-t border-gray-200 dark:border-gray-600 pt-2">
-                                    <div class="flex items-baseline">
-                                        <span class="text-3xl font-bold text-blue-600 dark:text-blue-400" id="numero-asistencias">0</span>
-                                        <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">asistencias totales</span>
-                                    </div>
+                        <!-- Valores Pendientes -->
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                <i class="fas fa-dollar-sign mr-2"></i>Valores Pendientes
+                            </h3>
+                            <div class="border-t border-gray-200 dark:border-gray-600 pt-2">
+                                <div class="flex items-baseline">
+                                    <span class="text-2xl font-bold text-red-600 dark:text-red-400">$</span>
+                                    <span class="text-2xl font-bold text-red-600 dark:text-red-400" id="valores-pendientes">0.00</span>
                                 </div>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">en matrículas</p>
                             </div>
+                        </div>
 
-                            <!-- Valores Pendientes -->
-                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                                    <i class="fas fa-dollar-sign mr-2"></i>Valores Pendientes
-                                </h3>
-                                <div class="border-t border-gray-200 dark:border-gray-600 pt-2">
-                                    <div class="flex items-baseline">
-                                        <span class="text-2xl font-bold text-red-600 dark:text-red-400">$</span>
-                                        <span class="text-2xl font-bold text-red-600 dark:text-red-400" id="valores-pendientes">0.00</span>
-                                    </div>
-                                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">en matrículas</p>
-                                </div>
-                            </div>
-
-                            <!-- Estado de Matrículas -->
-                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                                    <i class="fas fa-clipboard-check mr-2"></i>Estado de Matrículas
-                                </h3>
-                                <div class="border-t border-gray-200 dark:border-gray-600 pt-2">
-                                    <ul id="estado-matriculas" class="space-y-2 text-gray-600 dark:text-gray-300">
-                                        <li class="text-sm italic text-gray-400">No hay matrículas registradas</li>
-                                    </ul>
-                                </div>
+                        <!-- Estado de Matrículas -->
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                <i class="fas fa-clipboard-check mr-2"></i>Estado de Matrículas
+                            </h3>
+                            <div class="border-t border-gray-200 dark:border-gray-600 pt-2">
+                                <ul id="estado-matriculas" class="space-y-2 text-gray-600 dark:text-gray-300">
+                                    <li class="text-sm italic text-gray-400">No hay matrículas registradas</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
                 </div>
+                <!-- Fin de Datos del usuario -->
             </div>
-            <!-- End of Asistencias y Datos Card -->
+            <!-- Fin de Tarjeta Unificada -->
         </div>
     </div>
 
@@ -244,7 +253,6 @@
             resultDiv.style.display = 'block';
             resultDiv.innerHTML = 'Procesando código QR...';
             
-            // Añadir clase de éxito
             scanRegion.classList.add('success');
 
             fetch('{{ route('asistencias.registerScan') }}', {
@@ -295,13 +303,13 @@
                 document.getElementById('result').innerHTML = 'Error al acceder a las cámaras.';
             });
 
-        // Add the user data update functionality
+        // Actualizar datos de usuario
         document.addEventListener('DOMContentLoaded', function() {
             const users = @json($users);
             const matriculas = @json($matriculas);
             const asistencias = @json($asistencias);
 
-            // Reference to DOM elements
+            // Referencias a elementos del DOM
             const usuarioSelect = document.getElementById('usuario');
             const userPhotoDiv = document.getElementById('user-photo');
             const datosUsuarioDiv = document.getElementById('datos-usuario');
@@ -313,15 +321,15 @@
             usuarioSelect.addEventListener('change', function() {
                 const userId = parseInt(usuarioSelect.value);
                 if (userId) {
-                    // Update profile photo
+                    // Actualizar foto de perfil
                     const selectedOption = usuarioSelect.options[usuarioSelect.selectedIndex];
                     const photoUrl = selectedOption.dataset.photo;
                     actualizarFotoPerfil(photoUrl);
 
-                    // Filter user enrollments
+                    // Filtrar matriculas del usuario
                     const userMatriculas = matriculas.filter(m => m.usuario && m.usuario.id === userId);
 
-                    // Update enrolled courses
+                    // Cursos Matriculados
                     cursosMatriculadosUl.innerHTML = '';
                     if (userMatriculas.length > 0) {
                         userMatriculas.forEach(matricula => {
@@ -337,17 +345,17 @@
                         `;
                     }
 
-                    // Update attendance count
+                    // Asistencias
                     const userAsistencias = asistencias.filter(a => a.user_id === userId);
                     numeroAsistenciasP.textContent = userAsistencias.length;
 
-                    // Calculate and display pending amounts
+                    // Valores pendientes
                     const totalPendiente = userMatriculas.reduce((total, matricula) => {
                         return total + (parseFloat(matricula.valor_pendiente) || 0);
                     }, 0);
                     valoresPendientesP.textContent = totalPendiente.toFixed(2);
 
-                    // Update enrollment statuses
+                    // Estado de Matrículas
                     estadoMatriculasUl.innerHTML = '';
                     if (userMatriculas.length > 0) {
                         userMatriculas.forEach(matricula => {
@@ -374,7 +382,6 @@
 
             function actualizarFotoPerfil(photoUrl) {
                 if (photoUrl) {
-                    // Check if the image exists
                     fetch(photoUrl)
                         .then(response => {
                             if (response.ok) {
