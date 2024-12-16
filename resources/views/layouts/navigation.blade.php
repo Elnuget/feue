@@ -1,11 +1,11 @@
-<!-- resources/views/layouts/navigation.blade.php -->
 <div 
     :class="{'translate-x-0': open, '-translate-x-full': !open}"
     class="fixed inset-y-0 left-0 w-48 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 overflow-y-auto transition-transform duration-300 transform h-full z-20"
 >
     <div class="flex items-center justify-between px-4 py-4">
         <a href="{{ route('dashboard') }}">
-            <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+            <!-- Reemplazamos x-application-logo por un img con el favicon -->
+            <img src="{{ asset('favicon.png') }}" alt="Logo" class="h-9 w-auto">
         </a>
         <button @click="open = !open" class="text-gray-500 dark:text-gray-400 focus:outline-none">
             <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
@@ -22,7 +22,7 @@
             🏠 {{ __('Panel') }}
         </x-nav-link>
         @if(auth()->user()->hasRole(1))
-            <!-- Submenú "General" con su propia variable generalOpen -->
+            <!-- Submenú "General" -->
             <div x-data="{ generalOpen: false }">
                 <button @click="generalOpen = !generalOpen" class="flex items-center justify-between w-full text-gray-600 dark:text-gray-400 focus:outline-none hover:text-gray-900 dark:hover:text-gray-200">
                     <span>{{ __('General') }}</span>
