@@ -44,7 +44,8 @@
                             document.documentElement.classList.remove('dark');
                         }
                     " class="text-gray-500 dark:text-gray-400 focus:outline-none mr-4">
-                        <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'"></i> 🌙
+                        <!-- Muestra 🌙 si está en modo oscuro, y ☀️ si está en modo claro -->
+                        <span x-text="darkMode ? '🌙' : '☀️'"></span>
                     </button>
 
                     @if (Route::has('login'))
