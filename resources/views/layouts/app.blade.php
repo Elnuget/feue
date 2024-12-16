@@ -4,15 +4,23 @@
     <!-- Metatags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <title>{{ config('app.name', 'Laravel') }}</title>
+
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('favicon.png') }}" type="image/png">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
 
 <body class="font-sans antialiased">
     <!-- Agregamos darkMode al x-data y la lógica en x-init -->
@@ -56,7 +64,7 @@
                         }
                     " class="text-gray-500 dark:text-gray-400 focus:outline-none mr-4">
                         <span x-text="darkMode ? '🌙' : '☀️'"></span>
-                    </button>
+                </button>
 
                 <!-- Menú de Usuario -->
                 <div class="flex items-center ml-auto">
