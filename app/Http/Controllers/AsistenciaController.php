@@ -86,18 +86,6 @@ class AsistenciaController extends Controller
                 ], 404);
             }
 
-            // Verificar si ya existe una asistencia para hoy
-            $existingAttendance = Asistencia::where('user_id', $userId)
-                ->whereDate('fecha_hora', today())
-                ->first();
-
-            if ($existingAttendance) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Ya se registró la asistencia para este usuario hoy'
-                ], 400);
-            }
-
             // Registrar la asistencia
             Asistencia::create([
                 'user_id' => $userId,
