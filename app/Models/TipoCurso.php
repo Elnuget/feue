@@ -12,4 +12,9 @@ class TipoCurso extends Model
     protected $fillable = ['nombre', 'descripcion'];
 
     protected $table = 'tipos_cursos';
+
+    public function cursos()
+    {
+        return $this->hasMany(Curso::class, 'tipo_curso_id');
+    }
 }

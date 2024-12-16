@@ -10,9 +10,18 @@ class TiposCursosTableSeeder extends Seeder
     public function run()
     {
         DB::table('tipos_cursos')->insert([
-            ['nombre' => 'Online', 'descripcion' => 'Cursos en línea', 'created_at' => now(), 'updated_at' => now()],
-            ['nombre' => 'Presencial', 'descripcion' => 'Cursos presenciales', 'created_at' => now(), 'updated_at' => now()],
-            // ...other seed data...
+            [
+                'nombre' => 'Preuniversitario',
+                'descripcion' => 'Cursos para entrar a la universidad',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'nombre' => 'Enfermería',
+                'descripcion' => 'Cursos de enfermería',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
         ]);
     }
 }

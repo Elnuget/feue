@@ -90,13 +90,17 @@ class CursoController extends Controller
 
     public function dashboard()
     {
-        $cursos = Curso::all();
-        return view('dashboard', compact('cursos'));
+        $cursosPorTipo = Curso::with('tipoCurso')->get()->groupBy('tipo_curso_id');
+        $tiposCurso = TipoCurso::whereIn('id', $cursosPorTipo->keys())->get();
+        
+        return view('dashboard', compact('cursosPorTipo', 'tiposCurso'));
     }
 
     public function welcome()
     {
-        $cursos = Curso::all();
-        return view('welcome', compact('cursos'));
+        $cursosPorTipo = Curso::with('tipoCurso')->get()->groupBy('tipo_curso_id');
+        $tiposCurso = TipoCurso::whereIn('id', $cursosPorTipo->keys())->get();
+        
+        return view('welcome', compact('cursosPorTipo', 'tiposCurso'));
     }
 }

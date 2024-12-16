@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Matricula;
+use App\Models\Curso;    // Add this line
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\MatriculaAprobada;
@@ -164,16 +165,15 @@ class MatriculaController extends Controller
 
     public function listas(Request $request)
     {
-        $cursoId = $request->input('curso_id');
-        $cursos = \App\Models\Curso::all();
-
-        $matriculas = Matricula::where('curso_id', $cursoId)
-                               ->where('estado_matricula', 'Aprobada')
-                               ->with('usuario')
-                               ->get()
-                               ->sortBy(function($matricula) {
-                                   return $matricula->usuario->name;
-                               });
+        $cursos = Curso::all();
+        $cursoId = $request->query('curso_id');
+        
+        $matriculas = collect();
+        if ($cursoId) {
+            $matriculas = Matricula::where('curso_id', $cursoId)
+                ->with('usuario')
+                ->get();
+        }
 
         return view('matriculas.listas', compact('cursos', 'matriculas', 'cursoId'));
     }

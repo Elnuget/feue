@@ -24,16 +24,12 @@ class DatabaseSeeder extends Seeder
             UniversidadesTableSeeder::class,
             TiposCursosTableSeeder::class,
             PermissionTablesSeeder::class,
-           
             MetodosPagoTableSeeder::class,
             EstadosAcademicosTableSeeder::class,
             CursosTableSeeder::class, // Ensure this runs before MatriculaSeeder
             UsersTableSeeder::class,
-            UserProfileSeeder::class,
-            UserAcademicosTableSeeder::class,
-            UserAspiracionesTableSeeder::class,
-            DocumentoSeeder::class,
-            MatriculaSeeder::class,
+            
+           
             
         ]);
     }

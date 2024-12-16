@@ -1,3 +1,6 @@
+@if(!auth()->user()->is_admin)
+    <script>window.location = "{{ route('dashboard') }}";</script>
+@endif
 
 <x-app-layout>
     <x-slot name="header">

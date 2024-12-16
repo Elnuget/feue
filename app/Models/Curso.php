@@ -13,7 +13,7 @@ class Curso extends Model
 
     public function tipoCurso()
     {
-        return $this->belongsTo(TipoCurso::class);
+        return $this->belongsTo(TipoCurso::class, 'tipo_curso_id');
     }
 
     public function matriculas()
