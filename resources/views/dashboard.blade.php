@@ -14,9 +14,7 @@
                         @if($curso->imagen && file_exists(public_path('storage/' . $curso->imagen)))
                             <img src="{{ asset('storage/' . $curso->imagen) }}" alt="{{ $curso->nombre }}" class="w-full h-32 object-cover">
                         @else
-                            <div class="w-full h-32 flex items-center justify-center bg-gray-200 dark:bg-gray-700">
-                                <i class="fas fa-book text-6xl text-gray-500 dark:text-gray-300"></i>
-                            </div>
+                            <img src="{{ asset('CursosDefecto.jpg') }}" alt="Curso por defecto" class="w-full h-32 object-cover">
                         @endif
                         <div class="p-4">
                             <h3 class="text-lg font-bold text-gray-900 dark:text-gray-200 flex items-center">
