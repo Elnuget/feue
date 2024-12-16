@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
 <head>
     <!-- Metatags -->
     <meta charset="utf-8">
@@ -16,8 +15,11 @@
 </head>
 
 <body class="font-sans antialiased">
-    <!-- Definimos x-data aquí, para controlar el estado "open" del menú lateral -->
-    <div x-data="{ open: false }" class="flex h-screen bg-gray-100 dark:bg-gray-900">
+    <!-- Agregamos darkMode al x-data y la lógica en x-init -->
+    <div x-data="{ open: false, darkMode: false }" x-init="
+        darkMode = JSON.parse(localStorage.getItem('darkMode')) || false;
+        if(darkMode) document.documentElement.classList.add('dark');
+    " class="flex h-screen bg-gray-100 dark:bg-gray-900">
         <!-- Sidebar -->
         @include('layouts.navigation')
 
@@ -26,7 +28,7 @@
             <!-- Header -->
             <header
                 class="flex items-center px-4 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 relative z-10">
-                <!-- Botón de Toggle -->
+                <!-- Botón Toggle Sidebar -->
                 <button @click="open = !open" class="text-gray-500 dark:text-gray-400 focus:outline-none">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -42,6 +44,19 @@
                         Cap: {{ Auth::user()->roles->pluck('name')->first() ?? 'No Role' }}
                     </a>
                 </div>
+
+                <!-- Botón Modo Claro/Oscuro al lado de la imagen de perfil -->
+                <button @click="
+                        darkMode = !darkMode;
+                        localStorage.setItem('darkMode', JSON.stringify(darkMode));
+                        if (darkMode) {
+                            document.documentElement.classList.add('dark');
+                        } else {
+                            document.documentElement.classList.remove('dark');
+                        }
+                    " class="text-gray-500 dark:text-gray-400 focus:outline-none mr-4">
+                        <span x-text="darkMode ? '🌙' : '☀️'"></span>
+                    </button>
 
                 <!-- Menú de Usuario -->
                 <div class="flex items-center ml-auto">
