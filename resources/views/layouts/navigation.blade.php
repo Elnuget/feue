@@ -49,34 +49,39 @@
                     @endforeach
                 </div>
             </div>
-        @endif
-
-        @if(auth()->user()->hasRole(1))
             <x-nav-link :href="route('tipos_cursos.index')" :active="request()->routeIs('tipos_cursos.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
                 🎨 {{ __('Tipos de Cursos') }}
             </x-nav-link>
             <x-nav-link :href="route('cursos.index')" :active="request()->routeIs('cursos.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
                 📚 {{ __('Cursos') }}
             </x-nav-link>
+            <x-nav-link :href="route('matriculas.listas')" :active="request()->routeIs('matriculas.listas')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+                📋 {{ __('Listas') }}
+            </x-nav-link>
+            <x-nav-link :href="route('asistencias.index')" :active="request()->routeIs('asistencias.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+                📋 {{ __('Asistencias') }}
+            </x-nav-link>
+            <x-nav-link :href="route('pruebas')" :active="request()->routeIs('pruebas')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+                🧪 {{ __('Pruebas') }}
+            </x-nav-link>
         @endif
 
         <x-nav-link :href="route('matriculas.index')" :active="request()->routeIs('matriculas.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
             📝 {{ __('Matrículas') }}
         </x-nav-link>
-        <x-nav-link :href="route('matriculas.listas')" :active="request()->routeIs('matriculas.listas')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
-            📋 {{ __('Listas') }}
-        </x-nav-link>
+        @if(auth()->user()->hasRole(1))
+            <x-nav-link :href="route('matriculas.listas')" :active="request()->routeIs('matriculas.listas')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+                📋 {{ __('Listas') }}
+            </x-nav-link>
+            <x-nav-link :href="route('asistencias.index')" :active="request()->routeIs('asistencias.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+                📋 {{ __('Asistencias') }}
+            </x-nav-link>
+        @endif
         <x-nav-link :href="route('pagos.index')" :active="request()->routeIs('pagos.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
             💳 {{ __('Pagos') }}
         </x-nav-link>
-        <x-nav-link :href="route('asistencias.index')" :active="request()->routeIs('asistencias.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
-            📋 {{ __('Asistencias') }}
-        </x-nav-link>
         <x-nav-link :href="route('users.qr', auth()->id())" :active="request()->routeIs('users.qr')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
             🔲 {{ __('Mi Código QR') }}
-        </x-nav-link>
-        <x-nav-link :href="route('pruebas')" :active="request()->routeIs('pruebas')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
-            🧪 {{ __('Pruebas') }}
         </x-nav-link>
     </nav>
 </div>

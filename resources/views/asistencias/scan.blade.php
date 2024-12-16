@@ -121,7 +121,7 @@
                             </select>
                         </div>
                         <!-- Imagen debajo del Combobox -->
-                        <div id="user-photo" class="w-32 h-32 overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center mx-auto">
+                        <div id="user-photo" class="w-48 h-48 overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center mx-auto border-4 border-gray-300 dark:border-gray-600 shadow-lg">
                             <span class="text-2xl text-gray-600 dark:text-gray-400">👤</span>
                         </div>
                     </div>
@@ -267,10 +267,21 @@
             .then(data => {
                 resultDiv.innerHTML = data.message;
                 if (data.success) {
-                    scanner.stop();
+                    // Seleccionar automáticamente el usuario en el combobox
+                    const usuarioSelect = document.getElementById('usuario');
+                    usuarioSelect.value = content; // El content es el ID del usuario
+                    // Disparar el evento change para actualizar los datos
+                    usuarioSelect.dispatchEvent(new Event('change'));
+                    
+                    // Mostrar el mensaje de éxito
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = 'Asistencia registrada correctamente';
+                    
+                    // Remover la clase success después de 3 segundos
                     setTimeout(() => {
-                        window.location.href = '{{ route('asistencias.index') }}';
-                    }, 2000);
+                        resultDiv.style.display = 'none';
+                        scanRegion.classList.remove('success');
+                    }, 3000);
                 } else {
                     setTimeout(() => {
                         resultDiv.style.display = 'none';
