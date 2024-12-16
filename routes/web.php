@@ -77,6 +77,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/asistencias/scan', [AsistenciaController::class, 'scanQR'])->name('asistencias.scan');
     Route::post('/asistencias/register-scan', [AsistenciaController::class, 'registerScan'])->name('asistencias.registerScan');
     Route::resource('asistencias', AsistenciaController::class);
+    Route::get('/pruebas', function () {
+        $asistencias = \App\Models\Asistencia::all();
+        $listas = \App\Models\Matricula::all(); // Assuming 'listas' refers to matriculas
+        $matriculas = \App\Models\Matricula::all();
+        $cursos = \App\Models\Curso::all();
+        return view('pruebas.index', compact('asistencias', 'listas', 'matriculas', 'cursos'));
+    })->name('pruebas');
 });
 
 require __DIR__.'/auth.php';
