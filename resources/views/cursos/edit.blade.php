@@ -1,4 +1,8 @@
 <x-app-layout>
+    @if(!auth()->user()->hasRole(1))
+        <script>window.location = "{{ route('dashboard') }}";</script>
+    @endif
+
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Editar Curso') }}
@@ -9,10 +13,6 @@
         <!-- Font Awesome -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     </head>
-
-    @if(!auth()->user()->is_admin)
-        <script>window.location = "{{ route('dashboard') }}";</script>
-    @endif
 
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
