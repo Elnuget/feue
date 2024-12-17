@@ -38,4 +38,8 @@ php artisan route:cache
 para excel:
 phpoffice/phpspreadsheet
 
+Intrucciones para produccion:
+composer install --optimize-autoloader --no-dev
+npm install && npm npm run build
+
 
