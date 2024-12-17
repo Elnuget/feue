@@ -1,13 +1,13 @@
 <x-app-layout>
+    @if(!auth()->user()->hasRole(1))
+        <script>window.location = "{{ route('dashboard') }}";</script>
+    @endif
+
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Cursos') }}
         </h2>
     </x-slot>
-
-    @if(!auth()->user()->is_admin)
-        <script>window.location = "{{ route('dashboard') }}";</script>
-    @endif
 
     <head>
         <!-- Font Awesome -->

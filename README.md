@@ -27,6 +27,8 @@ git reset --hard origin/main
 
 para imagenes:
 php artisan storage:link
+EN PRODUCCION
+agregar trabajo de cron
 
 para ruta nueva creada o repo clonado:
 php artisan route:clear
