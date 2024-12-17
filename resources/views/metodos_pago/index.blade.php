@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('page_title', 'Métodos de Pago')
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Métodos de Pago') }}

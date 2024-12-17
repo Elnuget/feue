@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('page_title', 'Roles')
     <div class="container mx-auto px-4 py-8">
         <h1 class="text-3xl font-semibold mb-6">Roles</h1>
         <a href="{{ route('roles.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4 inline-block">Create Role</a>
