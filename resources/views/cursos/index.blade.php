@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('page_title', 'Cursos')
     @if(!auth()->user()->hasRole(1))
         <script>window.location = "{{ route('dashboard') }}";</script>
     @endif
