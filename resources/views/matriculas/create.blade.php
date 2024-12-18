@@ -114,9 +114,17 @@
             const selectedOption = cursoSelect.options[cursoSelect.selectedIndex];
             const precio = selectedOption.getAttribute('data-precio');
             document.getElementById('monto_total').value = precio;
+
+            const cursoNombre = selectedOption.text.toLowerCase();
+            const universidadContainer = document.getElementById('universidad-container');
+            if (cursoNombre.includes('preuniversitario')) {
+                universidadContainer.style.display = 'block';
+            } else {
+                universidadContainer.style.display = 'none';
+            }
         }
 
-        // Initialize the price fields on page load
+        // Initialize the price fields and visibility on page load
         document.addEventListener('DOMContentLoaded', function() {
             updateCoursePrice();
         });

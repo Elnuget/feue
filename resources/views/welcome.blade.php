@@ -111,7 +111,7 @@
                                         {{ $curso->nombre }} 🎓
                                     </h3>
                                     <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-300">{{ $curso->descripcion }}</p>
-                                    <p class="text-sm sm:text-base text-gray-900 dark:text-gray-200 font-bold">{{ $curso->precio }} $</p>
+                                    {{-- <p class="text-sm sm:text-base text-gray-900 dark:text-gray-200 font-bold">{{ $curso->precio }} $</p> --}}
                                     <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-300"><i class="fas fa-clock mr-1"></i> {{ $curso->horario }}</p>
                                     <a href="{{ route('matriculas.create', ['curso_id' => $curso->id]) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 sm:py-2 sm:px-4 rounded mt-2 sm:mt-4 inline-block text-xs sm:text-sm">
                                         <i class="fas fa-folder-plus mr-1 sm:mr-2"></i> Generar Matrícula 📁

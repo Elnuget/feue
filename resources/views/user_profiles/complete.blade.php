@@ -86,9 +86,10 @@
                                 @endforeach
                             </select>
                         </div>
+                        <!--
                         <div class="form-group">
                             <label for="acta_grado" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Acta de Grado (Opcional)</label>
-                            <input type="file" name="acta_grado" id="acta_grado" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300" accept="application/pdf,image/jpeg,image/png" onchange="uploadFile('acta_grado')">
+                            <input type="file" name="acta_grado" id="acta_grado" class="..." accept="application/pdf,image/jpeg,image/png" onchange="uploadFile('acta_grado')">
                             @php
                                 $userAcademico = \App\Models\UserAcademico::where('user_id', Auth::user()->id)->first();
                             @endphp
@@ -96,6 +97,7 @@
                                 <a href="{{ asset('storage/' . $userAcademico->acta_grado) }}" target="_blank" class="mt-2 text-blue-500 dark:text-blue-300">Ver Acta de Grado</a>
                             @endif  
                         </div>
+                        -->
                         <button type="submit" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Guardar</button>
                     </form>
                 </div>
