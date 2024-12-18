@@ -32,10 +32,21 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                function($attribute, $value, $fail) {
+                    $words = preg_split('/\s+/', trim($value));
+                    if (count($words) < 3) {
+                        $fail('Debe ingresar al menos 3 nombres.');
+                    }
+                }
+            ],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
+        
 
         $user = User::create([
             'name' => $request->name,
