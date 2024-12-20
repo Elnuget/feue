@@ -19,6 +19,7 @@
                     <table class="w-full border-collapse border border-gray-200">
                         <thead>
                             <tr class="bg-gray-100 text-gray-700">
+                                <th class="px-4 py-3 text-left">Foto de Perfil</th>
                                 <th class="px-4 py-3 text-left">Nombre</th>
                                 <th class="px-4 py-3 text-left">Email</th>
                                 <th class="px-4 py-3 text-left">Teléfono</th>
@@ -37,6 +38,13 @@
                         <tbody>
                             @foreach ($profiles as $profile)
                                 <tr class="border-t border-gray-200 hover:bg-gray-50">
+                                    <td class="px-4 py-3 text-center">
+                                        <form action="{{ route('profile.uploadPhoto', $profile->user_id) }}" method="POST" enctype="multipart/form-data">
+                                            @csrf
+                                            <input type="file" name="profile_photo" accept="image/*" class="mb-2">
+                                            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow">Subir Foto</button>
+                                        </form>
+                                    </td>
                                     <td class="px-4 py-3">{{ $profile->user->name }}</td>
                                     <td class="px-4 py-3">{{ $profile->user->email }}</td>
                                     <td class="px-4 py-3">{{ $profile->phone }}</td>
@@ -67,3 +75,33 @@
         </div>
     </div>
 </x-app-layout>
+
+<script>
+    function uploadFile(inputId) {
+        const input = document.getElementById(inputId);
+        const formData = new FormData();
+        formData.append(inputId, input.files[0]);
+
+        fetch('{{ route('profile.uploadPhoto', $profile->user_id) }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => { throw new Error(text) });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.success) {
+                console.error('Error al subir el archivo:', data);
+            }
+        })
+        .catch(error => {
+            console.error('Error al subir el archivo:', error);
+        });
+    }
+</script>

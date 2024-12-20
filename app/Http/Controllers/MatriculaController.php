@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Matricula;
 use App\Models\Curso;    // Add this line
+use App\Models\TipoCurso; // Add this line
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\MatriculaAprobada;
@@ -16,14 +17,37 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class MatriculaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        if (auth()->user()->hasRole(1)) {
-            $matriculas = Matricula::all();
-        } else {
-            $matriculas = Matricula::where('usuario_id', auth()->id())->get();
+        $query = Matricula::query()->with('usuario');
+        
+        if (!auth()->user()->hasRole(1)) {
+            $query->where('usuario_id', auth()->id());
         }
-        return view('matriculas.index', compact('matriculas'));
+
+        $tiposCursos = TipoCurso::all();
+        $tipoCursoId = $request->query('tipo_curso');
+        $cursoId = $request->query('curso_id');
+
+        // Get courses based on tipo_curso
+        if ($tipoCursoId) {
+            $cursos = Curso::where('tipo_curso_id', $tipoCursoId)->get();
+            if ($cursoId) {
+                $query->where('curso_id', $cursoId);
+            } else {
+                $query->whereIn('curso_id', $cursos->pluck('id'));
+            }
+        } else {
+            $cursos = collect();
+        }
+
+        // Add join with users table and sort by name
+        $matriculas = $query->join('users', 'matriculas.usuario_id', '=', 'users.id')
+                           ->select('matriculas.*')
+                           ->orderBy('users.name')
+                           ->get();
+
+        return view('matriculas.index', compact('matriculas', 'tiposCursos', 'cursos', 'tipoCursoId', 'cursoId'));
     }
 
     public function create(Request $request)
@@ -149,6 +173,9 @@ class MatriculaController extends Controller
 
         $matricula->update(['estado_matricula' => 'Aprobada']);
 
+        // Ensure the usuario relationship is loaded
+        $matricula->load('usuario');
+
         // Send email to the user
         Mail::to($matricula->usuario->email)->send(new MatriculaAprobada($matricula));
 
@@ -168,17 +195,38 @@ class MatriculaController extends Controller
 
     public function listas(Request $request)
     {
-        $cursos = Curso::all();
+        $tiposCursos = TipoCurso::all();
+        $tipoCursoId = $request->query('tipo_curso');
         $cursoId = $request->query('curso_id');
-        
-        $matriculas = collect();
+
+        // Filter courses based on selected tipo_curso
+        if ($tipoCursoId) {
+            $cursos = Curso::where('tipo_curso_id', $tipoCursoId)->get();
+        } else {
+            $cursos = collect();
+        }
+
+        // Filter matriculas based on selected curso_id or tipo_curso
         if ($cursoId) {
             $matriculas = Matricula::where('curso_id', $cursoId)
                 ->with('usuario')
-                ->get();
+                ->get()
+                ->sortBy(function($matricula) {
+                    return $matricula->usuario->name;
+                });
+        } elseif ($tipoCursoId) {
+            $cursoIds = Curso::where('tipo_curso_id', $tipoCursoId)->pluck('id');
+            $matriculas = Matricula::whereIn('curso_id', $cursoIds)
+                ->with('usuario')
+                ->get()
+                ->sortBy(function($matricula) {
+                    return $matricula->usuario->name;
+                });
+        } else {
+            $matriculas = collect();
         }
 
-        return view('matriculas.listas', compact('cursos', 'matriculas', 'cursoId'));
+        return view('matriculas.listas', compact('tiposCursos', 'cursos', 'matriculas', 'cursoId', 'tipoCursoId'));
     }
 
     public function exportPdf(Request $request)
@@ -187,7 +235,6 @@ class MatriculaController extends Controller
         $curso = \App\Models\Curso::findOrFail($cursoId);
 
         $matriculas = Matricula::where('curso_id', $cursoId)
-                               ->where('estado_matricula', 'Aprobada')
                                ->with('usuario')
                                ->get()
                                ->sortBy(function($matricula) {
@@ -196,7 +243,7 @@ class MatriculaController extends Controller
 
         $pdf = PDF::loadView('matriculas.pdf', compact('curso', 'matriculas'));
 
-        return $pdf->download('listas_matriculados_' . $curso->nombre . '.pdf');
+        return $pdf->download('listas_matriculados_' . $curso->nombre . '_' . $curso->horario . '.pdf');
     }
 
     public function exportExcel(Request $request)
@@ -205,7 +252,6 @@ class MatriculaController extends Controller
         $curso = \App\Models\Curso::findOrFail($cursoId);
 
         $matriculas = Matricula::where('curso_id', $cursoId)
-                               ->where('estado_matricula', 'Aprobada')
                                ->with('usuario')
                                ->get()
                                ->sortBy(function($matricula) {
@@ -223,10 +269,37 @@ class MatriculaController extends Controller
         }
 
         $writer = new Xlsx($spreadsheet);
-        $fileName = 'listas_matriculados_' . $curso->nombre . '.xlsx';
+        $fileName = 'listas_matriculados_' . $curso->nombre . '_' . $curso->horario . '.xlsx';
         $temp_file = tempnam(sys_get_temp_dir(), $fileName);
         $writer->save($temp_file);
 
         return response()->download($temp_file, $fileName)->deleteFileAfterSend(true);
+    }
+
+    public function printCredentials(Request $request)
+    {
+        try {
+            $ids = explode(',', $request->query('ids'));
+            $matriculas = Matricula::whereIn('id', $ids)
+                ->with(['usuario', 'usuario.profile', 'curso'])
+                ->get()
+                ->sortBy(function($matricula) {
+                    return $matricula->usuario->name;
+                });
+
+            if ($matriculas->isEmpty()) {
+                return back()->with('error', 'No se encontraron matrículas para imprimir.');
+            }
+
+            $pdf = PDF::loadView('matriculas.credentials', [
+                'matriculas' => $matriculas,
+                'curso' => $matriculas->first()->curso
+            ]);
+
+            return $pdf->download('credenciales_matriculados.pdf');
+        } catch (\Exception $e) {
+            \Log::error('Error al generar credenciales: ' . $e->getMessage());
+            return back()->with('error', 'Error al generar las credenciales.');
+        }
     }
 }

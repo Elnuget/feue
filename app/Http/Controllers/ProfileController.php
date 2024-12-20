@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Models\User;
 
 class ProfileController extends Controller
 {
@@ -56,5 +57,25 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * Upload the user's profile photo.
+     */
+    public function uploadPhoto(Request $request, $userId): RedirectResponse
+    {
+        $request->validate([
+            'profile_photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user = User::findOrFail($userId);
+
+        if ($request->hasFile('profile_photo')) {
+            $photoPath = $request->file('profile_photo')->store('profile_photos', 'public');
+            $user->profile_photo_path = $photoPath;
+            $user->save();
+        }
+
+        return Redirect::route('user_profiles.index')->with('status', 'photo-uploaded');
     }
 }

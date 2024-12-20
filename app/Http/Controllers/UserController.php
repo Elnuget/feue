@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\TipoCurso;
+use App\Models\Curso; // Add this line
 use Spatie\Permission\Models\Role;
 use Illuminate\Http\Request;
 
@@ -11,7 +13,9 @@ class UserController extends Controller
     public function index()
     {
         $users = User::all();
-        return view('users.index', compact('users'));
+        $tiposCursos = TipoCurso::all();
+        $cursos = Curso::all(); // Add this line
+        return view('users.index', compact('users', 'tiposCursos', 'cursos')); // Modify this line
     }
 
     public function create()

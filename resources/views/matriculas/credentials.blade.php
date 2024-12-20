@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ __('Listas de Matriculados') }}</title>
+    <title>{{ __('Credenciales de Matriculados') }}</title>
     <style>
         body {
             font-family: 'DejaVu Sans', sans-serif;
@@ -22,14 +22,14 @@
     </style>
 </head>
 <body>
-    <h1>{{ __('Listas de Matriculados') }}</h1>
-    <h2>{{ $curso->nombre }}</h2>
+    <h1>{{ __('Credenciales de Matriculados') }}</h1>
     <table>
         <thead>
             <tr>
                 <th>{{ __('#') }}</th>
                 <th>{{ __('Nombre del Matriculado') }}</th>
                 <th>{{ __('Valor Pendiente') }}</th>
+                <th>{{ __('Valor Pendiente en Moneda') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -37,6 +37,7 @@
                 <tr>
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ $matricula->usuario->name }}</td>
+                    <td>{{ $matricula->valor_pendiente > 0 ? 'Sí' : 'No' }}</td>
                     <td>${{ number_format($matricula->valor_pendiente, 2) }}</td>
                 </tr>
             @endforeach

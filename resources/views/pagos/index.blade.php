@@ -15,7 +15,33 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <a href="{{ route('pagos.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">➕</a>
+                    <div class="flex justify-between items-center mb-4">
+                        <a href="{{ route('pagos.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">➕</a>
+                    </div>
+
+                    @if(auth()->user()->hasRole(1))
+                        <form method="GET" action="{{ route('pagos.index') }}" id="cursoForm" class="mb-6">
+                            <div class="flex gap-4 mb-4">
+                                <select id="tipo_curso" name="tipo_curso" class="w-1/2 rounded-md border-gray-300">
+                                    <option value="">Seleccione un tipo de curso</option>
+                                    @foreach($tiposCursos as $tipoCurso)
+                                        <option value="{{ $tipoCurso->id }}" {{ request('tipo_curso') == $tipoCurso->id ? 'selected' : '' }}>
+                                            {{ $tipoCurso->nombre }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <select id="curso_id" name="curso_id" class="w-1/2 rounded-md border-gray-300" {{ $cursos->isEmpty() ? 'disabled' : '' }}>
+                                    <option value="">Seleccione un curso</option>
+                                    @foreach($cursos as $curso)
+                                        <option value="{{ $curso->id }}" {{ request('curso_id') == $curso->id ? 'selected' : '' }}>
+                                            {{ $curso->nombre }} ({{ $curso->horario }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </form>
+                    @endif
+
                     <div class="mt-4 overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 border">
                             <thead class="bg-blue-500">
@@ -70,4 +96,33 @@
             </div>
         </div>
     </div>
+
+    @if(auth()->user()->hasRole(1))
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tipoCursoSelect = document.getElementById('tipo_curso');
+            const cursoSelect = document.getElementById('curso_id');
+            const cursos = @json($cursos);
+
+            tipoCursoSelect.addEventListener('change', function() {
+                if (tipoCursoSelect.value) {
+                    cursoSelect.disabled = false;
+                    const cursosFiltrados = cursos.filter(curso => curso.tipo_curso_id == tipoCursoSelect.value);
+                    cursoSelect.innerHTML = '<option value="">Seleccione un curso</option>';
+                    cursosFiltrados.forEach(curso => {
+                        cursoSelect.innerHTML += `<option value="${curso.id}">${curso.nombre} (${curso.horario})</option>`;
+                    });
+                } else {
+                    cursoSelect.disabled = true;
+                    cursoSelect.innerHTML = '<option value="">Seleccione un curso</option>';
+                }
+                document.getElementById('cursoForm').submit();
+            });
+
+            cursoSelect.addEventListener('change', function() {
+                document.getElementById('cursoForm').submit();
+            });
+        });
+        </script>
+    @endif
 </x-app-layout>

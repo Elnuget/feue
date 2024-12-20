@@ -4,6 +4,10 @@ cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed
 npm install
+EN SHELL COMO ADMINISTRADOR:
+Get-ExecutionPolicy
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+
 
 Para iniciar:
 npm run dev

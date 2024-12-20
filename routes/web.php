@@ -37,6 +37,8 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('matriculas/print-credentials', [MatriculaController::class, 'printCredentials'])->name('matriculas.printCredentials');
+    
     Route::resource('roles', RoleController::class);
     Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
     Route::resource('users', \App\Http\Controllers\UserController::class);
@@ -82,6 +84,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/asistencias/register-scan', [AsistenciaController::class, 'registerScan'])->name('asistencias.registerScan');
     Route::resource('asistencias', AsistenciaController::class);
     Route::get('/pruebas', [PruebasController::class, 'index'])->name('pruebas');
+    Route::post('/user_profiles/{user}/upload_photo', [ProfileController::class, 'uploadPhoto'])->name('profile.uploadPhoto');
 });
 
 require __DIR__.'/auth.php';

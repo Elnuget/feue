@@ -4,24 +4,52 @@ namespace App\Http\Controllers;
 
 use App\Models\Pago;
 use App\Models\Matricula;
+use App\Models\TipoCurso;  // Add this import
+use App\Models\Curso;      // Add this import
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\PagoAprobado;
 
 class PagoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        if (auth()->user()->hasRole(1)) {
-            $pagos = Pago::with(['matricula.usuario', 'matricula.curso', 'metodoPago'])->get();
-        } else {
-            $pagos = Pago::with(['matricula.usuario', 'matricula.curso', 'metodoPago'])
-                         ->whereHas('matricula', function($query) {
-                             $query->where('usuario_id', auth()->id());
-                         })
-                         ->get();
+        $query = Pago::query()->with(['matricula.usuario', 'matricula.curso', 'metodoPago']);
+        
+        if (!auth()->user()->hasRole(1)) {
+            $query->whereHas('matricula', function($query) {
+                $query->where('usuario_id', auth()->id());
+            });
         }
-        return view('pagos.index', compact('pagos'));
+
+        $tiposCursos = TipoCurso::all();
+        $tipoCursoId = $request->query('tipo_curso');
+        $cursoId = $request->query('curso_id');
+
+        // Get courses based on tipo_curso
+        if ($tipoCursoId) {
+            $cursos = Curso::where('tipo_curso_id', $tipoCursoId)->get();
+            if ($cursoId) {
+                $query->whereHas('matricula', function($q) use ($cursoId) {
+                    $q->where('curso_id', $cursoId);
+                });
+            } else {
+                $query->whereHas('matricula', function($q) use ($cursos) {
+                    $q->whereIn('curso_id', $cursos->pluck('id'));
+                });
+            }
+        } else {
+            $cursos = collect();
+        }
+
+        // Add join with users table and sort by name
+        $pagos = $query->join('matriculas', 'pagos.matricula_id', '=', 'matriculas.id')
+                       ->join('users', 'matriculas.usuario_id', '=', 'users.id')
+                       ->select('pagos.*')
+                       ->orderBy('users.name')
+                       ->get();
+
+        return view('pagos.index', compact('pagos', 'tiposCursos', 'cursos', 'tipoCursoId', 'cursoId'));
     }
 
     public function create()
