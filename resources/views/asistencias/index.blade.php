@@ -23,45 +23,44 @@
                         </a>
                     </div>
 
-                    <!-- Nueva Tarjeta de Asistencias Mensuales -->
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg mb-6">
-                        <div class="p-6">
-                            <h2 class="text-xl font-semibold mb-4">Asistencias Mensuales</h2>
-                            <div class="flex gap-4 mb-4">
-                                <select id="anio" class="flex-1 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                    <option value="">Seleccione un año</option>
-                                    @for($year = date('Y'); $year >= 2020; $year--)
-                                        <option value="{{ $year }}">{{ $year }}</option>
-                                    @endfor
-                                </select>
+                    <h2 class="text-xl font-semibold mb-4">Asistencias Mensuales</h2>
+                    <div class="flex gap-4 mb-4">
+                        <select id="anio" class="w-1/4 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                            <option value="">Seleccione un año</option>
+                            @for($year = date('Y'); $year >= 2020; $year--)
+                                <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>{{ $year }}</option>
+                            @endfor
+                        </select>
 
-                                <select id="mes" class="flex-1 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300" disabled>
-                                    <option value="">Seleccione un mes</option>
-                                    @foreach(['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'] as $index => $mes)
-                                        <option value="{{ $index + 1 }}">{{ $mes }}</option>
-                                    @endforeach
-                                </select>
+                        <select id="mes" class="w-1/4 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                            <option value="">Seleccione un mes</option>
+                            @foreach(['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'] as $index => $mes)
+                                <option value="{{ $index + 1 }}" {{ $index + 1 == date('n') ? 'selected' : '' }}>{{ $mes }}</option>
+                            @endforeach
+                        </select>
 
-                                <select id="curso" class="flex-1 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300" disabled>
-                                    <option value="">Seleccione un curso</option>
-                                    @foreach($cursos as $curso)
-                                        <option value="{{ $curso->id }}">{{ $curso->nombre }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
+                        <select id="tipo_curso" class="w-1/4 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                            <option value="">Seleccione un tipo de curso</option>
+                            @foreach($tiposCursos as $tipoCurso)
+                                <option value="{{ $tipoCurso->id }}">{{ $tipoCurso->nombre }}</option>
+                            @endforeach
+                        </select>
 
-                            <!-- Tabla de asistencias mensuales -->
-                            <div id="tabla-asistencias" class="hidden overflow-x-auto mt-4">
-                                <table class="min-w-full divide-y divide-gray-200 border">
-                                    <thead class="bg-gray-50">
-                                        <!-- Aquí se agregarán dinámicamente las cabeceras de los días -->
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        <!-- Aquí se agregarán dinámicamente las filas de usuarios y asistencias -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                        <select id="curso" class="w-1/4 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300" disabled>
+                            <option value="">Seleccione un curso</option>
+                        </select>
+                    </div>
+
+                    <!-- Tabla de asistencias mensuales -->
+                    <div id="tabla-asistencias" class="hidden overflow-x-auto mt-4">
+                        <table class="min-w-full divide-y divide-gray-200 border">
+                            <thead class="bg-gray-50">
+                                <!-- Aquí se agregarán dinámicamente las cabeceras de los días -->
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <!-- Aquí se agregarán dinámicamente las filas de usuarios y asistencias -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -74,16 +73,14 @@
 document.addEventListener('DOMContentLoaded', function() {
     const anioSelect = document.getElementById('anio');
     const mesSelect = document.getElementById('mes');
+    const tipoCursoSelect = document.getElementById('tipo_curso');
     const cursoSelect = document.getElementById('curso');
     const tablaAsistencias = document.getElementById('tabla-asistencias');
-
-    // Deshabilitar mes y curso al inicio
-    mesSelect.disabled = true;
-    cursoSelect.disabled = true;
 
     // Obtener las listas de usuarios matriculados y asistencias
     const listas = @json($listas);
     const asistencias = @json($asistencias);
+    const cursos = @json($cursos);
 
     anioSelect.addEventListener('change', function() {
         if (anioSelect.value) {
@@ -91,6 +88,8 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             mesSelect.disabled = true;
             mesSelect.value = '';
+            tipoCursoSelect.disabled = true;
+            tipoCursoSelect.value = '';
             cursoSelect.disabled = true;
             cursoSelect.value = '';
             tablaAsistencias.classList.add('hidden');
@@ -99,7 +98,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     mesSelect.addEventListener('change', function() {
         if (mesSelect.value) {
+            tipoCursoSelect.disabled = false;
+        } else {
+            tipoCursoSelect.disabled = true;
+            tipoCursoSelect.value = '';
+            cursoSelect.disabled = true;
+            cursoSelect.value = '';
+            tablaAsistencias.classList.add('hidden');
+        }
+    });
+
+    tipoCursoSelect.addEventListener('change', function() {
+        if (tipoCursoSelect.value) {
             cursoSelect.disabled = false;
+            // Filtrar cursos por tipo de curso seleccionado
+            const cursosFiltrados = cursos.filter(curso => curso.tipo_curso_id == tipoCursoSelect.value);
+            cursoSelect.innerHTML = '<option value="">Seleccione un curso</option>';
+            cursosFiltrados.forEach(curso => {
+                cursoSelect.innerHTML += `<option value="${curso.id}">${curso.nombre} (${curso.horario})</option>`;
+            });
         } else {
             cursoSelect.disabled = true;
             cursoSelect.value = '';
@@ -180,5 +197,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
+
+    // Trigger change event to initialize the selects with default values
+    anioSelect.dispatchEvent(new Event('change'));
+    mesSelect.dispatchEvent(new Event('change'));
 });
 </script>

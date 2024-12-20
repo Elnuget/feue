@@ -34,9 +34,12 @@ class MatriculaController extends Controller
             $usuarios = \App\Models\User::where('id', auth()->id())->get();
         }
         $cursos = \App\Models\Curso::all();
+        $cursosPorTipo = $cursos->groupBy('tipo_curso_id'); // Group courses by type
         $cursoSeleccionado = $request->input('curso_id');
+        $tipoCursoSeleccionado = $cursoSeleccionado ? \App\Models\Curso::find($cursoSeleccionado)->tipo_curso_id : null;
         $universidades = \App\Models\Universidad::all();
-        return view('matriculas.create', compact('usuarios', 'cursos', 'cursoSeleccionado', 'universidades'));
+        $tiposCursos = \App\Models\TipoCurso::all(); // Add this line
+        return view('matriculas.create', compact('usuarios', 'cursosPorTipo', 'cursoSeleccionado', 'tipoCursoSeleccionado', 'universidades', 'tiposCursos'));
     }
 
     public function store(Request $request)

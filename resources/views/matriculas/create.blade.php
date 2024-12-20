@@ -35,17 +35,20 @@
                             </div>
                         </div>
 
-                        <!-- Nuevo combo para Sede -->
+                        <!-- Replace the 'sede' combobox -->
                         <div class="relative">
-                            <label for="sede" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Sede</label>
+                            <label for="tipo_curso_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tipo de Curso</label>
                             <div class="mt-1 flex rounded-md shadow-sm">
                                 <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                                    <i class="fas fa-map-marker-alt"></i>
+                                    <i class="fas fa-list-alt"></i>
                                 </span>
-                                <select name="sede" id="sede" required class="flex-1 block w-full rounded-none rounded-r-md border-gray-300 dark:bg-gray-700 dark:text-gray-300" onchange="handleSedeChange()">
-                                    <option value="">Seleccione una sede</option>
-                                    <option value="Norte">Sede Norte</option>
-                                    <option value="Sur">Sede Sur</option>
+                                <select name="tipo_curso_id" id="tipo_curso_id" required class="flex-1 block w-full rounded-none rounded-r-md border-gray-300 dark:bg-gray-700 dark:text-gray-300" onchange="handleTipoCursoChange()">
+                                    <option value="">Seleccione un tipo de curso</option>
+                                    @foreach($tiposCursos as $tipoCurso)
+                                        <option value="{{ $tipoCurso->id }}" {{ isset($tipoCursoSeleccionado) && $tipoCursoSeleccionado == $tipoCurso->id ? 'selected' : '' }}>
+                                            {{ $tipoCurso->nombre }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -58,11 +61,7 @@
                                     <i class="fas fa-book"></i>
                                 </span>
                                 <select name="curso_id" id="curso_id" required class="flex-1 block w-full rounded-none rounded-r-md border-gray-300 dark:bg-gray-700 dark:text-gray-300" onchange="updateCoursePrice()">
-                                    @foreach($cursos as $curso)
-                                        <option value="{{ $curso->id }}" data-precio="{{ $curso->precio }}" {{ isset($cursoSeleccionado) && $cursoSeleccionado == $curso->id ? 'selected' : '' }}>
-                                            {{ $curso->nombre }}
-                                        </option>
-                                    @endforeach
+                                    <!-- Options will be dynamically populated -->
                                 </select>
                             </div>
                         </div>
@@ -142,25 +141,55 @@
             }
         }
 
-        function handleSedeChange() {
-            const sedeSelect = document.getElementById('sede');
-            const sedeValue = sedeSelect.value;
+        function handleTipoCursoChange() {
+            const tipoCursoSelect = document.getElementById('tipo_curso_id');
+            const tipoCursoId = tipoCursoSelect.value;
             const cursoContainer = document.getElementById('curso_container');
+            const cursoSelect = document.getElementById('curso_id');
 
-            if (sedeValue === 'Norte' || sedeValue === 'Sur') {
+            if (tipoCursoId) {
                 // Mostrar el combo de Curso
                 cursoContainer.style.display = 'block';
+
+                // Limpiar opciones previas
+                cursoSelect.innerHTML = '';
+
+                // Obtener los cursos para el tipo de curso seleccionado
+                const cursosPorTipo = @json($cursosPorTipo);
+
+                if (cursosPorTipo[tipoCursoId]) {
+                    cursosPorTipo[tipoCursoId].forEach(curso => {
+                        const option = document.createElement('option');
+                        option.value = curso.id;
+                        option.text = `${curso.nombre} - ${curso.horario}`;
+                        option.setAttribute('data-precio', curso.precio);
+                        if (curso.id == {{ $cursoSeleccionado ?? 'null' }}) {
+                            option.selected = true;
+                        }
+                        cursoSelect.add(option);
+                    });
+
+                    // Actualizar el precio del curso
+                    updateCoursePrice();
+                } else {
+                    // No hay cursos para este tipo de curso
+                    document.getElementById('monto_total').value = '';
+                }
             } else {
-                // Ocultar el combo de Curso si no se ha seleccionado una sede
+                // Ocultar el combo de Curso si no se ha seleccionado un tipo de curso
                 cursoContainer.style.display = 'none';
+                cursoSelect.innerHTML = '';
+                document.getElementById('monto_total').value = '';
             }
         }
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
-            updateCoursePrice();
-            // Por defecto, ocultamos el combo de curso hasta que se seleccione una sede
+            // Por defecto, ocultamos el combo de curso hasta que se seleccione un tipo de curso
             document.getElementById('curso_container').style.display = 'none';
+            if ({{ $tipoCursoSeleccionado ?? 'null' }}) {
+                handleTipoCursoChange();
+            }
         });
     </script>
 </x-app-layout>

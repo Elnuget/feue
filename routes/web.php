@@ -53,6 +53,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('tipos_cursos', TipoCursoController::class)->parameters([
         'tipos_cursos' => 'tipoCurso'
     ]);
+    Route::get('/tipos_cursos', [TipoCursoController::class, 'index'])->name('tipos_cursos.index');
+    Route::get('/tipos_cursos/create', [TipoCursoController::class, 'create'])->name('tipos_cursos.create');
+    Route::get('/tipos_cursos/{tipoCurso}/edit', [TipoCursoController::class, 'edit'])->name('tipos_cursos.edit');
     Route::resource('metodos_pago', MetodoPagoController::class)->parameters([
         'metodos_pago' => 'metodoPago'
     ]);

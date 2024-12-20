@@ -6,6 +6,7 @@ use App\Models\Asistencia;
 use App\Models\User;
 use App\Models\Matricula;
 use App\Models\Curso;
+use App\Models\TipoCurso;
 use Illuminate\Http\Request;
 
 class AsistenciaController extends Controller
@@ -15,7 +16,8 @@ class AsistenciaController extends Controller
         $asistencias = Asistencia::with('user')->get();
         $listas = Matricula::with('usuario')->get();
         $cursos = Curso::all();
-        return view('asistencias.index', compact('asistencias', 'listas', 'cursos'));
+        $tiposCursos = TipoCurso::all();
+        return view('asistencias.index', compact('asistencias', 'listas', 'cursos', 'tiposCursos'));
     }
 
     public function create()
