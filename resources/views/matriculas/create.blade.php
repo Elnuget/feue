@@ -34,7 +34,24 @@
                                 @endif
                             </div>
                         </div>
+
+                        <!-- Nuevo combo para Sede -->
                         <div class="relative">
+                            <label for="sede" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Sede</label>
+                            <div class="mt-1 flex rounded-md shadow-sm">
+                                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </span>
+                                <select name="sede" id="sede" required class="flex-1 block w-full rounded-none rounded-r-md border-gray-300 dark:bg-gray-700 dark:text-gray-300" onchange="handleSedeChange()">
+                                    <option value="">Seleccione una sede</option>
+                                    <option value="Norte">Sede Norte</option>
+                                    <option value="Sur">Sede Sur</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Campo de Curso, inicialmente oculto -->
+                        <div class="relative" id="curso_container" style="display: none;">
                             <label for="curso_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Curso</label>
                             <div class="mt-1 flex rounded-md shadow-sm">
                                 <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
@@ -49,6 +66,7 @@
                                 </select>
                             </div>
                         </div>
+
                         <div class="relative">
                             <label for="fecha_matricula" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Fecha de Matricula</label>
                             <div class="mt-1 flex rounded-md shadow-sm">
@@ -124,9 +142,25 @@
             }
         }
 
-        // Initialize the price fields and visibility on page load
+        function handleSedeChange() {
+            const sedeSelect = document.getElementById('sede');
+            const sedeValue = sedeSelect.value;
+            const cursoContainer = document.getElementById('curso_container');
+
+            if (sedeValue === 'Norte' || sedeValue === 'Sur') {
+                // Mostrar el combo de Curso
+                cursoContainer.style.display = 'block';
+            } else {
+                // Ocultar el combo de Curso si no se ha seleccionado una sede
+                cursoContainer.style.display = 'none';
+            }
+        }
+
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             updateCoursePrice();
+            // Por defecto, ocultamos el combo de curso hasta que se seleccione una sede
+            document.getElementById('curso_container').style.display = 'none';
         });
     </script>
 </x-app-layout>
