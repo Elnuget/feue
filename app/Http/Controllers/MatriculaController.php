@@ -293,18 +293,26 @@ class MatriculaController extends Controller
                 return back()->with('error', 'No se encontraron matrículas para imprimir.');
             }
 
-            // Generar un único PDF directamente
+            // Generar QRs como base64
+            $qrCodes = [];
+            foreach ($matriculas as $matricula) {
+                $qrCodes[$matricula->usuario->id] = base64_encode(
+                    QrCode::format('png')
+                        ->size(200)
+                        ->margin(0)
+                        ->generate($matricula->usuario->id)
+                );
+            }
+
             $pdf = PDF::loadView('matriculas.credentials', [
                 'matriculas' => $matriculas,
-                'curso' => $matriculas->first()->curso
+                'curso' => $matriculas->first()->curso,
+                'qrCodes' => $qrCodes
             ]);
             
-            $pdf->setOption('enable-local-file-access', true);
-            $pdf->setOption('javascript-delay', 1000);
-            $pdf->setOption('no-stop-slow-scripts', true);
             $pdf->setPaper([0, 0, 153.5, 243.3], 'portrait');
             
-            return $pdf->stream('credenciales_matriculados.pdf'); // Cambiado a stream temporalmente para debug
+            return $pdf->download('credenciales_matriculados.pdf');
 
         } catch (\Exception $e) {
             \Log::error('Error al generar credenciales: ' . $e->getMessage());

@@ -11,7 +11,7 @@
         }
         body {
             font-family: 'DejaVu Sans', sans-serif;
-            font-size: 8px; /* Reducir aún más el tamaño de fuente */
+            font-size: 8px; 
             padding: 5px;
         }
         .credential-container {
@@ -31,19 +31,11 @@
         .qr-container {
             text-align: center;
             margin: 2mm auto;
-            width: 20mm;  /* Aumentado el tamaño */
-            height: 20mm; /* Aumentado el tamaño */
+            width: 20mm; 
+            height: 20mm;
             background: white;
             padding: 1mm;
-            border: 1px solid black; /* Añadir borde para el rectángulo */
-        }
-        .qr-code {
-            width: 100%;
-            height: 100%;
-        }
-        .qr-container svg {
-            width: 100% !important;
-            height: 100% !important;
+            border: 1px solid black;
         }
         .text-center {
             text-align: center;
@@ -64,9 +56,8 @@
         <p class="text-center">{{ $matricula->usuario->profile->cedula ?? 'N/A' }}</p>
         <p class="text-center">{{ now()->format('Y-m-d') }}</p>
         <div class="qr-container">
-            <div class="qr-code">
-                {!! QrCode::size(75)->generate($matricula->usuario->id) !!}
-            </div>
+            <img src="data:image/png;base64,{{ $qrCodes[$matricula->usuario->id] }}" 
+                 style="width: 100%; height: 100%;" />
         </div>
     </div>
     @if(!$loop->last)
