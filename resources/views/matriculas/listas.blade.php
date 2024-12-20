@@ -53,10 +53,13 @@
                                             {{ __('Nombre del Matriculado') }}
                                         </th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
-                                            {{ __('Valor Pendiente') }}
+                                            {{ __('Valor Pendiente en Moneda') }}
                                         </th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
-                                            {{ __('Valor Pendiente en Moneda') }}
+                                            Cédula
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
+                                            {{ __('QR Code') }}  <!-- Cambiado de 'ID de Usuario' a 'QR Code' -->
                                         </th>
                                     </tr>
                                 </thead>
@@ -80,10 +83,17 @@
                                                 {{ $matricula->usuario->name }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
-                                                {{ $matricula->valor_pendiente > 0 ? 'Sí' : 'No' }}
+                                                <span class="{{ $matricula->valor_pendiente == 0 ? 'text-green-500' : 'text-red-500' }}">
+                                                    ${{ number_format($matricula->valor_pendiente, 2) }}
+                                                </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
-                                                ${{ number_format($matricula->valor_pendiente, 2) }}
+                                                {{ $matricula->usuario->profile->cedula ?? 'N/A' }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
+                                                <div class="w-10 h-10">
+                                                    {!! QrCode::size(40)->generate($matricula->usuario->id) !!}
+                                                </div>
                                             </td>
                                         </tr>
                                     @endforeach
