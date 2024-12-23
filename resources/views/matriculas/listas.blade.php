@@ -29,12 +29,34 @@
                             <button id="print-credentials" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                                 {{ __('Imprimir Credenciales') }}
                             </button>
-                            <a href="{{ route('matriculas.exportPdf', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                {{ __('Exportar PDF') }}
-                            </a>
-                            <a href="{{ route('matriculas.exportExcel', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                                {{ __('Exportar Excel') }}
-                            </a>
+                        </div>
+                        <div x-data="{ open: false }" class="mb-4">
+                            <button @click="open = !open" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                {{ __('Opciones') }}
+                            </button>
+                            <div x-show="open" class="mt-4">
+                                <div class="flex justify-end mb-4 space-x-2">
+                                    <form action="{{ route('matriculas.uploadBackground') }}" method="POST" enctype="multipart/form-data">
+                                        @csrf
+                                        <input type="file" name="background" accept="image/*" class="mr-2" />
+                                        <button type="submit" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded">
+                                            {{ __('Subir Fondo') }}
+                                        </button>
+                                    </form>
+                                    <a href="{{ route('matriculas.exportPdf', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                        {{ __('Exportar PDF') }}
+                                    </a>
+                                    <a href="{{ route('matriculas.exportExcel', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                                        {{ __('Exportar Excel') }}
+                                    </a>
+                                </div>
+                                @if(session('background_path'))
+                                    <div class="mb-4">
+                                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">{{ __('Fondo seleccionado para las credenciales:') }}</p>
+                                        <img src="{{ session('background_path') }}" alt="Background Image" class="w-1/4 h-auto rounded"> <!-- Cambiado a w-1/4 -->
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-300 dark:border-gray-700 rounded">
@@ -73,10 +95,16 @@
                                                 {{ $loop->iteration }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
-                                                @if($matricula->usuario->profile && $matricula->usuario->profile->photo)
-                                                    <img src="{{ asset('storage/' . $matricula->usuario->profile->photo) }}" alt="Profile Photo" class="w-10 h-10 rounded-full">
+                                                @if($matricula->usuario->profile 
+                                                    && $matricula->usuario->profile->photo 
+                                                    && file_exists(storage_path('app/public/' . $matricula->usuario->profile->photo)))
+                                                    <img src="{{ asset('storage/' . $matricula->usuario->profile->photo) }}" 
+                                                         alt="Profile Photo" 
+                                                         class="w-10 h-10 rounded-full object-cover">
                                                 @else
-                                                    <span class="text-gray-500">No Photo</span>
+                                                    <div class="w-10 h-10 flex items-center justify-center bg-gray-200 rounded-full text-gray-500">
+                                                        👤
+                                                    </div>
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
@@ -92,7 +120,9 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
                                                 <div class="w-10 h-10">
-                                                    {!! QrCode::size(40)->generate($matricula->usuario->id) !!}
+                                                    <img src="data:image/png;base64,{{ $qrCodes[$matricula->usuario->id] }}" 
+                                                         alt="QR Code" 
+                                                         style="width: 40px; height: 40px;" />
                                                 </div>
                                             </td>
                                         </tr>
@@ -118,7 +148,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const tipoCursoSelect = document.getElementById('tipo_curso');
     const cursoSelect = document.getElementById('curso_id');
     const selectAllCheckbox = document.getElementById('select-all');
-    const rowCheckboxes = document.querySelectorAll('.select-row');
+    // Cambiar la selección para omitir el checkbox del encabezado
+    const rowCheckboxes = document.querySelectorAll('tbody .select-row');
     const printCredentialsButton = document.getElementById('print-credentials');
 
     const cursos = @json($cursos);
@@ -162,3 +193,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+

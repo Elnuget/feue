@@ -7,9 +7,11 @@
         <div class="flex gap-4 mb-4">
             <select id="tipo_curso" class="w-1/4 rounded-md border-gray-300">
                 <option value="">Seleccione un tipo de curso</option>
-                @foreach($tiposCursos as $tipoCurso)
-                    <option value="{{ $tipoCurso->id }}">{{ $tipoCurso->nombre }}</option>
-                @endforeach
+                @if(isset($tiposCursos))
+                    @foreach($tiposCursos as $tipoCurso)
+                        <option value="{{ $tipoCurso->id }}">{{ $tipoCurso->nombre }}</option>
+                    @endforeach
+                @endif
             </select>
             <select id="curso" class="w-1/4 rounded-md border-gray-300" disabled>
                 <option value="">Seleccione un curso</option>

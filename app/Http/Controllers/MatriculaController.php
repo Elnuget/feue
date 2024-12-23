@@ -16,6 +16,8 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
+use Endroid\QrCode\QrCode as EndroidQrCode;
+use Endroid\QrCode\Writer\PngWriter;
 
 class MatriculaController extends Controller
 {
@@ -228,7 +230,18 @@ class MatriculaController extends Controller
             $matriculas = collect();
         }
 
-        return view('matriculas.listas', compact('tiposCursos', 'cursos', 'matriculas', 'cursoId', 'tipoCursoId'));
+        // Generar QRs usando endroid/qr-code
+        $qrCodes = [];
+        $writer = new PngWriter();
+        foreach ($matriculas as $matricula) {
+            $qrCode = EndroidQrCode::create($matricula->usuario->id)
+                            ->setSize(200)
+                            ->setMargin(0);
+            $result = $writer->write($qrCode);
+            $qrCodes[$matricula->usuario->id] = base64_encode($result->getString());
+        }
+
+        return view('matriculas.listas', compact('tiposCursos', 'cursos', 'matriculas', 'cursoId', 'tipoCursoId', 'qrCodes'));
     }
 
     public function exportPdf(Request $request)
@@ -293,15 +306,15 @@ class MatriculaController extends Controller
                 return back()->with('error', 'No se encontraron matrículas para imprimir.');
             }
 
-            // Generar QRs como base64
+            // Generar QRs usando endroid/qr-code
             $qrCodes = [];
+            $writer = new PngWriter();
             foreach ($matriculas as $matricula) {
-                $qrCodes[$matricula->usuario->id] = base64_encode(
-                    QrCode::format('png')
-                        ->size(200)
-                        ->margin(0)
-                        ->generate($matricula->usuario->id)
-                );
+                $qrCode = EndroidQrCode::create($matricula->usuario->id)
+                                ->setSize(200)
+                                ->setMargin(0);
+                $result = $writer->write($qrCode);
+                $qrCodes[$matricula->usuario->id] = base64_encode($result->getString());
             }
 
             $pdf = PDF::loadView('matriculas.credentials', [
@@ -309,14 +322,36 @@ class MatriculaController extends Controller
                 'curso' => $matriculas->first()->curso,
                 'qrCodes' => $qrCodes
             ]);
-            
-            $pdf->setPaper([0, 0, 153.5, 243.3], 'portrait');
-            
-            return $pdf->download('credenciales_matriculados.pdf');
+
+            // Eliminar la primera página del PDF
+            $domPdf = $pdf->getDomPDF();
+            $canvas = $domPdf->getCanvas();
+            $pageCount = $canvas->get_page_count();
+            if ($pageCount > 1) {
+                $pages = $canvas->get_pages();
+                $newPages = array_slice($pages, 1); // Eliminar la primera página
+                $canvas->set_pages($newPages);
+            }
+
+            return $pdf->stream('credenciales_matriculados.pdf');
 
         } catch (\Exception $e) {
             \Log::error('Error al generar credenciales: ' . $e->getMessage());
             return back()->with('error', 'Error al generar las credenciales: ' . $e->getMessage());
         }
+    }
+
+    public function uploadBackground(Request $request)
+    {
+        $request->validate([
+            'background' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $path = $request->file('background')->store('imagenes_de_fondo', 'public');
+
+        // Guardar la ruta en la sesión para usarla en la vista de credenciales
+        session(['background_path' => basename($path)]);
+
+        return redirect()->route('matriculas.listas')->with('success', 'Fondo subido correctamente.');
     }
 }
