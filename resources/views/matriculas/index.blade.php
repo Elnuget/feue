@@ -39,6 +39,10 @@
                                     @endforeach
                                 </select>
                             </div>
+                            <div class="flex gap-4 mb-4">
+                                <input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Buscar matrícula..." class="w-full rounded-md border-gray-300">
+                                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Buscar</button>
+                            </div>
                         </form>
                     @endif
                     
@@ -86,7 +90,9 @@
                                                     <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">🗑️</button>
                                                 </form>
                                             @else
-                                                <a href="{{ route('pagos.create', ['matricula_id' => $matricula->id]) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded">💵</a>
+                                                <a href="{{ route('pagos.create', ['matricula_id' => $matricula->id]) }}" 
+                                                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded" 
+                                                   title="Realizar pago">💵</a>
                                             @endif
                                         </td>
                                     </tr>

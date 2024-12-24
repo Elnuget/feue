@@ -52,13 +52,36 @@ class PagoController extends Controller
         return view('pagos.index', compact('pagos', 'tiposCursos', 'cursos', 'tipoCursoId', 'cursoId'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        $matriculas = Matricula::with('curso')
-                      ->where('usuario_id', auth()->id())
-                      ->get();
+        $search = $request->input('search'); // Add this line
+
+        $matriculas = auth()->user()->hasRole(1)
+            ? Matricula::with(['curso', 'usuario'])
+                ->select('matriculas.id', 'curso_id', 'usuario_id', 'valor_pendiente')
+                ->when($search, function ($query, $search) {
+                    return $query->whereHas('usuario', function ($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    });
+                })
+                ->orderBy('valor_pendiente', 'desc')
+                ->get()
+            : Matricula::with('curso', 'usuario')
+                ->select('matriculas.id', 'curso_id', 'usuario_id', 'valor_pendiente')
+                ->where('usuario_id', auth()->id())
+                ->when($search, function ($query, $search) {
+                    return $query->whereHas('usuario', function ($q) use ($search) {
+                        $q->where('name', 'like', '%' . $search . '%');
+                    });
+                })
+                ->orderBy('valor_pendiente', 'desc')
+                ->get();
+
+        $selectedMatriculaId = $request->input('matricula_id');
+        $selectedMatricula = $selectedMatriculaId ? $matriculas->find($selectedMatriculaId) : null;
+        
         $metodosPago = \App\Models\MetodoPago::all();
-        return view('pagos.create', compact('matriculas', 'metodosPago'));
+        return view('pagos.create', compact('matriculas', 'metodosPago', 'selectedMatricula', 'search'));
     }
 
     public function store(Request $request)
@@ -71,17 +94,36 @@ class PagoController extends Controller
             'comprobante_pago' => 'nullable|file|mimes:png,jpg,jpeg,pdf|max:2048',
         ]);
 
-        $matricula = Matricula::where('id', $request->matricula_id)
-                              ->where('usuario_id', auth()->id())
-                              ->firstOrFail();
+        // Modificar la consulta para permitir acceso a administradores
+        $matricula = Matricula::where('id', $request->matricula_id);
+        if (!auth()->user()->hasRole(1)) {
+            $matricula->where('usuario_id', auth()->id());
+        }
+        $matricula = $matricula->firstOrFail();
+
+        // Validar que el monto no exceda el valor pendiente
+        if ($request->monto > $matricula->valor_pendiente) {
+            return back()->withErrors(['monto' => 'El monto no puede ser mayor al valor pendiente.']);
+        }
 
         $data = $request->all();
-
+        
         if ($request->hasFile('comprobante_pago')) {
             $data['comprobante_pago'] = $request->file('comprobante_pago')->store('comprobantes', 'public');
         }
 
+        // Si es usuario normal, siempre será pendiente
+        if (!auth()->user()->hasRole(1)) {
+            $data['estado'] = 'Pendiente';
+        }
+
         $pago = Pago::create($data);
+
+        // Actualizar valor pendiente solo si el pago es aprobado inmediatamente por un admin
+        if (auth()->user()->hasRole(1) && $data['estado'] === 'Aprobado') {
+            $matricula->valor_pendiente -= $request->monto;
+            $matricula->save();
+        }
 
         return redirect()->route('pagos.index')->with('success', 'Pago creado exitosamente.');
     }

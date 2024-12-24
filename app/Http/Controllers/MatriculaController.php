@@ -32,6 +32,7 @@ class MatriculaController extends Controller
         $tiposCursos = TipoCurso::all();
         $tipoCursoId = $request->query('tipo_curso');
         $cursoId = $request->query('curso_id');
+        $search = $request->query('search'); // Add this line
 
         // Get courses based on tipo_curso
         if ($tipoCursoId) {
@@ -45,13 +46,20 @@ class MatriculaController extends Controller
             $cursos = collect();
         }
 
+        // Add search filter
+        if ($search) {
+            $query->whereHas('usuario', function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%');
+            });
+        }
+
         // Add join with users table and sort by name
         $matriculas = $query->join('users', 'matriculas.usuario_id', '=', 'users.id')
                            ->select('matriculas.*')
                            ->orderBy('users.name')
                            ->get();
 
-        return view('matriculas.index', compact('matriculas', 'tiposCursos', 'cursos', 'tipoCursoId', 'cursoId'));
+        return view('matriculas.index', compact('matriculas', 'tiposCursos', 'cursos', 'tipoCursoId', 'cursoId', 'search'));
     }
 
     public function create(Request $request)
