@@ -57,7 +57,12 @@ class UserController extends Controller
             'role_id' => 'nullable|exists:roles,id',
         ]);
 
-        $user->update($request->only('name', 'email', 'password'));
+        $payload = $request->only('name','email');
+        if ($request->filled('password')) {
+            $payload['password'] = $request->password;
+        }
+        $user->update($payload);
+
         if ($request->filled('role_id')) {
             $role = Role::findById($request->role_id);
             $user->syncRoles($role);

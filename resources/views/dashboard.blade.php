@@ -36,7 +36,7 @@
                                     <p class="text-gray-500 dark:text-gray-300">{{ $curso->descripcion }}</p>
                                     <p class="text-gray-500 dark:text-gray-300"><i class="fas fa-clock mr-1"></i> {{ $curso->horario }}</p>
                                     <a href="{{ route('matriculas.create', ['curso_id' => $curso->id]) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4 inline-block">
-                                        <i class="fas fa-folder-plus mr-2"></i> Generar Matrícula 📁
+                                        <i class="fas fa-folder-plus mr-2"></i> Matricularme
                                     </a>
                                 </div>
                             </div>

@@ -93,7 +93,7 @@
                             {{ $tipo->nombre }}
                         </span>
                         <svg :class="{'rotate-180': open}" class="w-4 h-4 sm:w-5 sm:h-5 transform transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 01-1.414 0l-4-4a1 1 010-1.414z" clip-rule="evenodd"/>
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 011.414 1.414l-4 4a1 1 01-1.414 0l-4-4a1 1 010-1.414z" clip-rule="evenodd"/>
                         </svg>
                     </button>
                     
@@ -114,7 +114,7 @@
                                     {{-- <p class="text-sm sm:text-base text-gray-900 dark:text-gray-200 font-bold">{{ $curso->precio }} $</p> --}}
                                     <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-300"><i class="fas fa-clock mr-1"></i> {{ $curso->horario }}</p>
                                     <a href="{{ route('matriculas.create', ['curso_id' => $curso->id]) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 sm:py-2 sm:px-4 rounded mt-2 sm:mt-4 inline-block text-xs sm:text-sm">
-                                        <i class="fas fa-folder-plus mr-1 sm:mr-2"></i> Generar Matrícula 📁
+                                        <i class="fas fa-folder-plus mr-1 sm:mr-2"></i> Matricularme
                                     </a>
                                 </div>
                             </div>

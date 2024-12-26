@@ -49,6 +49,9 @@
             <x-nav-link :href="route('pruebas')" :active="request()->routeIs('pruebas')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
                 🧪 {{ __('Pruebas') }}
             </x-nav-link>
+            <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+                🧑 {{ __('Usuarios') }}
+            </x-nav-link>
         @endif
 
        
@@ -66,7 +69,6 @@
                     @foreach([
                         ['route' => 'dashboard', 'label' => __('Dashboard')],
                         ['route' => 'roles.index', 'label' => __('Roles')],
-                        ['route' => 'users.index', 'label' => __('Users')],
                         ['route' => 'estados_academicos.index', 'label' => __('Estados Académicos')],
                         ['route' => 'universidades.index', 'label' => __('Universidades')],
                         ['route' => 'metodos_pago.index', 'label' => __('Métodos de Pago')],

@@ -19,7 +19,7 @@
             padding: 0;
             /* Usamos la fuente Roboto, y en fallback Arial, sans-serif */
             font-family: 'Roboto', Arial, sans-serif; 
-            font-size: 8px;
+            font-size: 12px;
         }
 
         /* Contenedor principal de la credencial */
@@ -31,7 +31,7 @@
             break-inside: avoid-page;
             position: relative;
             box-sizing: border-box;
-            padding: 3mm;
+            padding: 5mm;
             overflow: hidden;
         }
 
@@ -50,10 +50,10 @@
 
         /* Foto de perfil */
         .profile-photo {
-            width: 15mm;
-            height: 15mm;
+            width: 18mm;
+            height: 18mm;
             object-fit: cover;
-            border-radius: 50%;
+            border-radius: 0;
             display: block;
             /* Aumentamos el margen superior para bajar la imagen */
             margin: 10mm auto 0; 
@@ -76,14 +76,18 @@
             padding: 0;
         }
 
+        .user-info .user-name {
+            font-size: 10px;
+        }
+
         /* Contenedor del QR */
         .qr-container {
             margin-top: 5mm;
             text-align: center;
         }
         .qr-container img {
-            width: 20mm;
-            height: 20mm;
+            width: 12mm;
+            height: 12mm;
             object-fit: contain;
         }
     </style>
@@ -124,9 +128,16 @@
 
         <!-- Datos del usuario -->
         <div class="user-info text-center">
+            @php
+            $parts = explode(' ', $matricula->usuario->name);
+            $firstLine = implode(' ', array_slice($parts, 0, 2));
+            $secondLine = implode(' ', array_slice($parts, 2, 2));
+            @endphp
             <p>
                 <strong style="color: #ffffff;">Nombre:</strong><br>
-                <span style="color: #ffffff;">{{ $matricula->usuario->name }}</span>
+                <span style="color: #ffffff;" class="user-name">
+                    {{ $firstLine }}<br>{{ $secondLine }}
+                </span>
             </p>
             <p>
                 <strong style="color: #ffffff;">Cédula:</strong><br>
