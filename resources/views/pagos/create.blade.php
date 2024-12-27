@@ -29,20 +29,6 @@
                         </div>
                     @endif
 
-                    {{-- Formulario de búsqueda --}}
-                    <form method="GET" action="{{ route('pagos.create') }}" class="mb-6">
-                        <div class="flex gap-4 mb-4">
-                            <input type="text" name="search" id="search" 
-                                   value="{{ request('search') }}" 
-                                   placeholder="Buscar matrícula..." 
-                                   class="w-full rounded-md border-gray-300">
-                            <button type="submit" 
-                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                Buscar
-                            </button>
-                        </div>
-                    </form>
-
                     {{-- Formulario de pagos --}}
                     <form action="{{ route('pagos.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                         @csrf
@@ -93,24 +79,6 @@
                                 <input type="file" name="comprobante_pago" id="comprobante_pago"
                                        accept=".png, .jpg, .jpeg, .pdf"
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700">
-                            </div>
-
-                            {{-- Valor Pendiente (combobox) --}}
-                            <div>
-                                <label for="valor_pendiente_select" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    💰 Valor Pendiente:
-                                </label>
-                                <select id="valor_pendiente_select" 
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700">
-                                    <option value="">Seleccione un valor...</option>
-                                    @foreach($matriculas as $matricula)
-                                        <option value="{{ $matricula->valor_pendiente }}"
-                                                data-matricula-id="{{ $matricula->id }}"
-                                                {{ $selectedMatricula && $selectedMatricula->id == $matricula->id ? 'selected' : '' }}>
-                                            M{{ $matricula->id }} | {{ $matricula->curso->nombre }} | ${{ number_format($matricula->valor_pendiente, 2) }}
-                                        </option>
-                                    @endforeach
-                                </select>
                             </div>
 
                             {{-- Input de Pago (monto) --}}
@@ -179,36 +147,14 @@
             }
         });
 
-        // Inicializa TomSelect sobre el combo de valores pendientes
-        let selectValorPendiente = new TomSelect('#valor_pendiente_select', {
-            create: false,
-            allowEmptyOption: true,
-            placeholder: 'Seleccione un valor...',
-            onChange: function(value) {
-                if (value) {
-                    const matriculaId = this.options[this.currentOption].dataset.matriculaId;
-                    sincronizarMatricula(matriculaId);
-                }
-            }
-        });
-
         function sincronizarValorPendiente(matriculaId) {
-            const options = selectValorPendiente.options;
+            const options = selectMatricula.options;
             for (let key in options) {
                 const option = options[key];
                 if (option.dataset && option.dataset.matriculaId === matriculaId) {
-                    selectValorPendiente.setValue(option.value);
-                    actualizarMonto(option.value);
+                    actualizarMonto(option.dataset.pendiente);
                     break;
                 }
-            }
-        }
-
-        function sincronizarMatricula(matriculaId) {
-            selectMatricula.setValue(matriculaId);
-            const selectedOption = selectMatricula.options[matriculaId];
-            if (selectedOption) {
-                actualizarMonto(selectedOption.dataset.pendiente);
             }
         }
 
@@ -241,7 +187,11 @@
         document.getElementById('metodo_pago_id').addEventListener('change', function() {
             let selectedOption = this.options[this.selectedIndex];
             let comprobanteContainer = document.getElementById('comprobante_pago_container');
-            if (selectedOption.value === '1') { // Suponiendo que '1' es el ID del método que requiere comprobante
+
+            // IDs de métodos de pago que requieren comprobante
+            let metodosConComprobante = ['2', '3']; // Suponiendo que '2' es depósito y '3' es tarjeta
+
+            if (metodosConComprobante.includes(selectedOption.value)) {
                 comprobanteContainer.classList.remove('hidden');
             } else {
                 comprobanteContainer.classList.add('hidden');
@@ -255,16 +205,7 @@
         document.getElementById('matricula_id').addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
             const pendiente = selectedOption.getAttribute('data-pendiente');
-            const valorPendienteSelect = document.getElementById('valor_pendiente_select');
-            
-            // Actualizar el valor pendiente seleccionado
-            for(let option of valorPendienteSelect.options) {
-                if(option.value === pendiente) {
-                    option.selected = true;
-                    actualizarMonto(pendiente);
-                    break;
-                }
-            }
+            actualizarMonto(pendiente);
         });
 
         // Si hay una matrícula seleccionada inicialmente, actualizar el monto
