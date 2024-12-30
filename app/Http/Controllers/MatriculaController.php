@@ -97,9 +97,8 @@ class MatriculaController extends Controller
         $data = $request->all();
         $data['valor_pendiente'] = $data['monto_total'];
 
-        if (!auth()->user()->hasRole(1)) {
-            $data['estado_matricula'] = 'Pendiente';
-        }
+        // Set the status to approved
+        $data['estado_matricula'] = 'Aprobada';
 
         Matricula::create($data);
 

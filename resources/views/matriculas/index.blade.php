@@ -73,16 +73,6 @@
                                         <td class="px-4 py-2 text-sm font-medium flex items-center justify-center space-x-2">
                                             <a href="{{ route('matriculas.show', $matricula) }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">👁️</a>
                                             @if(auth()->user()->hasRole(1))
-                                                @if($matricula->estado_matricula == 'Pendiente')
-                                                    <form action="{{ route('matriculas.aprobar', $matricula) }}" method="POST" class="inline">
-                                                        @csrf
-                                                        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">✔️</button>
-                                                    </form>
-                                                    <form action="{{ route('matriculas.rechazar', $matricula) }}" method="POST" class="inline">
-                                                        @csrf
-                                                        <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">🚫</button>
-                                                    </form>
-                                                @endif
                                                 <a href="{{ route('matriculas.edit', $matricula) }}" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded">✏️</a>
                                                 <form action="{{ route('matriculas.destroy', $matricula) }}" method="POST" class="inline-block">
                                                     @csrf
