@@ -88,6 +88,12 @@ class CursoController extends Controller
         return redirect()->route('cursos.index')->with('deleted', 'Curso eliminado correctamente');
     }
 
+    public function disable(Curso $curso)
+    {
+        $curso->update(['estado' => 'Inactivo']);
+        return redirect()->route('cursos.index')->with('success', 'Curso deshabilitado correctamente');
+    }
+
     public function dashboard()
     {
         $cursosPorTipo = Curso::with('tipoCurso')->get()->groupBy('tipo_curso_id');

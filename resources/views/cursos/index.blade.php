@@ -57,6 +57,10 @@
                                                 @method('DELETE')
                                                 <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">Eliminar</button>
                                             </form>
+                                            <form action="{{ route('cursos.disable', $curso) }}" method="POST" class="inline-block">
+                                                @csrf
+                                                <button type="submit" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded">Deshabilitar</button>
+                                            </form>
                                         </td>
                                     </tr>
                                 @endforeach
