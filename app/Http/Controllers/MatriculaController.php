@@ -355,7 +355,8 @@ class MatriculaController extends Controller
             'background' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $path = $request->file('background')->store('imagenes_de_fondo', 'public');
+        // Store the image in a permanent folder
+        $path = $request->file('background')->store('imagenes_de_fondo_permanentes', 'public');
 
         // Guardar la ruta en la sesión para usarla en la vista de credenciales
         session(['background_path' => basename($path)]);

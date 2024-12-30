@@ -2,6 +2,47 @@
     @section('page_title', 'Listas')
     <div class="py-12 bg-gray-100 dark:bg-gray-900">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Opciones Card -->
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg mb-6">
+                <div class="p-6">
+                    <div x-data="{ openOptions: false }" class="flex items-center justify-between flex-wrap gap-4">
+                        <div class="flex items-center space-x-4">
+                            <button @click="openOptions = !openOptions" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                {{ __('Opciones de Fondo') }}
+                            </button>
+                            @if($matriculas->isNotEmpty())
+                                <button id="print-credentials" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                    {{ __('Imprimir Credenciales') }}
+                                </button>
+                                <a href="{{ route('matriculas.exportPdf', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                    {{ __('Exportar PDF') }}
+                                </a>
+                                <a href="{{ route('matriculas.exportExcel', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                                    {{ __('Exportar Excel') }}
+                                </a>
+                            @endif
+                        </div>
+                        <div x-show="openOptions" class="w-full mt-4">
+                            <div class="flex items-center space-x-4">
+                                <form action="{{ route('matriculas.uploadBackground') }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-2">
+                                    @csrf
+                                    <input type="file" name="background" accept="image/*" class="rounded-md border-gray-300" />
+                                    <button type="submit" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                        {{ __('Subir Fondo') }}
+                                    </button>
+                                </form>
+                                @if(session('background_path'))
+                                    <a href="{{ asset('storage/imagenes_de_fondo_permanentes/' . session('background_path')) }}" download class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                        {{ __('Descargar Fondo Actual') }}
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Card -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg">
                 <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                     <form method="GET" action="{{ route('matriculas.listas') }}" id="cursoForm" class="mb-6">
@@ -25,39 +66,6 @@
                         </div>
                     </form>
                     @if($matriculas->isNotEmpty())
-                        <div class="flex justify-end mb-4 space-x-2">
-                            <button id="print-credentials" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                {{ __('Imprimir Credenciales') }}
-                            </button>
-                        </div>
-                        <div x-data="{ open: false }" class="mb-4">
-                            <button @click="open = !open" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                {{ __('Opciones') }}
-                            </button>
-                            <div x-show="open" class="mt-4">
-                                <div class="flex justify-end mb-4 space-x-2">
-                                    <form action="{{ route('matriculas.uploadBackground') }}" method="POST" enctype="multipart/form-data">
-                                        @csrf
-                                        <input type="file" name="background" accept="image/*" class="mr-2" />
-                                        <button type="submit" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded">
-                                            {{ __('Subir Fondo') }}
-                                        </button>
-                                    </form>
-                                    <a href="{{ route('matriculas.exportPdf', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                        {{ __('Exportar PDF') }}
-                                    </a>
-                                    <a href="{{ route('matriculas.exportExcel', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                                        {{ __('Exportar Excel') }}
-                                    </a>
-                                </div>
-                                @if(session('background_path'))
-                                    <div class="mb-4">
-                                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">{{ __('Fondo seleccionado para las credenciales:') }}</p>
-                                        <img src="{{ session('background_path') }}" alt="Background Image" class="w-1/4 h-auto rounded"> <!-- Cambiado a w-1/4 -->
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-300 dark:border-gray-700 rounded">
                                 <thead class="bg-gray-50 dark:bg-gray-700">
