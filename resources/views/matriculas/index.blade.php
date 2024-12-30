@@ -82,7 +82,7 @@
                                             @else
                                                 <a href="{{ route('pagos.create', ['matricula_id' => $matricula->id]) }}" 
                                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded" 
-                                                   title="Realizar pago">💵</a>
+                                                   title="Realizar pago">💵 PAGAR</a>
                                             @endif
                                         </td>
                                     </tr>
