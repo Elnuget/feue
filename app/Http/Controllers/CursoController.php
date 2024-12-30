@@ -10,7 +10,7 @@ class CursoController extends Controller
 {
     public function index()
     {
-        $cursos = Curso::with('tipoCurso')->get();
+        $cursos = Curso::with('tipoCurso')->orderBy('created_at', 'desc')->get();
         return view('cursos.index', compact('cursos'));
     }
 
@@ -94,9 +94,16 @@ class CursoController extends Controller
         return redirect()->route('cursos.index')->with('success', 'Curso deshabilitado correctamente');
     }
 
+    public function disableMultiple(Request $request)
+    {
+        $cursoIds = $request->input('cursos', []);
+        Curso::whereIn('id', $cursoIds)->update(['estado' => 'Inactivo']);
+        return redirect()->route('cursos.index')->with('success', 'Cursos deshabilitados correctamente');
+    }
+
     public function dashboard()
     {
-        $cursosPorTipo = Curso::with('tipoCurso')->get()->groupBy('tipo_curso_id');
+        $cursosPorTipo = Curso::with('tipoCurso')->where('estado', 'Activo')->get()->groupBy('tipo_curso_id');
         $tiposCurso = TipoCurso::whereIn('id', $cursosPorTipo->keys())->get();
         
         return view('dashboard', compact('cursosPorTipo', 'tiposCurso'));
@@ -104,7 +111,7 @@ class CursoController extends Controller
 
     public function welcome()
     {
-        $cursosPorTipo = Curso::with('tipoCurso')->get()->groupBy('tipo_curso_id');
+        $cursosPorTipo = Curso::with('tipoCurso')->where('estado', 'Activo')->get()->groupBy('tipo_curso_id');
         $tiposCurso = TipoCurso::whereIn('id', $cursosPorTipo->keys())->get();
         
         return view('welcome', compact('cursosPorTipo', 'tiposCurso'));

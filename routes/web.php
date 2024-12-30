@@ -66,6 +66,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/cursos/create', [CursoController::class, 'create'])->name('cursos.create');
     Route::get('/cursos/{curso}/edit', [CursoController::class, 'edit'])->name('cursos.edit');
     Route::post('/cursos/{curso}/disable', [CursoController::class, 'disable'])->name('cursos.disable');
+    Route::post('/cursos/disable-multiple', [CursoController::class, 'disableMultiple'])->name('cursos.disableMultiple');
+    Route::get('/cursos/disable-multiple', function () {
+        return redirect()->route('cursos.index');
+    });
     Route::resource('user_profiles', UserProfileController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
     Route::resource('user_academicos', \App\Http\Controllers\UserAcademicoController::class);
     Route::resource('user_aspiraciones', \App\Http\Controllers\UserAspiracionController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
