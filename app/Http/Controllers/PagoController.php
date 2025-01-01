@@ -122,6 +122,10 @@ class PagoController extends Controller
         // Actualizar valor pendiente solo si el pago es aprobado inmediatamente por un admin
         if (auth()->user()->hasRole(1) && $data['estado'] === 'Aprobado') {
             $matricula->valor_pendiente -= $request->monto;
+            if ($matricula->valor_pendiente <= 0) {
+                $matricula->valor_pendiente = 0;
+                $matricula->estado_matricula = 'Completada';
+            }
             $matricula->save();
         }
 
@@ -167,6 +171,10 @@ class PagoController extends Controller
 
         $matricula = $pago->matricula;
         $matricula->valor_pendiente -= $pago->monto;
+        if ($matricula->valor_pendiente <= 0) {
+            $matricula->valor_pendiente = 0;
+            $matricula->estado_matricula = 'Completada';
+        }
         $matricula->save();
 
         // Send email to the user

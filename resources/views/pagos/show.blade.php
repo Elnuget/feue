@@ -28,7 +28,7 @@
                             @if($pago->comprobante_pago)
                                 @if(in_array(pathinfo($pago->comprobante_pago, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png']))
                                     <div class="mt-2">
-                                        <img src="{{ asset('storage/' . $pago->comprobante_pago) }}" alt="Comprobante de Pago" class="w-full h-auto rounded-md shadow-md">
+                                        <img src="{{ asset('storage/' . $pago->comprobante_pago) }}" alt="Comprobante de Pago" class="w-1/2 h-auto rounded-md shadow-md">
                                     </div>
                                 @else
                                     <a href="{{ asset('storage/' . $pago->comprobante_pago) }}" target="_blank" class="block text-sm font-semibold text-blue-500 dark:text-blue-300 mt-1">
