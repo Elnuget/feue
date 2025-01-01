@@ -114,6 +114,6 @@ class UserProfileController extends Controller
             $data
         );
 
-        return redirect()->route('dashboard')->with('success', 'Perfil completado');
+        return redirect()->route('matriculas.create')->with('success', 'Perfil completado');
     }
 }

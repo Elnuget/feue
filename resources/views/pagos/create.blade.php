@@ -1,11 +1,4 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-bold text-2xl text-gray-800 dark:text-gray-200 leading-tight flex items-center space-x-2">
-            <span>💰</span>
-            <span>{{ __('Pagar') }}</span>
-        </h2>
-    </x-slot>
-
     {{-- Estilos y scripts de TomSelect --}}
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
@@ -14,6 +7,12 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6 border border-gray-200 dark:border-gray-700">
                 <div class="text-gray-900 dark:text-gray-100">
+
+                    {{-- Encabezado del formulario --}}
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold">Registrar Pago</h2>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Complete los campos a continuación para registrar un nuevo pago.</p>
+                    </div>
 
                     {{-- Mostrar errores si los hay --}}
                     @if ($errors->any())
@@ -40,7 +39,7 @@
                                     🎓 Matricula:
                                 </label>
                                 <select name="matricula_id" id="matricula_id"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 focus:ring-indigo-500 transition"
                                         autocomplete="off">
                                     <option value="" data-pendiente="0">Buscar matrícula...</option>
                                     @foreach($matriculas as $matricula)
@@ -64,7 +63,7 @@
                                     💳 Método de Pago:
                                 </label>
                                 <select name="metodo_pago_id" id="metodo_pago_id"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700">
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 focus:ring-indigo-500 transition">
                                     @foreach($metodosPago as $metodo)
                                         <option value="{{ $metodo->id }}">{{ $metodo->nombre }}</option>
                                     @endforeach
@@ -78,7 +77,7 @@
                                 </label>
                                 <input type="file" name="comprobante_pago" id="comprobante_pago"
                                        accept=".png, .jpg, .jpeg, .pdf"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700">
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 focus:ring-indigo-500 transition">
                             </div>
 
                             {{-- Input de Pago (monto) --}}
@@ -87,8 +86,8 @@
                                     💲 Pago:
                                 </label>
                                 <input type="number" name="monto" id="monto" value="0"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700"
-                                       step="0.01">
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 focus:ring-indigo-500 transition"
+                                       step="0.01" placeholder="Ingrese el monto">
                             </div>
 
                             {{-- Fecha de pago --}}
@@ -98,7 +97,7 @@
                                 </label>
                                 <input type="date" name="fecha_pago" id="fecha_pago"
                                        value="{{ now()->timezone('America/Guayaquil')->toDateString() }}"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700">
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 focus:ring-indigo-500 transition">
                             </div>
 
                             {{-- Estado --}}
@@ -107,7 +106,7 @@
                                     🔄 Estado:
                                 </label>
                                 <select name="estado" id="estado"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 focus:ring-indigo-500 transition"
                                         {{ auth()->user()->hasRole(1) ? '' : 'disabled' }}>
                                     <option value="Pendiente" {{ auth()->user()->hasRole(1) ? '' : 'selected' }}>Pendiente</option>
                                     <option value="Aprobado">Aprobado</option>
@@ -121,7 +120,7 @@
                         <button type="submit"
                                 class="w-full mt-6 bg-gradient-to-r from-indigo-500 to-purple-500
                                        hover:from-indigo-600 hover:to-purple-600
-                                       text-white font-bold py-2 px-4 rounded-md shadow-lg">
+                                       text-white font-bold py-2 px-4 rounded-md shadow-lg focus:ring-4 focus:ring-indigo-500 transition">
                             💾 Pagar
                         </button>
                     </form>
