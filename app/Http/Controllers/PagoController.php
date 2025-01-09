@@ -91,7 +91,7 @@ class PagoController extends Controller
             'metodo_pago_id' => 'required|exists:metodos_pago,id',
             'monto' => 'required|numeric',
             'fecha_pago' => 'required|date',
-            'comprobante_pago' => 'nullable|file|mimes:png,jpg,jpeg,pdf|max:2048',
+            'comprobante_pago' => 'required|file|mimes:png,jpg,jpeg,pdf|max:2048',
         ]);
 
         // Modificar la consulta para permitir acceso a administradores

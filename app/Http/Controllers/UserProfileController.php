@@ -93,7 +93,12 @@ class UserProfileController extends Controller
 
         $data = $request->except(['photo', 'acta_grado']);
 
+        $profile = \App\Models\UserProfile::where('user_id', $request->user_id)->first();
+
         if ($request->hasFile('photo')) {
+            if (isset($profile->photo)) {
+                \Storage::disk('public')->delete($profile->photo);
+            }
             $data['photo'] = $request->file('photo')->store('imguser', 'public');
         }
 

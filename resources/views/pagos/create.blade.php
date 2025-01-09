@@ -71,7 +71,7 @@
                             </div>
 
                             {{-- Comprobante de pago (mostrar/ocultar según método) --}}
-                            <div class="col-span-1 md:col-span-2 hidden" id="comprobante_pago_container">
+                            <div class="col-span-1 md:col-span-2" id="comprobante_pago_container">
                                 <label for="comprobante_pago" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                     📎 Comprobante de Pago:
                                 </label>
@@ -181,24 +181,6 @@
                 this.value = max.toFixed(2);
             }
         });
-
-        // Mostrar/ocultar comprobante de pago según método
-        document.getElementById('metodo_pago_id').addEventListener('change', function() {
-            let selectedOption = this.options[this.selectedIndex];
-            let comprobanteContainer = document.getElementById('comprobante_pago_container');
-
-            // IDs de métodos de pago que requieren comprobante
-            let metodosConComprobante = ['2', '3']; // Suponiendo que '2' es depósito y '3' es tarjeta
-
-            if (metodosConComprobante.includes(selectedOption.value)) {
-                comprobanteContainer.classList.remove('hidden');
-            } else {
-                comprobanteContainer.classList.add('hidden');
-            }
-        });
-
-        // Dispara el evento 'change' para ajustar el comprobante si ya viene algo preseleccionado
-        document.getElementById('metodo_pago_id').dispatchEvent(new Event('change'));
 
         // Actualizar valores cuando cambia la matrícula seleccionada
         document.getElementById('matricula_id').addEventListener('change', function() {

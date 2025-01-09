@@ -6,6 +6,13 @@
 
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+            <!-- Mensaje de error -->
+            @if(session('error'))
+                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline">{{ session('error') }}</span>
+                </div>
+            @endif
+
             <!-- Tarjeta principal -->
             <div
                 class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 transition duration-300 hover:shadow-lg"
@@ -306,16 +313,18 @@
 
                 if (cursosPorTipo[tipoCursoId]) {
                     cursosPorTipo[tipoCursoId].forEach(curso => {
-                        const option = document.createElement('option');
-                        option.value = curso.id;
-                        option.text = `${curso.nombre} - ${curso.horario}`;
-                        option.setAttribute('data-precio', curso.precio);
+                        if (curso.estado === 'Activo') { // Use 'Activo' here
+                            const option = document.createElement('option');
+                            option.value = curso.id;
+                            option.text = `${curso.nombre} - ${curso.horario}`;
+                            option.setAttribute('data-precio', curso.precio);
 
-                        // Si existe un curso previamente seleccionado
-                        if (curso.id == {{ $cursoSeleccionado ?? 'null' }}) {
-                            option.selected = true;
+                            // Si existe un curso previamente seleccionado
+                            if (curso.id == {{ $cursoSeleccionado ?? 'null' }}) {
+                                option.selected = true;
+                            }
+                            cursoSelect.add(option);
                         }
-                        cursoSelect.add(option);
                     });
 
                     // Actualizar el precio del curso

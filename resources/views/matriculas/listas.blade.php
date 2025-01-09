@@ -31,11 +31,9 @@
                                         {{ __('Subir Fondo') }}
                                     </button>
                                 </form>
-                                @if(session('background_path'))
-                                    <a href="{{ asset('storage/imagenes_de_fondo_permanentes/' . session('background_path')) }}" download class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                        {{ __('Descargar Fondo Actual') }}
-                                    </a>
-                                @endif
+                                <a href="{{ asset('storage/imagenes_de_fondo_permanentes/background.jpg') }}" download class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                    {{ __('Descargar Fondo Actual') }}
+                                </a>
                             </div>
                         </div>
                     </div>

@@ -115,11 +115,9 @@
 
 @foreach($matriculas as $index => $matricula)
     <div class="credential-container" style="@if($loop->iteration > 1) page-break-before: always; @endif">
-        @if(session('background_path'))
-            <div class="background-image" 
-                 style="background-image: url('{{ public_path('storage/imagenes_de_fondo_permanentes/' . session('background_path')) }}');">
-            </div>
-        @endif
+        <div class="background-image" 
+             style="background-image: url('{{ public_path('storage/imagenes_de_fondo_permanentes/background.jpg') }}');">
+        </div>
 
         <div class="text-center">
             @if(

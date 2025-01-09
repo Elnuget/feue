@@ -36,7 +36,7 @@ class MatriculaController extends Controller
 
         // Get courses based on tipo_curso
         if ($tipoCursoId) {
-            $cursos = Curso::where('tipo_curso_id', $tipoCursoId)->get();
+            $cursos = Curso::where('tipo_curso_id', $tipoCursoId)->where('estado', 'Activo')->get(); // Only get active courses
             if ($cursoId) {
                 $query->where('curso_id', $cursoId);
             } else {
@@ -69,7 +69,7 @@ class MatriculaController extends Controller
         } else {
             $usuarios = \App\Models\User::where('id', auth()->id())->get();
         }
-        $cursos = \App\Models\Curso::all();
+        $cursos = \App\Models\Curso::where('estado', 'Activo')->get(); // Only get active courses
         $cursosPorTipo = $cursos->groupBy('tipo_curso_id'); // Group courses by type
         $cursoSeleccionado = $request->input('curso_id');
         $tipoCursoSeleccionado = $cursoSeleccionado ? \App\Models\Curso::find($cursoSeleccionado)->tipo_curso_id : null;
@@ -89,6 +89,17 @@ class MatriculaController extends Controller
             'estado_matricula' => 'required|in:Pendiente,Aprobada,Completada,Rechazada',
             'universidad_id' => 'required_if:curso_id,1,2,3|exists:universidades,id',
         ]);
+
+        // Check if user is already enrolled in this course
+        $existingMatricula = Matricula::where('usuario_id', $request->usuario_id)
+            ->where('curso_id', $request->curso_id)
+            ->first();
+
+        if ($existingMatricula) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'El usuario ya está matriculado en este curso.');
+        }
 
         if (!auth()->user()->hasRole(1) && $request->usuario_id != auth()->id()) {
             return redirect()->route('matriculas.index')->with('error', 'No tienes permiso para crear esta matrícula.');
@@ -140,7 +151,7 @@ class MatriculaController extends Controller
             $usuarios = \App\Models\User::where('id', auth()->id())->get();
         }
 
-        $cursos = \App\Models\Curso::all();
+        $cursos = \App\Models\Curso::where('estado', 'Activo')->get(); // Only get active courses
 
         return view('matriculas.edit', compact('matricula', 'usuarios', 'cursos'));
     }
@@ -212,7 +223,7 @@ class MatriculaController extends Controller
 
         // Filter courses based on selected tipo_curso
         if ($tipoCursoId) {
-            $cursos = Curso::where('tipo_curso_id', $tipoCursoId)->get();
+            $cursos = Curso::where('tipo_curso_id', $tipoCursoId)->where('estado', 'Activo')->get(); // Only get active courses
         } else {
             $cursos = collect();
         }
@@ -354,12 +365,18 @@ class MatriculaController extends Controller
             'background' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Store the image in a permanent folder
-        $path = $request->file('background')->store('imagenes_de_fondo_permanentes', 'public');
+        $fixedFileName = 'background.jpg';
+        $storagePath = 'public/imagenes_de_fondo_permanentes';
+        
+        // Delete existing background file if it exists
+        if (Storage::exists($storagePath . '/' . $fixedFileName)) {
+            Storage::delete($storagePath . '/' . $fixedFileName);
+        }
 
-        // Guardar la ruta en la sesión para usarla en la vista de credenciales
-        session(['background_path' => basename($path)]);
+        // Store the new image with the fixed filename
+        $request->file('background')->storeAs($storagePath, $fixedFileName);
 
-        return redirect()->route('matriculas.listas')->with('success', 'Fondo subido correctamente.');
+        // No need to store in session anymore since we'll use a fixed path
+        return redirect()->route('matriculas.listas')->with('success', 'Fondo actualizado correctamente.');
     }
 }
