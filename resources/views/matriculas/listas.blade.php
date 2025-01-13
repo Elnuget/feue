@@ -89,11 +89,14 @@
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
                                             {{ __('QR Code') }}  <!-- Cambiado de 'ID de Usuario' a 'QR Code' -->
                                         </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
+                                            Estado
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     @foreach($matriculas as $index => $matricula)
-                                        <tr class="{{ $index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-700' : 'bg-white dark:bg-gray-800' }}">
+                                        <tr class="{{ $matricula->estado_matricula == 'Entregado' ? 'bg-green-200' : ($index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-700' : 'bg-white dark:bg-gray-800') }}">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
                                                 <input type="checkbox" class="select-row" value="{{ $matricula->id }}">
                                             </td>
@@ -113,7 +116,7 @@
                                                     </div>
                                                 @endif
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium {{ $matricula->estado_matricula == 'Entregado' ? 'text-blue-500' : 'text-gray-900 dark:text-gray-100' }} border-b border-gray-300 dark:border-gray-700">
                                                 {{ $matricula->usuario->name }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
@@ -130,6 +133,9 @@
                                                          alt="QR Code" 
                                                          style="width: 40px; height: 40px;" />
                                                 </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
+                                                {{ $matricula->estado_matricula }}
                                             </td>
                                         </tr>
                                     @endforeach
@@ -193,6 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectedIds.length > 0) {
             const url = "{{ route('matriculas.printCredentials') }}?ids=" + selectedIds.join(',');
             window.open(url, '_blank');
+            window.location.reload(); // Recargar la vista de listas
         } else {
             alert('Por favor, seleccione al menos una fila.');
         }

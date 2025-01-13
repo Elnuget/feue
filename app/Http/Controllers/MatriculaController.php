@@ -324,6 +324,9 @@ class MatriculaController extends Controller
                 return back()->with('error', 'No se encontraron matrículas para imprimir.');
             }
 
+            // Actualizar el estado de las matrículas a 'Entregado'
+            Matricula::whereIn('id', $ids)->update(['estado_matricula' => 'Entregado']);
+
             // Generar QRs usando endroid/qr-code
             $qrCodes = [];
             $writer = new PngWriter();
