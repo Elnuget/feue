@@ -11,18 +11,18 @@
                     {{-- Encabezado del formulario --}}
                     <div class="mb-6">
                         <h2 class="text-2xl font-bold">Registrar Pago</h2>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Complete los campos a continuación para registrar un nuevo pago.</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Complete los campos a continuacion para registrar un nuevo pago.</p>
                     </div>
 
                     {{-- Mostrar errores si los hay --}}
                     @if ($errors->any())
                         <div class="mb-4 p-4 bg-red-50 dark:bg-red-900 rounded-lg">
                             <div class="font-medium text-red-700 dark:text-red-300">
-                                ⚠️ {{ __('Whoops! Algo salió mal.') }}
+                                <i class="fa fa-exclamation-triangle"></i> {{ __('Whoops! Algo salio mal.') }}
                             </div>
                             <ul class="mt-3 list-disc list-inside text-sm text-red-700 dark:text-red-300">
                                 @foreach ($errors->all() as $error)
-                                    <li>{{ $error }} 😞</li>
+                                    <li>{{ $error }} <i class="fa fa-frown-open"></i></li>
                                 @endforeach
                             </ul>
                         </div>
@@ -36,7 +36,7 @@
                             {{-- Seleccionar matrícula --}}
                             <div>
                                 <label for="matricula_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    🎓 Matricula:
+                                    <i class="fa fa-graduation-cap"></i> Matricula:
                                 </label>
                                 <select name="matricula_id" id="matricula_id"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 focus:ring-indigo-500 transition"
@@ -60,7 +60,7 @@
                             {{-- Método de pago --}}
                             <div>
                                 <label for="metodo_pago_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    💳 Método de Pago:
+                                    <i class="fa fa-credit-card"></i> Metodo de Pago:
                                 </label>
                                 <select name="metodo_pago_id" id="metodo_pago_id"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 focus:ring-indigo-500 transition">
@@ -73,7 +73,7 @@
                             {{-- Comprobante de pago (mostrar/ocultar según método) --}}
                             <div class="col-span-1 md:col-span-2" id="comprobante_pago_container">
                                 <label for="comprobante_pago" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    📎 Comprobante de Pago:
+                                    <i class="fa fa-paperclip"></i> Comprobante de Pago:
                                 </label>
                                 <input type="file" name="comprobante_pago" id="comprobante_pago"
                                        accept=".png, .jpg, .jpeg, .pdf"
@@ -83,7 +83,7 @@
                             {{-- Input de Pago (monto) --}}
                             <div>
                                 <label for="monto" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    💲 Pago:
+                                    <i class="fa fa-dollar-sign"></i> Pago:
                                 </label>
                                 <input type="number" name="monto" id="monto" value="0"
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 focus:ring-indigo-500 transition"
@@ -93,7 +93,7 @@
                             {{-- Fecha de pago --}}
                             <div>
                                 <label for="fecha_pago" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    📅 Fecha de Pago:
+                                    <i class="fa fa-calendar"></i> Fecha de Pago:
                                 </label>
                                 <input type="date" name="fecha_pago" id="fecha_pago"
                                        value="{{ now()->timezone('America/Guayaquil')->toDateString() }}"
@@ -103,7 +103,7 @@
                             {{-- Estado --}}
                             <div>
                                 <label for="estado" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    🔄 Estado:
+                                    <i class="fa fa-sync"></i> Estado:
                                 </label>
                                 <select name="estado" id="estado"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 focus:ring-indigo-500 transition"
@@ -121,7 +121,7 @@
                                 class="w-full mt-6 bg-gradient-to-r from-indigo-500 to-purple-500
                                        hover:from-indigo-600 hover:to-purple-600
                                        text-white font-bold py-2 px-4 rounded-md shadow-lg focus:ring-4 focus:ring-indigo-500 transition">
-                            💾 Pagar
+                            <i class="fa fa-save"></i> Pagar
                         </button>
                     </form>
                 </div>

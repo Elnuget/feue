@@ -84,7 +84,7 @@
                                             {{ __('Valor Pendiente en Moneda') }}
                                         </th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
-                                            Cédula
+                                            Cedula
                                         </th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
                                             {{ __('QR Code') }}  <!-- Cambiado de 'ID de Usuario' a 'QR Code' -->
@@ -112,7 +112,7 @@
                                                          class="w-10 h-10 rounded-full object-cover">
                                                 @else
                                                     <div class="w-10 h-10 flex items-center justify-center bg-gray-200 rounded-full text-gray-500">
-                                                        👤
+                                                        <i class="fa fa-user"></i>
                                                     </div>
                                                 @endif
                                             </td>
