@@ -154,7 +154,7 @@
                             </thead>
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200">
                                 @foreach ($matriculas->sortByDesc('id') as $matricula)
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                    <tr class="{{ $matricula->estado_matricula == 'Rechazada' ? 'bg-red-200' : ($matricula->estado_matricula == 'Entregado' ? 'bg-green-200' : ($loop->index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-700' : 'bg-white dark:bg-gray-800')) }}">
                                         @if(!auth()->user()->hasRole(1))
                                             <td 
                                                 class="px-4 py-2 text-sm font-medium flex items-center justify-center space-x-2"
@@ -202,7 +202,7 @@
                                         <td 
                                             class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300"
                                         >
-                                            <span class="{{ $matricula->estado_matricula == 'Aprobada' ? 'text-green-500' : ($matricula->estado_matricula == 'Completada' ? 'text-blue-500' : 'text-gray-500') }}">
+                                            <span class="{{ $matricula->estado_matricula == 'Aprobada' ? 'text-green-500' : ($matricula->estado_matricula == 'Completada' ? 'text-blue-500' : ($matricula->estado_matricula == 'Rechazada' ? 'text-red-500' : 'text-gray-500')) }}">
                                                 {{ $matricula->estado_matricula }}
                                             </span>
                                         </td>

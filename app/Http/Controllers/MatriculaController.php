@@ -36,14 +36,14 @@ class MatriculaController extends Controller
 
         // Get courses based on tipo_curso
         if ($tipoCursoId) {
-            $cursos = Curso::where('tipo_curso_id', $tipoCursoId)->where('estado', 'Activo')->get(); // Only get active courses
+            $cursos = Curso::where('tipo_curso_id', $tipoCursoId)->get(); // Fetch all courses regardless of status
             if ($cursoId) {
                 $query->where('curso_id', $cursoId);
             } else {
                 $query->whereIn('curso_id', $cursos->pluck('id'));
             }
         } else {
-            $cursos = collect();
+            $cursos = Curso::all(); // Fetch all courses regardless of status
         }
 
         // Add search filter
@@ -182,9 +182,17 @@ class MatriculaController extends Controller
             return redirect()->route('matriculas.index')->with('error', 'No tienes permiso para eliminar esta matrícula.');
         }
 
-        $matricula->delete();
+        try {
+            // Delete associated payments
+            $matricula->pagos()->delete();
 
-        return redirect()->route('matriculas.index')->with('success', 'Matricula eliminada exitosamente.');
+            // Delete the matricula
+            $matricula->delete();
+
+            return redirect()->route('matriculas.index')->with('success', 'Matricula eliminada exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()->route('matriculas.index')->with('error', 'Error al eliminar la matrícula: ' . $e->getMessage());
+        }
     }
 
     public function aprobar(Matricula $matricula)
@@ -223,29 +231,27 @@ class MatriculaController extends Controller
 
         // Filter courses based on selected tipo_curso
         if ($tipoCursoId) {
-            $cursos = Curso::where('tipo_curso_id', $tipoCursoId)->where('estado', 'Activo')->get(); // Only get active courses
+            $cursos = Curso::where('tipo_curso_id', $tipoCursoId)->get(); // Fetch all courses regardless of status
         } else {
-            $cursos = collect();
+            $cursos = Curso::all(); // Fetch all courses regardless of status
         }
 
         // Filter matriculas based on selected curso_id or tipo_curso
         if ($cursoId) {
             $matriculas = Matricula::where('curso_id', $cursoId)
-                ->with('usuario')
-                ->get()
-                ->sortBy(function($matricula) {
-                    return $matricula->usuario->name;
-                });
+                ->with(['usuario', 'usuario.profile']) // Ensure profiles are loaded
+                ->orderBy('id', 'desc') // Sort by ID in descending order
+                ->get();
         } elseif ($tipoCursoId) {
             $cursoIds = Curso::where('tipo_curso_id', $tipoCursoId)->pluck('id');
             $matriculas = Matricula::whereIn('curso_id', $cursoIds)
-                ->with('usuario')
-                ->get()
-                ->sortBy(function($matricula) {
-                    return $matricula->usuario->name;
-                });
+                ->with(['usuario', 'usuario.profile']) // Ensure profiles are loaded
+                ->orderBy('id', 'desc') // Sort by ID in descending order
+                ->get();
         } else {
-            $matriculas = collect();
+            $matriculas = Matricula::with(['usuario', 'usuario.profile']) // Ensure profiles are loaded
+                ->orderBy('id', 'desc') // Sort by ID in descending order
+                ->get();
         }
 
         // Generar QRs usando endroid/qr-code

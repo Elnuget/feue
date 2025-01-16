@@ -53,7 +53,7 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <select id="curso_id" name="curso_id" class="w-1/2 rounded-md border-gray-300" {{ $cursos->isEmpty() ? 'disabled' : '' }}>
+                            <select id="curso_id" name="curso_id" class="w-1/2 rounded-md border-gray-300">
                                 <option value="">Seleccione un curso</option>
                                 @foreach($cursos as $curso)
                                     <option value="{{ $curso->id }}" {{ $cursoId == $curso->id ? 'selected' : '' }}>
@@ -85,6 +85,9 @@
                                         </th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
                                             Cedula
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
+                                            {{ __('Celular') }}
                                         </th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
                                             {{ __('QR Code') }}  <!-- Cambiado de 'ID de Usuario' a 'QR Code' -->
@@ -126,6 +129,9 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
                                                 {{ $matricula->usuario->profile->cedula ?? 'N/A' }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
+                                                {{ $matricula->usuario->profile->phone ?? 'N/A' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
                                                 <div class="w-10 h-10">
