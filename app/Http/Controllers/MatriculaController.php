@@ -153,7 +153,23 @@ class MatriculaController extends Controller
 
         $cursos = \App\Models\Curso::where('estado', 'Activo')->get(); // Only get active courses
 
-        return view('matriculas.edit', compact('matricula', 'usuarios', 'cursos'));
+        // Add the following lines
+        $tiposCursos = \App\Models\TipoCurso::all();
+        $cursosPorTipo = $cursos->groupBy('tipo_curso_id');
+        $cursoSeleccionado = $matricula->curso_id;
+        $tipoCursoSeleccionado = $cursoSeleccionado ? \App\Models\Curso::find($cursoSeleccionado)->tipo_curso_id : null;
+        $universidades = \App\Models\Universidad::all();
+
+        return view('matriculas.edit', compact(
+            'matricula',
+            'usuarios',
+            'cursos',
+            'tiposCursos',
+            'cursosPorTipo',
+            'cursoSeleccionado',
+            'tipoCursoSeleccionado',
+            'universidades'
+        ));
     }
 
     public function update(Request $request, Matricula $matricula)

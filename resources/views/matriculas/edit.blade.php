@@ -17,6 +17,8 @@
                     @csrf
                     @method('PUT')
                     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+                        
+                        <!-- Usuario -->
                         <div class="relative">
                             <label for="usuario_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Usuario</label>
                             <div class="mt-1 flex rounded-md shadow-sm">
@@ -35,21 +37,49 @@
                                 @endif
                             </div>
                         </div>
+
+                        <!-- Sede (Tipo de Curso) -->
                         <div class="relative">
-                            <label for="curso_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Curso</label>
+                            <label for="tipo_curso_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Sede
+                            </label>
                             <div class="mt-1 flex rounded-md shadow-sm">
                                 <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                                    <i class="fas fa-book"></i>
+                                    <i class="fas fa-list-alt"></i>
                                 </span>
-                                <select name="curso_id" id="curso_id" required class="flex-1 block w-full rounded-none rounded-r-md border-gray-300 dark:bg-gray-700 dark:text-gray-300">
-                                    @foreach($cursos as $curso)
-                                        <option value="{{ $curso->id }}" {{ $curso->id == $matricula->curso_id ? 'selected' : '' }}>{{ $curso->nombre }}</option>
+                                <select name="tipo_curso_id" id="tipo_curso_id" required class="flex-1 block w-full rounded-none rounded-r-md border-gray-300 dark:bg-gray-700 dark:text-gray-300" onchange="handleTipoCursoChange()">
+                                    <option value="">Selecciona una Sede</option>
+                                    @foreach($tiposCursos as $tipoCurso)
+                                        <option value="{{ $tipoCurso->id }}" {{ isset($tipoCursoSeleccionado) && $tipoCursoSeleccionado == $tipoCurso->id ? 'selected' : '' }}>
+                                            {{ $tipoCurso->nombre }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
+
+                        <!-- Curso (oculto por defecto) -->
+                        <div class="relative" id="curso_container" style="display: none;">
+                            <label for="curso_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Curso
+                            </label>
+                            <div class="mt-1 flex rounded-md shadow-sm">
+                                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                                    <i class="fas fa-book"></i>
+                                </span>
+                                <select name="curso_id" id="curso_id" required class="flex-1 block w-full rounded-none rounded-r-md border-gray-300 dark:bg-gray-700 dark:text-gray-300" onchange="updateCoursePrice()">
+                                    @foreach($cursos as $curso)
+                                        <option value="{{ $curso->id }}" {{ $curso->id == $matricula->curso_id ? 'selected' : '' }} data-precio="{{ $curso->precio }}">
+                                            {{ $curso->nombre }} - {{ $curso->horario }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Fecha de Matrícula -->
                         <div class="relative">
-                            <label for="fecha_matricula" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Fecha de Matricula</label>
+                            <label for="fecha_matricula" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Fecha de Matrícula</label>
                             <div class="mt-1 flex rounded-md shadow-sm">
                                 <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
                                     <i class="fas fa-calendar-alt"></i>
@@ -57,6 +87,8 @@
                                 <input type="date" name="fecha_matricula" id="fecha_matricula" value="{{ $matricula->fecha_matricula }}" required class="flex-1 block w-full rounded-none rounded-r-md border-gray-300 dark:bg-gray-700 dark:text-gray-300">
                             </div>
                         </div>
+
+                        <!-- Monto Total -->
                         <div class="relative">
                             <label for="monto_total" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Monto Total</label>
                             <div class="mt-1 flex rounded-md shadow-sm">
@@ -66,8 +98,10 @@
                                 <input type="number" name="monto_total" id="monto_total" value="{{ $matricula->monto_total }}" required readonly class="flex-1 block w-full rounded-none rounded-r-md border-gray-300 dark:bg-gray-700 dark:text-gray-300">
                             </div>
                         </div>
+
+                        <!-- Estado de Matrícula -->
                         <div class="relative">
-                            <label for="estado_matricula" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Estado de Matricula</label>
+                            <label for="estado_matricula" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Estado de Matrícula</label>
                             <div class="mt-1 flex rounded-md shadow-sm">
                                 <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
                                     <i class="fas fa-info-circle"></i>
@@ -84,6 +118,26 @@
                                 @endif
                             </div>
                         </div>
+
+                        <!-- Universidad a Postular -->
+                        <div class="relative" id="universidad-container" style="display: none;">
+                            <label for="universidad_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Universidad a postular
+                            </label>
+                            <div class="mt-1 flex rounded-md shadow-sm">
+                                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                                    <i class="fas fa-university"></i>
+                                </span>
+                                <select name="universidad_id" id="universidad_id" class="flex-1 block w-full rounded-none rounded-r-md border-gray-300 dark:bg-gray-700 dark:text-gray-300">
+                                    @foreach($universidades as $universidad)
+                                        <option value="{{ $universidad->id }}" {{ $matricula->universidad_id == $universidad->id ? 'selected' : '' }}>
+                                            {{ $universidad->nombre }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        
                     </div>
                     <div class="flex justify-end">
                         <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:border-blue-700 dark:focus:border-blue-600 focus:ring focus:ring-blue-200 dark:focus:ring-blue-500 active:bg-blue-700 dark:active:bg-blue-600 disabled:opacity-25 transition">
@@ -94,4 +148,85 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function updateCoursePrice() {
+            const cursoSelect = document.getElementById('curso_id');
+            const selectedOption = cursoSelect.options[cursoSelect.selectedIndex];
+            const precio = selectedOption.getAttribute('data-precio');
+            document.getElementById('monto_total').value = precio;
+
+            const cursoNombre = selectedOption.text.toLowerCase();
+            const universidadContainer = document.getElementById('universidad-container');
+            // Mostrar u ocultar la lista de universidades si la palabra "preuniversitario" está en el nombre del curso
+            if (cursoNombre.includes('preuniversitario')) {
+                universidadContainer.style.display = 'block';
+            } else {
+                universidadContainer.style.display = 'none';
+            }
+        }
+
+        function handleTipoCursoChange() {
+            const tipoCursoSelect = document.getElementById('tipo_curso_id');
+            const tipoCursoId = tipoCursoSelect.value;
+            const cursoContainer = document.getElementById('curso_container');
+            const cursoSelect = document.getElementById('curso_id');
+
+            if (tipoCursoId) {
+                // Mostrar el combo de Curso
+                cursoContainer.style.display = 'block';
+
+                // Limpiar opciones previas
+                cursoSelect.innerHTML = '';
+
+                // Obtener los cursos para el tipo de curso seleccionado
+                const cursosPorTipo = @json($cursosPorTipo);
+
+                if (cursosPorTipo[tipoCursoId]) {
+                    cursosPorTipo[tipoCursoId].forEach(curso => {
+                        if (curso.estado === 'Activo') { // Use 'Activo' here
+                            const option = document.createElement('option');
+                            option.value = curso.id;
+                            option.text = `${curso.nombre} - ${curso.horario}`;
+                            option.setAttribute('data-precio', curso.precio);
+
+                            // Si existe un curso previamente seleccionado
+                            @if(isset($cursoSeleccionado))
+                                if (curso.id == {{ $cursoSeleccionado }}) {
+                                    option.selected = true;
+                                }
+                            @endif
+
+                            cursoSelect.add(option);
+                        }
+                    });
+
+                    // Actualizar el precio del curso
+                    updateCoursePrice();
+                } else {
+                    // No hay cursos para este tipo de curso
+                    document.getElementById('monto_total').value = '';
+                    document.getElementById('universidad-container').style.display = 'none';
+                }
+            } else {
+                // Ocultar el combo de Curso si no se ha seleccionado un tipo de curso
+                cursoContainer.style.display = 'none';
+                cursoSelect.innerHTML = '';
+                document.getElementById('monto_total').value = '';
+                document.getElementById('universidad-container').style.display = 'none';
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Por defecto, ocultar el combo de curso hasta que se seleccione un tipo de curso
+            document.getElementById('curso_container').style.display = 'none';
+            document.getElementById('universidad-container').style.display = 'none';
+
+            // Si se proporcionó un tipo de curso seleccionado, llamar la función para mostrarlo
+            @if(isset($tipoCursoSeleccionado))
+                handleTipoCursoChange();
+            @endif
+        });
+    </script>
 </x-app-layout>
