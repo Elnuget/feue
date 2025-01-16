@@ -14,7 +14,11 @@ class AsistenciaController extends Controller
     public function index()
     {
         $asistencias = Asistencia::with('user')->get();
-        $listas = Matricula::with('usuario')->get();
+        $listas = Matricula::with('usuario')->get()->map(function($lista) {
+            $lista->anio = $lista->created_at->year;
+            $lista->mes = $lista->created_at->month;
+            return $lista;
+        });
         $cursos = Curso::all();
         $tiposCursos = TipoCurso::all();
         return view('asistencias.index', compact('asistencias', 'listas', 'cursos', 'tiposCursos'));

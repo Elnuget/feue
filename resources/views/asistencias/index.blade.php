@@ -21,6 +21,9 @@
                         <a href="{{ route('asistencias.scan') }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                             📷 Escanear QR
                         </a>
+                        <button id="export-excel" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
+                            Exportar a Excel
+                        </button>
                     </div>
 
                     <h2 class="text-xl font-semibold mb-4">Asistencias Mensuales</h2>
@@ -68,6 +71,9 @@
     </div>
 </x-app-layout>
 
+<!-- Include SheetJS library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <!-- Agrega los scripts necesarios para la funcionalidad de Asistencias Mensuales -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -83,11 +89,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const cursos = @json($cursos);
 
     anioSelect.addEventListener('change', function() {
-        if (anioSelect.value) {
-            mesSelect.disabled = false;
+        if (anioSelect.value && mesSelect.value) {
+            tipoCursoSelect.disabled = false;
+            // Optionally reset tipoCursoSelect and cursoSelect
+            tipoCursoSelect.value = '';
+            cursoSelect.disabled = true;
+            cursoSelect.value = '';
+            tablaAsistencias.classList.add('hidden');
         } else {
-            mesSelect.disabled = true;
-            mesSelect.value = '';
             tipoCursoSelect.disabled = true;
             tipoCursoSelect.value = '';
             cursoSelect.disabled = true;
@@ -97,8 +106,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     mesSelect.addEventListener('change', function() {
-        if (mesSelect.value) {
+        if (mesSelect.value && anioSelect.value) {
             tipoCursoSelect.disabled = false;
+            // Optionally reset tipoCursoSelect and cursoSelect
+            tipoCursoSelect.value = '';
+            cursoSelect.disabled = true;
+            cursoSelect.value = '';
+            tablaAsistencias.classList.add('hidden');
         } else {
             tipoCursoSelect.disabled = true;
             tipoCursoSelect.value = '';
@@ -154,8 +168,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 </tr>
             `;
 
-            // Filtrar usuarios matriculados en el curso seleccionado
-            const usuariosMatriculados = listas.filter(lista => lista.curso_id === cursoId);
+            // Filtrar listas por curso, año y mes
+            const usuariosMatriculados = listas.filter(lista => 
+                lista.curso_id === cursoId &&
+                lista.anio === anio &&
+                lista.mes === mes
+            );
+
             const tbody = tablaAsistencias.querySelector('tbody');
             tbody.innerHTML = '';
 
@@ -201,5 +220,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Trigger change event to initialize the selects with default values
     anioSelect.dispatchEvent(new Event('change'));
     mesSelect.dispatchEvent(new Event('change'));
+
+    document.getElementById('export-excel').addEventListener('click', function() {
+        const table = document.getElementById('tabla-asistencias').querySelector('table');
+        const tipoCurso = tipoCursoSelect.options[tipoCursoSelect.selectedIndex].text || 'TipoCurso';
+        const curso = cursoSelect.options[cursoSelect.selectedIndex].text || 'Curso';
+        let titulo = `${tipoCurso}_${curso}`.replace(/\s+/g, '_');
+        
+        /* Convert table to workbook with a fixed sheet name */
+        const workbook = XLSX.utils.table_to_book(table, { sheet: 'Asistencias' });
+
+        /* Export to Excel with the full title in the filename */
+        XLSX.writeFile(workbook, `${titulo}.xlsx`);
+    });
 });
 </script>

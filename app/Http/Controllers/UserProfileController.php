@@ -121,4 +121,21 @@ class UserProfileController extends Controller
 
         return redirect()->route('matriculas.create')->with('success', 'Perfil completado');
     }
+
+    /**
+     * Verificar si la cédula ya está registrada.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function checkCedula(Request $request)
+    {
+        $request->validate([
+            'cedula' => 'required|string|max:20',
+        ]);
+
+        $exists = UserProfile::where('cedula', $request->cedula)->exists();
+
+        return response()->json(['exists' => $exists]);
+    }
 }

@@ -36,6 +36,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Agregar la ruta checkCedula fuera del grupo de middleware 'auth' y 'verified'
+Route::post('/user_profiles/check-cedula', [UserProfileController::class, 'checkCedula'])->name('user_profiles.checkCedula');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('matriculas/print-credentials', [MatriculaController::class, 'printCredentials'])->name('matriculas.printCredentials');
     
