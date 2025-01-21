@@ -256,18 +256,24 @@ class MatriculaController extends Controller
         if ($cursoId) {
             $matriculas = Matricula::where('curso_id', $cursoId)
                 ->with(['usuario', 'usuario.profile']) // Ensure profiles are loaded
-                ->orderBy('id', 'desc') // Sort by ID in descending order
-                ->get();
+                ->get()
+                ->sortBy(function($matricula) {
+                    return $matricula->usuario->name;
+                });
         } elseif ($tipoCursoId) {
             $cursoIds = Curso::where('tipo_curso_id', $tipoCursoId)->pluck('id');
             $matriculas = Matricula::whereIn('curso_id', $cursoIds)
                 ->with(['usuario', 'usuario.profile']) // Ensure profiles are loaded
-                ->orderBy('id', 'desc') // Sort by ID in descending order
-                ->get();
+                ->get()
+                ->sortBy(function($matricula) {
+                    return $matricula->usuario->name;
+                });
         } else {
             $matriculas = Matricula::with(['usuario', 'usuario.profile']) // Ensure profiles are loaded
-                ->orderBy('id', 'desc') // Sort by ID in descending order
-                ->get();
+                ->get()
+                ->sortBy(function($matricula) {
+                    return $matricula->usuario->name;
+                });
         }
 
         // Generar QRs usando endroid/qr-code
@@ -348,6 +354,14 @@ class MatriculaController extends Controller
 
             // Actualizar el estado de las matrículas a 'Entregado'
             Matricula::whereIn('id', $ids)->update(['estado_matricula' => 'Entregado']);
+
+            // Update 'numero_referencia' to 'Entregado'
+            $matriculas->each(function($matricula) {
+                if ($matricula->usuario && $matricula->usuario->profile) {
+                    $matricula->usuario->profile->numero_referencia = 'Entregado';
+                    $matricula->usuario->profile->save();
+                }
+            });
 
             // Generar QRs usando endroid/qr-code
             $qrCodes = [];

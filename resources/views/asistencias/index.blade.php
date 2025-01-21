@@ -168,12 +168,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 </tr>
             `;
 
-            // Filtrar listas por curso, año y mes
-            const usuariosMatriculados = listas.filter(lista => 
-                lista.curso_id === cursoId &&
-                lista.anio === anio &&
-                lista.mes === mes
+            // Filtrar listas sólo por curso, sin filtrar por año o mes
+            const usuariosMatriculados = listas.filter(lista =>
+                lista.curso_id === cursoId
             );
+
+            // Ordenar usuarios matriculados alfabéticamente por nombre
+            usuariosMatriculados.sort((a, b) => {
+                const nameA = a.usuario.name.toUpperCase();
+                const nameB = b.usuario.name.toUpperCase();
+                if (nameA < nameB) {
+                    return -1;
+                }
+                if (nameA > nameB) {
+                    return 1;
+                }
+                return 0;
+            });
 
             const tbody = tablaAsistencias.querySelector('tbody');
             tbody.innerHTML = '';

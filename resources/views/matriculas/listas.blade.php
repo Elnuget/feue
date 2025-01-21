@@ -83,14 +83,9 @@
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
                                             {{ __('Valor Pendiente en Moneda') }}
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
-                                            Cedula
-                                        </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
-                                            {{ __('Celular') }}
-                                        </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
-                                            {{ __('QR Code') }}  <!-- Cambiado de 'ID de Usuario' a 'QR Code' -->
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700"
+                                            style="width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            {{ __('Carnet') }}
                                         </th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
                                             Estado
@@ -99,7 +94,7 @@
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     @foreach($matriculas as $index => $matricula)
-                                        <tr class="{{ $matricula->estado_matricula == 'Entregado' ? 'bg-green-200' : ($index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-700' : 'bg-white dark:bg-gray-800') }}">
+                                        <tr class="{{ ($matricula->estado_matricula == 'Entregado' || ($matricula->usuario->profile && $matricula->usuario->profile->numero_referencia == 'Entregado')) ? 'bg-pastel-orange' : ($index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-700' : 'bg-white dark:bg-gray-800') }}">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
                                                 <input type="checkbox" class="select-row" value="{{ $matricula->id }}">
                                             </td>
@@ -119,7 +114,7 @@
                                                     </div>
                                                 @endif
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium {{ $matricula->estado_matricula == 'Entregado' ? 'text-blue-500' : 'text-gray-900 dark:text-gray-100' }} border-b border-gray-300 dark:border-gray-700">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium {{ ($matricula->estado_matricula == 'Entregado' || ($matricula->usuario->profile && $matricula->usuario->profile->numero_referencia == 'Entregado')) ? 'text-blue-500' : 'text-gray-900 dark:text-gray-100' }} border-b border-gray-300 dark:border-gray-700">
                                                 {{ $matricula->usuario->name }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
@@ -127,18 +122,9 @@
                                                     ${{ number_format($matricula->valor_pendiente, 2) }}
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
-                                                {{ $matricula->usuario->profile->cedula ?? 'N/A' }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
-                                                {{ $matricula->usuario->profile->phone ?? 'N/A' }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
-                                                <div class="w-10 h-10">
-                                                    <img src="data:image/png;base64,{{ $qrCodes[$matricula->usuario->id] }}" 
-                                                         alt="QR Code" 
-                                                         style="width: 40px; height: 40px;" />
-                                                </div>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700"
+                                                style="width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                {{ $matricula->usuario->profile->numero_referencia ?? 'N/A' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
                                                 {{ $matricula->estado_matricula }}
@@ -160,6 +146,12 @@
         </div>
     </div>
 </x-app-layout>
+
+<style>
+.bg-pastel-orange {
+    background-color: #FFCC99 !important;
+}
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

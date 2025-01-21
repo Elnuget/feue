@@ -19,6 +19,12 @@ class AsistenciaController extends Controller
             $lista->mes = $lista->created_at->month;
             return $lista;
         });
+
+        // Verificar asistencias para cada usuario en las matrículas
+        $listas->each(function($lista) use ($asistencias) {
+            $lista->usuario->asistencias = $asistencias->where('user_id', $lista->usuario->id);
+        });
+
         $cursos = Curso::all();
         $tiposCursos = TipoCurso::all();
         return view('asistencias.index', compact('asistencias', 'listas', 'cursos', 'tiposCursos'));
