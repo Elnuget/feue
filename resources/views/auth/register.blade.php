@@ -42,6 +42,16 @@
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
+        <!-- Celular -->
+        <div class="mt-4">
+            <x-input-label for="phone" :value="__('Celular')"/> 📱
+            <x-text-input id="phone" class="block mt-1 w-full"
+                          type="text"
+                          name="phone"
+                          :value="old('phone')" />
+            <x-input-error :messages="$errors->get('phone')" class="mt-2" />
+        </div>
+
         <!-- Contraseña -->
         <div class="mt-4">
             <x-input-label for="password" :value="__('Contraseña')"/> 🔒

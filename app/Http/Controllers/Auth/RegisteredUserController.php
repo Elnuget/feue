@@ -45,6 +45,7 @@ class RegisteredUserController extends Controller
             ],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'phone' => ['nullable','string','max:20'],
         ]);
         
         $name = mb_strtoupper($request->name, 'UTF-8');
@@ -53,6 +54,11 @@ class RegisteredUserController extends Controller
             'name' => $name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+        ]);
+
+        \App\Models\UserProfile::create([
+            'user_id' => $user->id,
+            'phone' => $request->phone,
         ]);
 
         $role = Role::find(2); // Default role ID 2

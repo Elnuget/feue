@@ -18,9 +18,6 @@
     </div>
     <!-- Navegación -->
     <nav class="mt-5 flex flex-col space-y-1 px-2">
-        <x-nav-link :href="route('pruebas')" :active="request()->routeIs('pruebas')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
-            🏠 {{ __('Admin') }}
-        </x-nav-link>         
         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
             🏠 {{ __('Panel') }}
         </x-nav-link>
@@ -50,7 +47,7 @@
             
             
             <x-nav-link :href="route('pruebas')" :active="request()->routeIs('pruebas')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
-                🧪 {{ __('Pruebas') }}
+                👑 {{ __('Admin') }}
             </x-nav-link>
             <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
                 🧑 {{ __('Usuarios') }}
