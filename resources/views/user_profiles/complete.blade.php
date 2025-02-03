@@ -145,13 +145,12 @@
                                 >
                                 @if(isset($profile->photo))
                                     <img
-                                        src="{{ asset('storage/' . $profile->photo) }}"
+                                        src="{{ Storage::disk('public')->exists($profile->photo) 
+                                            ? Storage::url($profile->photo) 
+                                            : asset('default-profile.png') }}"
                                         alt="Profile Photo"
                                         class="mt-2 w-32 h-32 rounded-full object-cover shadow"
                                     >
-                                    <script>
-                                        document.getElementById('photo').value = "{{ asset('storage/' . $profile->photo) }}";
-                                    </script>
                                 @endif
                             </div>
 

@@ -96,10 +96,11 @@ class UserProfileController extends Controller
         $profile = \App\Models\UserProfile::where('user_id', $request->user_id)->first();
 
         if ($request->hasFile('photo')) {
-            if (isset($profile->photo)) {
+            if ($profile && $profile->photo) {
                 \Storage::disk('public')->delete($profile->photo);
             }
-            $data['photo'] = $request->file('photo')->store('imguser', 'public');
+            // Guardamos la foto en profiles/photos para mantener una estructura organizada
+            $data['photo'] = $request->file('photo')->store('profiles/photos', 'public');
         }
 
         if ($request->hasFile('acta_grado')) {
