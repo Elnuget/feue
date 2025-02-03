@@ -352,26 +352,35 @@ class MatriculaController extends Controller
                 return back()->with('error', 'No se encontraron matrículas para imprimir.');
             }
 
-            // Actualizar el estado de las matrículas a 'Entregado'
-            Matricula::whereIn('id', $ids)->update(['estado_matricula' => 'Entregado']);
-
-            // Update 'numero_referencia' to 'Entregado'
-            $matriculas->each(function($matricula) {
-                if ($matricula->usuario && $matricula->usuario->profile) {
-                    $matricula->usuario->profile->numero_referencia = 'Entregado';
-                    $matricula->usuario->profile->save();
-                }
-            });
-
-            // Generar QRs usando endroid/qr-code
+            // Generar QRs
             $qrCodes = [];
             $writer = new PngWriter();
             foreach ($matriculas as $matricula) {
-                $qrCode = EndroidQrCode::create($matricula->usuario->id)
-                                ->setSize(200)
-                                ->setMargin(0);
+                // Include more data in QR code
+                $qrData = json_encode([
+                    'id' => $matricula->usuario->id,
+                    'name' => $matricula->usuario->name,
+                    'curso' => $matricula->curso->nombre
+                ]);
+                
+                $qrCode = EndroidQrCode::create($qrData)
+                    ->setSize(200)
+                    ->setMargin(10)
+                    ->setErrorCorrectionLevel(new ErrorCorrectionLevelHigh());
+                
                 $result = $writer->write($qrCode);
                 $qrCodes[$matricula->usuario->id] = base64_encode($result->getString());
+            }
+
+            // Update status after QR generation
+            Matricula::whereIn('id', $ids)->update(['estado_matricula' => 'Entregado']);
+            
+            foreach ($matriculas as $matricula) {
+                if ($matricula->usuario->profile) {
+                    $matricula->usuario->profile->update([
+                        'numero_referencia' => 'Entregado'
+                    ]);
+                }
             }
 
             $pdf = PDF::loadView('matriculas.credentials', [
@@ -379,16 +388,6 @@ class MatriculaController extends Controller
                 'curso' => $matriculas->first()->curso,
                 'qrCodes' => $qrCodes
             ]);
-
-            // Eliminar la primera página del PDF
-            $domPdf = $pdf->getDomPDF();
-            $canvas = $domPdf->getCanvas();
-            $pageCount = $canvas->get_page_count();
-            if ($pageCount > 1) {
-                $pages = $canvas->get_pages();
-                $newPages = array_slice($pages, 1); // Eliminar la primera página
-                $canvas->set_pages($newPages);
-            }
 
             return $pdf->stream('credenciales_matriculados.pdf');
 

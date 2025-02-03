@@ -125,13 +125,15 @@
                 $matricula->usuario->profile->photo &&
                 file_exists(storage_path('app/public/' . $matricula->usuario->profile->photo))
             )
-                <img
-                  src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(public_path('storage/' . $matricula->usuario->profile->photo))) }}"
-                  alt="Foto de perfil"
-                  class="profile-photo"
+                <img 
+                    src="{{ 'data:image/jpeg;base64,' . base64_encode(file_get_contents(storage_path('app/public/' . $matricula->usuario->profile->photo))) }}"
+                    alt="Foto de perfil"
+                    class="profile-photo"
                 />
             @else
-                <div style="width: 22mm; height: 30mm; border: 1px solid #000; margin: 5mm auto 0;"></div>
+                <div style="width: 22mm; height: 30mm; border: 1px solid #000; margin: 5mm auto 0; display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 24px;">👤</span>
+                </div>
             @endif
         </div>
 
@@ -146,7 +148,11 @@
         </div>
 
         <div class="qr-container">
-            <img src="data:image/png;base64,{{ $qrCodes[$matricula->usuario->id] }}" alt="QR Code">
+            @if(isset($qrCodes[$matricula->usuario->id]))
+                <img src="data:image/png;base64,{{ $qrCodes[$matricula->usuario->id] }}" 
+                     alt="QR Code" 
+                     style="width: 18mm; height: 18mm; margin: 0 auto;">
+            @endif
         </div>
 
         <div class="vertical-text">
