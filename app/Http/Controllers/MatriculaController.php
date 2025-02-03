@@ -256,7 +256,7 @@ class MatriculaController extends Controller
         // Filter matriculas based on selected curso_id or tipo_curso
         if ($cursoId) {
             $matriculas = Matricula::where('curso_id', $cursoId)
-                ->with(['usuario', 'usuario.profile']) // Ensure profiles are loaded
+                ->with(['usuario', 'usuario.profile']) // Aseguramos que los perfiles estén cargados
                 ->get()
                 ->sortBy(function($matricula) {
                     return $matricula->usuario->name;
@@ -375,7 +375,7 @@ class MatriculaController extends Controller
                 
                 if ($matricula->usuario->profile) {
                     $matricula->usuario->profile->update([
-                        'numero_referencia' => 'Entregado'
+                        'carnet' => 'Entregado'
                     ]);
                 }
             }

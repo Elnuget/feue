@@ -225,24 +225,6 @@
                                     value="{{ old('codigo_postal', $profile->codigo_postal ?? '') }}"
                                 >
                             </div>
-
-                            <!-- Número de Referencia -->
-                            <div>
-                                <label
-                                    for="numero_referencia"
-                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    🔢 Número de Referencia (Opcional)
-                                </label>
-                                <input
-                                    type="text"
-                                    name="numero_referencia"
-                                    id="numero_referencia"
-                                    placeholder="Algún número de referencia"
-                                    class="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition duration-150"
-                                    value="{{ old('numero_referencia', $profile->numero_referencia ?? '') }}"
-                                >
-                            </div>
                         </div>
 
                         <!-- Estado Académico -->
@@ -251,17 +233,19 @@
                                 for="estado_academico_id"
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                             >
-                                Estado Académico
+                                🎓 Estado Académico <span class="text-red-500">*</span>
                             </label>
                             <select
                                 name="estado_academico_id"
                                 id="estado_academico_id"
                                 class="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition duration-150"
+                                required
                             >
+                                <option value="">Seleccione un estado académico</option>
                                 @foreach($estadosAcademicos as $estado)
-                                    <option
+                                    <option 
                                         value="{{ $estado->id }}"
-                                        {{ (old('estado_academico_id', $profile->estado_academico_id ?? '') == $estado->id) ? 'selected' : '' }}
+                                        {{ (old('estado_academico_id', $profile->estadoAcademico->estado_academico_id ?? '') == $estado->id) ? 'selected' : '' }}
                                     >
                                         {{ $estado->nombre }}
                                     </option>

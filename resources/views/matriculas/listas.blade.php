@@ -94,7 +94,7 @@
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     @foreach($matriculas as $index => $matricula)
-                                        <tr class="{{ ($matricula->estado_matricula == 'Entregado' || ($matricula->usuario->profile && $matricula->usuario->profile->numero_referencia == 'Entregado')) ? 'bg-pastel-orange' : ($index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-700' : 'bg-white dark:bg-gray-800') }}">
+                                        <tr class="{{ ($matricula->estado_matricula == 'Entregado' || ($matricula->usuario->profile && $matricula->usuario->profile->carnet == 'Entregado')) ? 'bg-pastel-orange' : ($index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-700' : 'bg-white dark:bg-gray-800') }}">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
                                                 <input type="checkbox" class="select-row" value="{{ $matricula->id }}">
                                             </td>
@@ -114,7 +114,7 @@
                                                     </div>
                                                 @endif
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium {{ ($matricula->estado_matricula == 'Entregado' || ($matricula->usuario->profile && $matricula->usuario->profile->numero_referencia == 'Entregado')) ? 'text-blue-500' : 'text-gray-900 dark:text-gray-100' }} border-b border-gray-300 dark:border-gray-700">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium {{ ($matricula->estado_matricula == 'Entregado' || ($matricula->usuario->profile && $matricula->usuario->profile->carnet == 'Entregado')) ? 'text-blue-500' : 'text-gray-900 dark:text-gray-100' }} border-b border-gray-300 dark:border-gray-700">
                                                 {{ $matricula->usuario->name }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
@@ -124,7 +124,7 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700"
                                                 style="width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                                {{ $matricula->usuario->profile->numero_referencia ?? 'N/A' }}
+                                                {{ $matricula->usuario->profile->carnet ?? 'N/A' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
                                                 {{ $matricula->estado_matricula }}

@@ -9,12 +9,17 @@ class UserProfile extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'phone', 'birth_date', 'gender', 'photo', 'cedula', 'direccion_calle', 'direccion_ciudad', 'direccion_provincia', 'codigo_postal', 'numero_referencia', 'last_login_at'
+        'user_id', 'phone', 'birth_date', 'gender', 'photo', 'cedula', 'direccion_calle', 'direccion_ciudad', 'direccion_provincia', 'codigo_postal', 'carnet', 'last_login_at'
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function estadoAcademico()
+    {
+        return $this->hasOne(\App\Models\UserAcademico::class, 'user_id', 'user_id');
     }
 
     public function isComplete()

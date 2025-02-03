@@ -69,7 +69,10 @@ class UserProfileController extends Controller
     {
         $universidades = \App\Models\Universidad::all();
         $estadosAcademicos = \App\Models\EstadoAcademico::all();
-        $profile = \App\Models\UserProfile::where('user_id', auth()->id())->first();
+        $profile = \App\Models\UserProfile::with('estadoAcademico')
+            ->where('user_id', auth()->id())
+            ->first();
+        
         return view('user_profiles.complete', compact('universidades', 'estadosAcademicos', 'profile'));
     }
 
@@ -88,7 +91,6 @@ class UserProfileController extends Controller
             'direccion_ciudad' => 'nullable|string|max:100',
             'direccion_provincia' => 'nullable|string|max:100',
             'codigo_postal' => 'nullable|string|max:20',
-            'numero_referencia' => 'nullable|string|max:50',
         ]);
 
         $data = $request->except(['photo', 'acta_grado']);
@@ -99,28 +101,28 @@ class UserProfileController extends Controller
             if ($profile && $profile->photo) {
                 \Storage::disk('public')->delete($profile->photo);
             }
-            // Guardamos la foto en profiles/photos para mantener una estructura organizada
             $data['photo'] = $request->file('photo')->store('profiles/photos', 'public');
         }
 
-        if ($request->hasFile('acta_grado')) {
-            $userAcademico = \App\Models\UserAcademico::where('user_id', $request->user_id)->first();
-            if (isset($userAcademico->acta_grado)) {
-                \Storage::disk('public')->delete($userAcademico->acta_grado);
-            }
-            $data['acta_grado'] = $request->file('acta_grado')->store('actas', 'public');
+        if ($profile && $profile->carnet) {
+            $data['carnet'] = $profile->carnet;
         }
 
-        \App\Models\UserProfile::updateOrCreate(
-            ['user_id' => $request->user_id],
-            $data
-        );
-        \App\Models\UserAcademico::updateOrCreate(
+        $profile = \App\Models\UserProfile::updateOrCreate(
             ['user_id' => $request->user_id],
             $data
         );
 
-        return redirect()->route('matriculas.create')->with('success', 'Perfil completado');
+        if ($request->filled('estado_academico_id')) {
+            $userAcademico = \App\Models\UserAcademico::updateOrCreate(
+                ['user_id' => $request->user_id],
+                [
+                    'estado_academico_id' => $request->estado_academico_id,
+                ]
+            );
+        }
+
+        return redirect()->route('matriculas.create')->with('success', 'Perfil completado exitosamente');
     }
 
     /**
