@@ -18,6 +18,7 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
 use Endroid\QrCode\QrCode as EndroidQrCode;
 use Endroid\QrCode\Writer\PngWriter;
+use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
 
 class MatriculaController extends Controller
 {
@@ -356,26 +357,22 @@ class MatriculaController extends Controller
             $qrCodes = [];
             $writer = new PngWriter();
             foreach ($matriculas as $matricula) {
-                // Include more data in QR code
-                $qrData = json_encode([
-                    'id' => $matricula->usuario->id,
-                    'name' => $matricula->usuario->name,
-                    'curso' => $matricula->curso->nombre
-                ]);
-                
-                $qrCode = EndroidQrCode::create($qrData)
-                    ->setSize(200)
-                    ->setMargin(10)
-                    ->setErrorCorrectionLevel(new ErrorCorrectionLevelHigh());
-                
-                $result = $writer->write($qrCode);
-                $qrCodes[$matricula->usuario->id] = base64_encode($result->getString());
+                try {
+                    $qrCode = EndroidQrCode::create($matricula->usuario->id)
+                        ->setSize(200)
+                        ->setMargin(10);
+                    
+                    $result = $writer->write($qrCode);
+                    $qrCodes[$matricula->usuario->id] = base64_encode($result->getString());
+                } catch (\Exception $e) {
+                    \Log::error('Error generando QR: ' . $e->getMessage());
+                }
             }
 
-            // Update status after QR generation
-            Matricula::whereIn('id', $ids)->update(['estado_matricula' => 'Entregado']);
-            
+            // Actualizar estados
             foreach ($matriculas as $matricula) {
+                $matricula->update(['estado_matricula' => 'Entregado']);
+                
                 if ($matricula->usuario->profile) {
                     $matricula->usuario->profile->update([
                         'numero_referencia' => 'Entregado'

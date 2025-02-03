@@ -120,13 +120,18 @@
         </div>
 
         <div class="text-center">
-            @if(
-                $matricula->usuario->profile &&
-                $matricula->usuario->profile->photo &&
-                file_exists(storage_path('app/public/' . $matricula->usuario->profile->photo))
-            )
+            @php
+                $photoPath = null;
+                if ($matricula->usuario->profile && 
+                    $matricula->usuario->profile->photo && 
+                    Storage::disk('public')->exists($matricula->usuario->profile->photo)) {
+                    $photoPath = storage_path('app/public/' . $matricula->usuario->profile->photo);
+                }
+            @endphp
+            
+            @if($photoPath && file_exists($photoPath))
                 <img 
-                    src="{{ 'data:image/jpeg;base64,' . base64_encode(file_get_contents(storage_path('app/public/' . $matricula->usuario->profile->photo))) }}"
+                    src="data:image/jpeg;base64,{{ base64_encode(file_get_contents($photoPath)) }}"
                     alt="Foto de perfil"
                     class="profile-photo"
                 />
