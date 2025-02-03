@@ -62,6 +62,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Obtener las matrículas del usuario.
+     */
+    public function matriculas()
+    {
+        return $this->hasMany(Matricula::class, 'usuario_id');
+    }
+
+    /**
      * Send the email verification notification.
      *
      * @return void
