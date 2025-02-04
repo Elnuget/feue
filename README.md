@@ -35,9 +35,10 @@ EN PRODUCCION
 agregar trabajo de cron
 
 para ruta nueva creada o repo clonado:
-php artisan route:clear
+php artisan config:clear 
+php artisan config:cache 
+php artisan route:clear 
 php artisan route:cache
-
 
 para excel:
 phpoffice/phpspreadsheet

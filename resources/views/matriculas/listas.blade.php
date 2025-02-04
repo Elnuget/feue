@@ -132,7 +132,19 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
                                                 {{ $matricula->usuario->profile->phone ?? 'N/A' }}
                                                 @if($matricula->usuario->profile && $matricula->usuario->profile->phone)
-                                                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $matricula->usuario->profile->phone) }}" 
+                                                    @php
+                                                        $phone = $matricula->usuario->profile->phone;
+                                                        // Limpia el número de cualquier carácter no numérico
+                                                        $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
+                                                        
+                                                        // Si el número no empieza con 593, añadirlo
+                                                        if (!str_starts_with($cleanPhone, '593')) {
+                                                            // Si empieza con 0, quitarlo antes de añadir 593
+                                                            $cleanPhone = ltrim($cleanPhone, '0');
+                                                            $cleanPhone = '593' . $cleanPhone;
+                                                        }
+                                                    @endphp
+                                                    <a href="https://wa.me/{{ $cleanPhone }}" 
                                                        target="_blank"
                                                        class="inline-block ml-2 text-green-500 hover:text-green-600 transition-colors duration-200">
                                                         <i class="fab fa-whatsapp text-lg"></i>

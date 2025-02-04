@@ -62,6 +62,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Alias para userProfile para mantener consistencia en el código
+     */
+    public function profile()
+    {
+        return $this->userProfile();
+    }
+
+    /**
      * Obtener las matrículas del usuario.
      */
     public function matriculas()
