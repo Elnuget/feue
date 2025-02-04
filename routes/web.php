@@ -95,5 +95,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('asistencias', AsistenciaController::class);
     Route::get('/pruebas', [PruebasController::class, 'index'])->name('pruebas');
     Route::post('/user_profiles/{user}/upload_photo', [ProfileController::class, 'uploadPhoto'])->name('profile.uploadPhoto');
+    Route::get('/pagos/{pago}/recibo', [PagoController::class, 'generarRecibo'])->name('pagos.recibo');
 });
 require __DIR__.'/auth.php';

@@ -9,12 +9,13 @@ use App\Models\Curso;      // Add this import
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\PagoAprobado;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PagoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pago::query()->with(['matricula.usuario', 'matricula.curso', 'metodoPago']);
+        $query = Pago::query()->with(['matricula.usuario.userProfile', 'matricula.curso', 'metodoPago']);
         
         if (!auth()->user()->hasRole(1)) {
             $query->whereHas('matricula', function($query) {
@@ -165,22 +166,35 @@ class PagoController extends Controller
 
     public function aprobar($id)
     {
-        $pago = Pago::findOrFail($id);
-        $pago->estado = 'Aprobado';
-        $pago->save();
+        try {
+            $pago = Pago::findOrFail($id);
+            $pago->estado = 'Aprobado';
+            $pago->save();
 
-        $matricula = $pago->matricula;
-        $matricula->valor_pendiente -= $pago->monto;
-        if ($matricula->valor_pendiente <= 0) {
-            $matricula->valor_pendiente = 0;
-            $matricula->estado_matricula = 'Completada';
+            $matricula = $pago->matricula;
+            $matricula->valor_pendiente -= $pago->monto;
+            if ($matricula->valor_pendiente <= 0) {
+                $matricula->valor_pendiente = 0;
+                $matricula->estado_matricula = 'Completada';
+            }
+            $matricula->save();
+
+            // Intentar enviar el correo, pero no detener el proceso si falla
+            try {
+                Mail::to($pago->matricula->usuario->email)->send(new PagoAprobado($pago));
+            } catch (\Exception $e) {
+                // Registrar el error pero continuar con el proceso
+                \Log::error('Error al enviar correo de pago aprobado: ' . $e->getMessage());
+            }
+
+            return redirect()->route('pagos.index')
+                ->with('success', 'Pago aprobado y valor pendiente actualizado.');
+            
+        } catch (\Exception $e) {
+            \Log::error('Error al aprobar pago: ' . $e->getMessage());
+            return redirect()->route('pagos.index')
+                ->with('error', 'Hubo un error al aprobar el pago. Por favor, intente nuevamente.');
         }
-        $matricula->save();
-
-        // Send email to the user
-        Mail::to($pago->matricula->usuario->email)->send(new PagoAprobado($pago));
-
-        return redirect()->route('pagos.index')->with('success', 'Pago aprobado y valor pendiente actualizado.');
     }
 
     public function rechazar($id)
@@ -190,5 +204,14 @@ class PagoController extends Controller
         $pago->save();
 
         return redirect()->route('pagos.index')->with('success', 'Pago rechazado.');
+    }
+
+    public function generarRecibo($id)
+    {
+        $pago = Pago::with(['matricula.usuario', 'matricula.curso'])->findOrFail($id);
+        
+        $pdf = PDF::loadView('pagos.recibo', compact('pago'));
+        
+        return $pdf->stream('recibo-' . $pago->id . '.pdf');
     }
 }
