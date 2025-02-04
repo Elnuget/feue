@@ -88,6 +88,9 @@
                                             {{ __('Carnet') }}
                                         </th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
+                                            {{ __('Celular') }}
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
                                             Estado
                                         </th>
                                     </tr>
@@ -124,7 +127,17 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700"
                                                 style="width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                                {{ $matricula->usuario->profile->carnet ?? 'N/A' }}
+                                                {{ ($matricula->usuario->profile && $matricula->usuario->profile->carnet == 'Entregado') ? 'Entregado' : 'NO' }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
+                                                {{ $matricula->usuario->profile->phone ?? 'N/A' }}
+                                                @if($matricula->usuario->profile && $matricula->usuario->profile->phone)
+                                                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $matricula->usuario->profile->phone) }}" 
+                                                       target="_blank"
+                                                       class="inline-block ml-2 text-green-500 hover:text-green-600 transition-colors duration-200">
+                                                        <i class="fab fa-whatsapp text-lg"></i>
+                                                    </a>
+                                                @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
                                                 {{ $matricula->estado_matricula }}
