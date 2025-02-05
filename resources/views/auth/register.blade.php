@@ -1,6 +1,6 @@
 <x-guest-layout>
     @section('page_title', 'Register')
-    <form method="POST" action="{{ route('register') }}">
+    <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data">
         @csrf
 
         <!-- CEDULA Y VERIFICACIÓN -->
@@ -13,7 +13,7 @@
                 Los campos de registro se habilitarán una vez que verifiques tu cédula.
             </p>
             <div class="flex">
-                <x-text-input id="cedula" class="block mt-1 w-full" type="text" name="cedula" 
+                <x-text-input id="cedula" class="block mat-1 w-full" type="text" name="cedula" 
                               :value="old('cedula')" required autocomplete="cedula" />
                 <button type="button" id="verify-cedula" class="ml-2 px-4 py-2 bg-blue-500 text-white rounded">
                     Verificar
@@ -71,6 +71,81 @@
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
+        <!-- Campos para registrar matrícula -->
+        <div class="mt-4">
+            <x-input-label for="tipo_curso_id" :value="__('Tipo de Curso')"/> 📚
+            <select name="tipo_curso_id" id="tipo_curso_id" required class="block mt-1 w-full">
+                <option value="">Selecciona un Tipo de Curso</option>
+                @foreach($tiposCursos as $tipoCurso)
+                    <option value="{{ $tipoCurso->id }}">{{ $tipoCurso->nombre }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="mt-4">
+            <x-input-label for="curso_id" :value="__('Curso')"/> 📖
+            <select name="curso_id" id="curso_id" required class="block mt-1 w-full">
+                <option value="">Selecciona un Curso</option>
+            </select>
+        </div>
+
+        <div class="mt-4">
+            <x-input-label for="fecha_matricula" :value="__('Fecha de Matrícula')"/> 📅
+            <x-text-input id="fecha_matricula" class="block mt-1 w-full" type="date" name="fecha_matricula" 
+                          value="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" required />
+        </div>
+
+        <div class="mt-4">
+            <x-input-label for="monto_total" :value="__('Monto Total')"/> 💰
+            <x-text-input id="monto_total" class="block mt-1 w-full" type="number" name="monto_total" 
+                          required readonly placeholder="Selecciona un curso" />
+        </div>
+
+        <!-- Campos para registrar pago -->
+        <div class="mt-4">
+            <x-input-label for="metodo_pago_id" :value="__('Método de Pago')"/> 💳
+            <select name="metodo_pago_id" id="metodo_pago_id" required class="block mt-1 w-full">
+                @foreach($metodosPago as $metodo)
+                    <option value="{{ $metodo->id }}">{{ $metodo->nombre }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="mt-4">
+            <x-input-label for="monto" :value="__('Monto de Pago')"/> 💵
+            <x-text-input id="monto" class="block mt-1 w-full" type="number" name="monto" 
+                          value="0" step="0.01" placeholder="Monto de pago" required readonly />
+        </div>
+
+        <div class="mt-4">
+            <x-input-label for="fecha_pago" :value="__('Fecha de Pago')"/> 📅
+            <x-text-input id="fecha_pago" class="block mt-1 w-full" type="date" name="fecha_pago" 
+                          value="{{ now()->timezone('America/Guayaquil')->toDateString() }}" required />
+        </div>
+
+        <div class="col-span-1 md:col-span-2" id="comprobante_pago_container">
+            <x-input-label for="comprobante_pago" :value="__('Comprobante de Pago')"/> 📎
+            <div class="mt-1 flex items-center">
+                <input type="file" name="comprobante_pago" id="comprobante_pago"
+                       accept=".png, .jpg, .jpeg, .pdf"
+                       required
+                       class="block w-full text-sm text-gray-500
+                              file:mr-4 file:py-2 file:px-4
+                              file:rounded-full file:border-0
+                              file:text-sm file:font-semibold
+                              file:bg-blue-50 file:text-blue-700
+                              hover:file:bg-blue-100"
+                       onchange="handleFileSelect(this)">
+            </div>
+            <div id="fileError" class="mt-2 text-sm text-red-600 hidden"></div>
+            <div id="filePreview" class="mt-2 hidden">
+                <img id="imagePreview" class="max-w-xs hidden" alt="Vista previa">
+                <p id="pdfPreview" class="text-sm text-gray-600 hidden">
+                    Archivo PDF seleccionado
+                </p>
+            </div>
+        </div>
+
         <div class="flex items-center justify-end mt-4">
             <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('login') }}">
                 {{ __('¿Ya estás registrado?') }}
@@ -82,8 +157,29 @@
         </div>
     </form>
 
+    <!-- Toast de notificación: ahora verifica session('error') o errores de validación -->
+    @if(session('status') || session('error') || $errors->any())
+    <div id="toast" data-type="{{ session('status') ? 'status' : 'error' }}" class="fixed bottom-5 right-5 px-4 py-2 rounded shadow-lg
+         {{ session('status') ? 'bg-green-500 text-white' : 'bg-red-500 text-white' }}">
+        {{-- Muestra el mensaje flash o el primer error de validación --}}
+        {{ session('status') ?? session('error') ?? $errors->first() }}
+    </div>
+    @endif
+
     <!-- Script para verificar cédula y controlar el estado de los campos -->
     <script>
+        // Ocultar el toast automáticamente después de 5 segundos
+        const toast = document.getElementById('toast');
+        if (toast) {
+            const toastType = toast.getAttribute('data-type');
+            // Si es error, mantener el mensaje visible 10 seg; si no, 5 seg.
+            const timeoutDuration = toastType === 'error' ? 10000 : 5000;
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, timeoutDuration);
+        }
+
         /**
          * Función para validar una cédula ecuatoriana.
          * Verifica que la cédula tenga 10 dígitos, que el código de provincia sea válido,
@@ -179,6 +275,120 @@
                 formFields.forEach(field => field.disabled = true);
                 submitButton.disabled = true;
             });
+        });
+
+        document.getElementById('tipo_curso_id').addEventListener('change', function() {
+            const tipoCursoId = this.value;
+            const cursoSelect = document.getElementById('curso_id');
+            cursoSelect.innerHTML = '<option value="">Selecciona un Curso</option>'; // Reset con opción por defecto
+
+            if (tipoCursoId) {
+                const cursosPorTipo = @json($cursosPorTipo);
+                if (cursosPorTipo[tipoCursoId]) {
+                    const cursosOrdenados = cursosPorTipo[tipoCursoId].sort((a, b) =>
+                        a.nombre.localeCompare(b.nombre)
+                    );
+                    cursosOrdenados.forEach(curso => {
+                        if (curso.estado === 'Activo') {
+                            const option = new Option(
+                                `${curso.nombre} - $${parseFloat(curso.precio).toFixed(2)}`,
+                                curso.id
+                            );
+                            option.dataset.precio = curso.precio;
+                            cursoSelect.add(option);
+                        }
+                    });
+                    if (cursoSelect.options.length > 1) { // Si hay más de la opción por defecto
+                        const primerCurso = cursosPorTipo[tipoCursoId].find(c => c.estado === 'Activo');
+                        if (primerCurso) {
+                            const precio = parseFloat(primerCurso.precio).toFixed(2);
+                            document.getElementById('monto_total').value = precio;
+                            document.getElementById('monto').value = precio;
+                        }
+                    } else {
+                        document.getElementById('monto_total').value = '0.00';
+                        document.getElementById('monto').value = '0.00';
+                    }
+                } else {
+                    document.getElementById('monto_total').value = '0.00';
+                    document.getElementById('monto').value = '0.00';
+                }
+            } else {
+                document.getElementById('monto_total').value = '0.00';
+                document.getElementById('monto').value = '0.00';
+            }
+        });
+
+        document.getElementById('curso_id').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption) {
+                const precio = parseFloat(selectedOption.getAttribute('data-precio')).toFixed(2);
+                document.getElementById('monto_total').value = precio;
+                document.getElementById('monto').value = precio;
+            }
+        });
+
+        function handleFileSelect(input) {
+            const fileError = document.getElementById('fileError');
+            const filePreview = document.getElementById('filePreview');
+            const imagePreview = document.getElementById('imagePreview');
+            const pdfPreview = document.getElementById('pdfPreview');
+
+            fileError.classList.add('hidden');
+            imagePreview.classList.add('hidden');
+            pdfPreview.classList.add('hidden');
+            filePreview.classList.add('hidden');
+
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                // Validar tamaño (máximo 5MB)
+                const maxSize = 5 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    fileError.textContent = 'El archivo es demasiado grande. Máximo 5MB permitido.';
+                    fileError.classList.remove('hidden');
+                    input.value = '';
+                    return;
+                }
+
+                // Validar tipo de archivo
+                const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                if (!validTypes.includes(file.type)) {
+                    fileError.textContent = 'Tipo de archivo no válido. Solo se permiten JPG, PNG y PDF.';
+                    fileError.classList.remove('hidden');
+                    input.value = '';
+                    return;
+                }
+
+                filePreview.classList.remove('hidden');
+
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                } else if (file.type === 'application/pdf') {
+                    pdfPreview.classList.remove('hidden');
+                }
+                
+                // Habilitar el botón de envío si hay un archivo válido
+                document.querySelector('button[type="submit"]').disabled = false;
+            }
+        }
+
+        // Validación del formulario antes del envío
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const fileInput = document.getElementById('comprobante_pago');
+            const fileError = document.getElementById('fileError');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                e.preventDefault();
+                fileError.textContent = 'Debe subir un comprobante de pago.';
+                fileError.classList.remove('hidden');
+                return false;
+            }
         });
     </script>
 </x-guest-layout>

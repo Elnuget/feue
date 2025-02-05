@@ -21,7 +21,15 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        $tiposCursos = \App\Models\TipoCurso::all();
+        $cursos = \App\Models\Curso::all();
+        $cursosPorTipo = [];
+        foreach ($cursos as $curso) {
+            $cursosPorTipo[$curso->tipo_curso_id][] = $curso;
+        }
+        $metodosPago = \App\Models\MetodoPago::all();
+
+        return view('auth.register', compact('tiposCursos','cursosPorTipo','metodosPago'));
     }
 
     /**
@@ -63,6 +71,30 @@ class RegisteredUserController extends Controller
 
         $role = Role::find(2); // Default role ID 2
         $user->assignRole($role);
+
+        // Crear la matrícula
+        $matricula = \App\Models\Matricula::create([
+            'usuario_id' => $user->id,
+            'tipo_curso_id' => $request->tipo_curso_id,
+            'curso_id' => $request->curso_id,
+            'fecha_matricula' => $request->fecha_matricula,
+            'monto_total' => $request->monto_total,
+            'valor_pendiente' => $request->monto, // Asignar el valor del pago como pendiente
+            'estado_matricula' => 'Aprobada', // Cambiar estado a Aprobada
+        ]);
+
+        // Crear el pago
+        $pagoData = [
+            'matricula_id' => $matricula->id,
+            'metodo_pago_id' => $request->metodo_pago_id,
+            'monto' => $request->monto,
+            'fecha_pago' => $request->fecha_pago,
+            'estado' => 'Pendiente', // Asegurar que el pago también esté aprobado
+        ];
+        if ($request->hasFile('comprobante_pago')) {
+            $pagoData['comprobante_pago'] = $request->file('comprobante_pago')->store('comprobantes', 'public');
+        }
+        \App\Models\Pago::create($pagoData);
 
         event(new Registered($user));
 

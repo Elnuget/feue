@@ -57,7 +57,7 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200">
-                                @foreach ($pagos->sortByDesc('fecha_pago') as $pago)
+                                @foreach ($pagos->sortByDesc('id') as $pago)
                                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-600">
                                         <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">
                                             <span class="{{ $pago->estado == 'Pendiente' ? 'text-orange-500' : ($pago->estado == 'Rechazado' ? 'text-red-500' : 'text-green-500') }}">
