@@ -8,6 +8,14 @@
             line-height: 1.6;
             margin: 40px;
         }
+        .favicon-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .favicon-container img {
+            width: 100px;
+            height: auto;
+        }
         .titulo {
             text-align: center;
             font-size: 18px;
@@ -26,20 +34,20 @@
         }
         .horario {
             margin-top: 20px;
-            margin-bottom: 100px; /* Aumentado el espacio después del horario */
+            margin-bottom: 100px; 
             color: #000000;
             font-weight: bold;
         }
         .nota {
             margin-top: 30px;
-            margin-bottom: 100px; /* Aumentado el espacio después de la nota */
+            margin-bottom: 100px; 
         }
         .firma {
             margin-bottom: 15px;
             text-align: left;
         }
         .firma-final {
-            margin-top: 100px; /* Manteniendo el mismo espacio que el anterior */
+            margin-top: 100px; 
         }
         .metodo-pago {
             margin-top: 20px;
@@ -47,6 +55,10 @@
     </style>
 </head>
 <body>
+    <div class="favicon-container">
+        <img src="{{ asset('favicon.png') }}" alt="Logo">
+    </div>
+
     <div class="titulo">
         RECIBO
     </div>
@@ -59,7 +71,7 @@
         @php
             $userProfile = $pago->matricula->usuario->userProfile;
             $gender = $userProfile->gender ?? null;
-            $cedula = $userProfile->cedula ?? '1751550193';
+            $cedula = $userProfile->cedula ?? 'No registrado';
             
             if ($gender === 'Masculino') {
                 $tratamiento = 'el señor';
@@ -70,32 +82,35 @@
             }
         @endphp
         {{ $tratamiento }} <strong>{{ strtoupper($pago->matricula->usuario->name) }}</strong> con 
-        CI#<strong>{{ $cedula }}</strong> de
-        <strong>${{ number_format($pago->monto, 2) }}</strong> dólares americanos en 
-        <strong>{{ $pago->metodoPago->nombre }}</strong> por pago 
-        CURSO <strong>{{ strtoupper($pago->matricula->curso->nombre) }}</strong>
+        CI#<strong>{{ $cedula }}</strong> la cantidad de
+        <strong>${{ number_format($pago->monto, 2) }}</strong> dólares americanos mediante 
+        <strong>{{ $pago->metodoPago->nombre }}</strong> por concepto de pago del CURSO 
+        <strong>{{ strtoupper($pago->matricula->curso->nombre) }}</strong>.
     </div>
 
     <div class="contenido horario">
-        PRESENCIAL DE LUNES A VIERNES DE 17H00 A 19H00
+        MODALIDAD: {{ strtoupper($pago->matricula->curso->tipoCurso->nombre ?? 'NO ESPECIFICADO') }}<br>
+        HORARIO: {{ strtoupper($pago->matricula->curso->horario ?? 'NO ESPECIFICADO') }}
     </div>
 
     <div class="contenido nota">
-        <strong>Nota:</strong> No hay posibilidad de devolución por ninguna causa.
+        <strong>Nota:</strong> No se aceptan devoluciones por matrícula o mensualidad bajo ninguna circunstancia.
     </div>
 
     <div class="firma">
         <strong>{{ strtoupper($pago->matricula->usuario->name) }}</strong><br>
-        <strong>ENTREGA</strong>
+        <strong>ESTUDIANTE</strong>
     </div>
 
     <div class="firma firma-final">
-        <strong>CENTRO DE CAPACITACIONES UNIVERSITARIO</strong><br>
-        <strong>RECIBE DALTON HEREDIA</strong>
+        <strong>CENTRO DE CAPACITACIÓN UNIVERSITARIA</strong><br>
+        <strong>ADMINISTRACIÓN</strong>
     </div>
 
     <div class="metodo-pago">
-        <strong>{{ $pago->metodoPago->nombre }}</strong>
+        <strong>Método de Pago:</strong> {{ $pago->metodoPago->nombre }}<br>
+        <strong>Número de Transacción:</strong><br>
+        <strong>Fecha de Pago:</strong> {{ \Carbon\Carbon::parse($pago->fecha_pago)->format('d/m/Y') }}
     </div>
 </body>
-</html> 
+</html>

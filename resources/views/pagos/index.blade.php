@@ -72,8 +72,8 @@
                                         <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $pago->fecha_pago }}</td>
                                         <td class="px-4 py-2 text-sm font-medium flex items-center justify-center space-x-2">
                                             <a href="{{ route('pagos.show', $pago) }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">👁️</a>
-                                            <a href="{{ route('pagos.recibo', $pago) }}" target="_blank" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-1 px-2 rounded">📄</a>
                                             @if(auth()->user()->hasRole(1))
+                                                <a href="{{ route('pagos.recibo', $pago) }}" target="_blank" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-1 px-2 rounded">📄</a>
                                                 @if($pago->estado == 'Pendiente')
                                                     <form action="{{ route('pagos.aprobar', $pago) }}" method="POST" class="inline">
                                                         @csrf
