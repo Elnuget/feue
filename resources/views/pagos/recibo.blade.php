@@ -56,7 +56,7 @@
 </head>
 <body>
     <div class="favicon-container">
-        <img src="{{ asset('favicon.png') }}" alt="Logo">
+        <img src="{{ public_path('favicon.png') }}" alt="Logo">
     </div>
 
     <div class="titulo">
