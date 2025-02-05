@@ -17,6 +17,12 @@
                     Mi QR
                 </a>
 
+                <!-- Nuevo botón para Aulas Virtuales -->
+                <a href="{{ route('aulas_virtuales.index') }}" class="bg-indigo-500 hover:bg-indigo-700 text-white text-center font-bold py-6 px-4 rounded-lg shadow-lg flex flex-col items-center">
+                    <i class="fas fa-laptop text-3xl mb-2"></i>
+                    Aulas Virtuales
+                </a>
+
                 <a href="/" class="bg-yellow-500 hover:bg-yellow-700 text-white text-center font-bold py-6 px-4 rounded-lg shadow-lg flex flex-col items-center">
                     <i class="fas fa-plus text-3xl mb-2"></i>
                     Añadir Matrícula o Ver todos los Cursos

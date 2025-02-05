@@ -31,6 +31,12 @@
         <x-nav-link :href="route('users.qr', auth()->id())" :active="request()->routeIs('users.qr')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
             🔲 {{ __('Mi Código QR') }}
         </x-nav-link>
+        
+        <!-- Aulas Virtuales - Visible para todos -->
+        <x-nav-link :href="route('aulas_virtuales.index')" :active="request()->routeIs('aulas_virtuales.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+            💻 {{ __('Aulas Virtuales') }}
+        </x-nav-link>
+
         @if(auth()->user()->hasRole(1))
             <x-nav-link :href="route('asistencias.index')" :active="request()->routeIs('asistencias.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
                 📋 {{ __('Asistencias') }}
@@ -44,7 +50,6 @@
             <x-nav-link :href="route('cursos.index')" :active="request()->routeIs('cursos.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
                 📚 {{ __('Cursos') }}
             </x-nav-link>
-            
             
             <x-nav-link :href="route('pruebas')" :active="request()->routeIs('pruebas')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
                 👑 {{ __('Admin') }}

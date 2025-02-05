@@ -14,6 +14,7 @@ use App\Http\Controllers\MatriculaController;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\AsistenciaController;
 use App\Http\Controllers\PruebasController;
+use App\Http\Controllers\AulaVirtualController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,6 +66,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'metodos_pago' => 'metodoPago'
     ]);
     Route::resource('cursos', CursoController::class);
+    Route::resource('aulas_virtuales', AulaVirtualController::class);
     Route::get('/cursos', [CursoController::class, 'index'])->name('cursos.index');
     Route::get('/cursos/create', [CursoController::class, 'create'])->name('cursos.create');
     Route::get('/cursos/{curso}/edit', [CursoController::class, 'edit'])->name('cursos.edit');
