@@ -122,7 +122,7 @@ class UserProfileController extends Controller
             );
         }
 
-        return redirect()->route('matriculas.create')->with('success', 'Perfil completado exitosamente');
+        return redirect()->route('dashboard')->with('success', 'Perfil completado exitosamente');
     }
 
     /**

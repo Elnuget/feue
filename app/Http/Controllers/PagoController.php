@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Pago;
 use App\Models\Matricula;
-use App\Models\TipoCurso;  // Add this import
-use App\Models\Curso;      // Add this import
+use App\Models\TipoCurso;
+use App\Models\Curso;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;  // Add this import
 use App\Mail\PagoAprobado;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -140,19 +141,61 @@ class PagoController extends Controller
 
     public function edit(Pago $pago)
     {
-        return view('pagos.edit', compact('pago'));
+        $matriculas = auth()->user()->hasRole(1)
+            ? Matricula::with(['curso', 'usuario'])
+                ->select('matriculas.id', 'curso_id', 'usuario_id', 'valor_pendiente')
+                ->orderBy('valor_pendiente', 'desc')
+                ->get()
+            : Matricula::with('curso', 'usuario')
+                ->select('matriculas.id', 'curso_id', 'usuario_id', 'valor_pendiente')
+                ->where('usuario_id', auth()->id())
+                ->orderBy('valor_pendiente', 'desc')
+                ->get();
+
+        $metodosPago = \App\Models\MetodoPago::all();
+        
+        return view('pagos.edit', compact('pago', 'matriculas', 'metodosPago'));
     }
 
     public function update(Request $request, Pago $pago)
     {
+        // Validación básica para todos los usuarios
         $request->validate([
-            'matricula_id' => 'required|exists:matriculas,id',
             'metodo_pago_id' => 'required|exists:metodos_pago,id',
-            'monto' => 'required|numeric',
-            'fecha_pago' => 'required|date',
+            'comprobante_pago' => 'nullable|file|mimes:png,jpg,jpeg,pdf|max:2048',
         ]);
 
-        $pago->update($request->all());
+        // Inicializar datos a actualizar
+        $data = ['metodo_pago_id' => $request->metodo_pago_id];
+
+        // Validaciones y campos adicionales solo para administradores
+        if (auth()->user()->hasRole(1)) {
+            $request->validate([
+                'matricula_id' => 'required|exists:matriculas,id',
+                'monto' => 'required|numeric',
+                'fecha_pago' => 'required|date',
+            ]);
+
+            $data = array_merge($data, [
+                'matricula_id' => $request->matricula_id,
+                'monto' => $request->monto,
+                'fecha_pago' => $request->fecha_pago,
+                'estado' => $request->estado,
+            ]);
+        }
+
+        // Manejar el comprobante de pago
+        if ($request->hasFile('comprobante_pago')) {
+            // Eliminar el comprobante anterior
+            if ($pago->comprobante_pago) {
+                Storage::disk('public')->delete($pago->comprobante_pago);
+            }
+            
+            // Guardar el nuevo comprobante
+            $data['comprobante_pago'] = $request->file('comprobante_pago')->store('comprobantes', 'public');
+        }
+
+        $pago->update($data);
 
         return redirect()->route('pagos.index')->with('success', 'Pago actualizado exitosamente.');
     }

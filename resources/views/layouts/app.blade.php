@@ -50,8 +50,13 @@
 
                 <!-- Título o Logo -->
                 <div class="flex-1 text-center">
-                    <a href="{{ route('dashboard') }}" class="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                        Cap: {{ Auth::user()->roles->pluck('name')->first() ?? 'No Role' }}
+                    <a href="{{ route('dashboard') }}" class="flex flex-col items-center">
+                        <span class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                            Panel Principal 🎓
+                        </span>
+                        <span class="text-xs text-gray-600 dark:text-gray-400">
+                            {{ Auth::user()->roles->pluck('name')->first() ?? 'No Role' }}
+                        </span>
                     </a>
                 </div>
 
