@@ -78,6 +78,7 @@
                                 <input type="file" name="comprobante_pago" id="comprobante_pago"
                                        accept=".png, .jpg, .jpeg, .pdf"
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 focus:ring-indigo-500 transition">
+                                <div id="fileError" class="mt-2 text-sm text-red-600 hidden"></div>
                             </div>
 
                             {{-- Input de Pago (monto) --}}
@@ -193,5 +194,36 @@
         @if($selectedMatricula)
             actualizarMonto('{{ $selectedMatricula->valor_pendiente }}');
         @endif
+
+        // Agregar evento para el cambio de método de pago
+        document.getElementById('metodo_pago_id').addEventListener('change', function() {
+            const comprobanteInput = document.getElementById('comprobante_pago');
+            const isEfectivo = this.options[this.selectedIndex].text.toLowerCase() === 'efectivo';
+            
+            if (isEfectivo) {
+                comprobanteInput.removeAttribute('required');
+                // Actualizar el texto del label para indicar que es opcional
+                document.querySelector('label[for="comprobante_pago"]').textContent = 'Comprobante de Pago (Opcional)';
+            } else {
+                comprobanteInput.setAttribute('required', 'required');
+                document.querySelector('label[for="comprobante_pago"]').textContent = 'Comprobante de Pago';
+            }
+        });
+
+        // Validación del formulario antes del envío
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const fileInput = document.getElementById('comprobante_pago');
+            const fileError = document.getElementById('fileError');
+            const metodoPago = document.getElementById('metodo_pago_id');
+            const isEfectivo = metodoPago.options[metodoPago.selectedIndex].text.toLowerCase() === 'efectivo';
+
+            // Solo validar si no es efectivo y no se ha seleccionado un archivo
+            if (!isEfectivo && (!fileInput.files || fileInput.files.length === 0)) {
+                e.preventDefault();
+                fileError.textContent = 'Debe subir un comprobante de pago.';
+                fileError.classList.remove('hidden');
+                return false;
+            }
+        });
     </script>
 </x-app-layout>

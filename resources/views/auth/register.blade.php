@@ -128,7 +128,6 @@
             <div class="mt-1 flex items-center">
                 <input type="file" name="comprobante_pago" id="comprobante_pago"
                        accept=".png, .jpg, .jpeg, .pdf"
-                       required
                        class="block w-full text-sm text-gray-500
                               file:mr-4 file:py-2 file:px-4
                               file:rounded-full file:border-0
@@ -382,12 +381,30 @@
         document.querySelector('form').addEventListener('submit', function(e) {
             const fileInput = document.getElementById('comprobante_pago');
             const fileError = document.getElementById('fileError');
+            const metodoPago = document.getElementById('metodo_pago_id');
+            const isEfectivo = metodoPago.options[metodoPago.selectedIndex].text.toLowerCase() === 'efectivo';
 
-            if (!fileInput.files || fileInput.files.length === 0) {
+            // Solo validar si no es efectivo o si se ha seleccionado un archivo
+            if (!isEfectivo && (!fileInput.files || fileInput.files.length === 0)) {
                 e.preventDefault();
                 fileError.textContent = 'Debe subir un comprobante de pago.';
                 fileError.classList.remove('hidden');
                 return false;
+            }
+        });
+
+        // Agregar evento para el cambio de método de pago
+        document.getElementById('metodo_pago_id').addEventListener('change', function() {
+            const comprobanteInput = document.getElementById('comprobante_pago');
+            const isEfectivo = this.options[this.selectedIndex].text.toLowerCase() === 'efectivo';
+            
+            if (isEfectivo) {
+                comprobanteInput.removeAttribute('required');
+                // Actualizar el texto del label para indicar que es opcional
+                document.querySelector('label[for="comprobante_pago"]').textContent = 'Comprobante de Pago (Opcional)';
+            } else {
+                comprobanteInput.setAttribute('required', 'required');
+                document.querySelector('label[for="comprobante_pago"]').textContent = 'Comprobante de Pago';
             }
         });
     </script>

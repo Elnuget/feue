@@ -88,13 +88,26 @@ class PagoController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        // Obtenemos el método de pago seleccionado
+        $metodoPago = \App\Models\MetodoPago::find($request->metodo_pago_id);
+        $isEfectivo = strtolower($metodoPago->nombre) === 'efectivo';
+
+        // Reglas de validación base
+        $rules = [
             'matricula_id' => 'required|exists:matriculas,id',
             'metodo_pago_id' => 'required|exists:metodos_pago,id',
             'monto' => 'required|numeric',
             'fecha_pago' => 'required|date',
-            'comprobante_pago' => 'required|file|mimes:png,jpg,jpeg,pdf|max:2048',
-        ]);
+        ];
+
+        // Agregar regla de comprobante solo si no es efectivo
+        if (!$isEfectivo) {
+            $rules['comprobante_pago'] = 'required|file|mimes:png,jpg,jpeg,pdf|max:2048';
+        } else {
+            $rules['comprobante_pago'] = 'nullable|file|mimes:png,jpg,jpeg,pdf|max:2048';
+        }
+
+        $request->validate($rules);
 
         // Modificar la consulta para permitir acceso a administradores
         $matricula = Matricula::where('id', $request->matricula_id);
@@ -159,23 +172,38 @@ class PagoController extends Controller
 
     public function update(Request $request, Pago $pago)
     {
+        // Obtenemos el método de pago seleccionado
+        $metodoPago = \App\Models\MetodoPago::find($request->metodo_pago_id);
+        $isEfectivo = strtolower($metodoPago->nombre) === 'efectivo';
+
         // Validación básica para todos los usuarios
-        $request->validate([
+        $rules = [
             'metodo_pago_id' => 'required|exists:metodos_pago,id',
-            'comprobante_pago' => 'nullable|file|mimes:png,jpg,jpeg,pdf|max:2048',
-        ]);
+        ];
+
+        // Agregar regla de comprobante según el método de pago
+        if (!$isEfectivo) {
+            $rules['comprobante_pago'] = $pago->comprobante_pago ? 'nullable|file|mimes:png,jpg,jpeg,pdf|max:2048' : 'required|file|mimes:png,jpg,jpeg,pdf|max:2048';
+        } else {
+            $rules['comprobante_pago'] = 'nullable|file|mimes:png,jpg,jpeg,pdf|max:2048';
+        }
+
+        // Validaciones adicionales para administradores
+        if (auth()->user()->hasRole(1)) {
+            $rules = array_merge($rules, [
+                'matricula_id' => 'required|exists:matriculas,id',
+                'monto' => 'required|numeric',
+                'fecha_pago' => 'required|date',
+            ]);
+        }
+
+        $request->validate($rules);
 
         // Inicializar datos a actualizar
         $data = ['metodo_pago_id' => $request->metodo_pago_id];
 
         // Validaciones y campos adicionales solo para administradores
         if (auth()->user()->hasRole(1)) {
-            $request->validate([
-                'matricula_id' => 'required|exists:matriculas,id',
-                'monto' => 'required|numeric',
-                'fecha_pago' => 'required|date',
-            ]);
-
             $data = array_merge($data, [
                 'matricula_id' => $request->matricula_id,
                 'monto' => $request->monto,
