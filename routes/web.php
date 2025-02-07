@@ -98,5 +98,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/pruebas', [PruebasController::class, 'index'])->name('pruebas');
     Route::post('/user_profiles/{user}/upload_photo', [ProfileController::class, 'uploadPhoto'])->name('profile.uploadPhoto');
     Route::get('/pagos/{pago}/recibo', [PagoController::class, 'generarRecibo'])->name('pagos.recibo');
+    Route::get('/aulas_virtuales/{aulasVirtuale}/show', [AulaVirtualController::class, 'show'])
+         ->name('aulas_virtuales.show');
+    
+    Route::post('/aulas_virtuales/{aulasVirtuale}/contenidos', [AulaVirtualController::class, 'storeContenido'])
+         ->name('aulas_virtuales.contenidos.store');
+    
+    Route::delete('/aulas_virtuales/contenidos/{id}', [AulaVirtualController::class, 'destroyContenido'])
+         ->name('aulas_virtuales.contenidos.destroy');
 });
 require __DIR__.'/auth.php';

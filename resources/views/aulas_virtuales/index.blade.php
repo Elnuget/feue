@@ -23,14 +23,20 @@
                         @foreach ($aulasVirtuales as $aula)
                             <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
                                 <div class="p-6">
-                                    <div class="flex justify-between items-start">
-                                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                                            {{ $aula->nombre }}
-                                        </h3>
+                                    <div class="flex justify-between items-center mb-4">
+                                        <div class="flex items-center gap-3">
+                                            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                                {{ $aula->nombre }}
+                                            </h3>
+                                            <a href="{{ route('aulas_virtuales.show', $aula) }}" 
+                                               class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                                👁️
+                                            </a>
+                                        </div>
                                         @if(auth()->user()->hasRole(1))
-                                            <div class="flex space-x-2">
+                                            <div class="flex items-center gap-2">
                                                 <a href="{{ route('aulas_virtuales.edit', $aula) }}"
-                                                   class="text-yellow-500 hover:text-yellow-700 transition">
+                                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
                                                     ✏️
                                                 </a>
                                                 <form action="{{ route('aulas_virtuales.destroy', $aula) }}"
@@ -39,7 +45,7 @@
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
-                                                            class="text-red-500 hover:text-red-700 transition">
+                                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
                                                         🗑️
                                                     </button>
                                                 </form>

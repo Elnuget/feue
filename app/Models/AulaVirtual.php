@@ -24,4 +24,9 @@ class AulaVirtual extends Model
         return $this->belongsToMany(Curso::class, 'aula_virtual_curso')
                     ->withTimestamps();
     }
+
+    public function contenidos()
+    {
+        return $this->hasMany(AulaVirtualContenido::class);
+    }
 }

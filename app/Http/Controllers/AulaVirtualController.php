@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\AulaVirtual;
 use App\Models\Curso;
+use App\Models\AulaVirtualContenido;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AulaVirtualController extends Controller
 {
@@ -75,5 +77,52 @@ class AulaVirtualController extends Controller
         return redirect()
             ->route('aulas_virtuales.index')
             ->with('success', 'Aula virtual eliminada exitosamente.');
+    }
+
+    public function show(AulaVirtual $aulasVirtuale)
+    {
+        $aula = $aulasVirtuale;
+        return view('aulas_virtuales.show', compact('aula'));
+    }
+
+    public function storeContenido(Request $request, AulaVirtual $aulasVirtuale)
+    {
+        if (!auth()->user()->hasRole(1)) {
+            abort(403, 'No tienes permiso para realizar esta acción.');
+        }
+
+        $request->validate([
+            'titulo' => 'required|string|max:255',
+            'contenido' => 'nullable|string',
+            'enlace' => 'nullable|url',
+            'archivo' => 'nullable|file|max:10240',
+        ]);
+
+        $data = $request->only(['titulo', 'contenido', 'enlace']);
+        
+        if ($request->hasFile('archivo')) {
+            $data['archivo'] = $request->file('archivo')->store('aulas_virtuales/archivos', 'public');
+        }
+
+        $aulasVirtuale->contenidos()->create($data);
+
+        return redirect()->back()->with('success', 'Contenido agregado exitosamente');
+    }
+
+    public function destroyContenido($id)
+    {
+        if (!auth()->user()->hasRole(1)) {
+            abort(403, 'No tienes permiso para realizar esta acción.');
+        }
+
+        $contenido = AulaVirtualContenido::findOrFail($id);
+        
+        if ($contenido->archivo) {
+            Storage::disk('public')->delete($contenido->archivo);
+        }
+        
+        $contenido->delete();
+
+        return redirect()->back()->with('success', 'Contenido eliminado exitosamente');
     }
 }
