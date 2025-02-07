@@ -29,8 +29,8 @@
                                                 {{ $aula->nombre }}
                                             </h3>
                                             <a href="{{ route('aulas_virtuales.show', $aula) }}" 
-                                               class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-                                                👁️
+                                               class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition">
+                                                📓 Entrar
                                             </a>
                                         </div>
                                         @if(auth()->user()->hasRole(1))

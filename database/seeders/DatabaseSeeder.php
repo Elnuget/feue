@@ -21,12 +21,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             RoleSeeder::class,
-            UniversidadesTableSeeder::class,
-            TiposCursosTableSeeder::class,
-            PermissionTablesSeeder::class,
-            MetodosPagoTableSeeder::class,
-            EstadosAcademicosTableSeeder::class,
-            CursosTableSeeder::class, // Ensure this runs before MatriculaSeeder
+            
             UsersTableSeeder::class,
             
            
