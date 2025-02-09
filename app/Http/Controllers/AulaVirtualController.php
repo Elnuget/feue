@@ -13,13 +13,13 @@ class AulaVirtualController extends Controller
     public function index()
     {
         if (auth()->user()->hasRole(1)) {
+            // Administrador ve todas las aulas virtuales
             $aulasVirtuales = AulaVirtual::with(['cursos', 'contenidos'])->orderBy('id', 'desc')->get();
         } else {
+            // Usuario normal solo ve las aulas virtuales de los cursos en los que está matriculado
             $userId = auth()->id();
-            $aulasVirtuales = AulaVirtual::whereHas('cursos', function($query) use ($userId) {
-                $query->whereHas('matriculas', function($q) use ($userId) {
-                    $q->where('usuario_id', $userId);
-                });
+            $aulasVirtuales = AulaVirtual::whereHas('cursos.matriculas', function($query) use ($userId) {
+                $query->where('usuario_id', $userId);
             })
             ->with(['cursos' => function($query) use ($userId) {
                 $query->whereHas('matriculas', function($q) use ($userId) {
@@ -34,7 +34,14 @@ class AulaVirtualController extends Controller
 
     public function create()
     {
-        $cursos = Curso::orderBy('id', 'desc')->get();
+        $cursos = Curso::with(['tipoCurso'])
+            ->orderBy('id', 'desc')
+            ->get()
+            ->map(function($curso) {
+                $curso->nombre_completo = $curso->nombre;
+                $curso->descripcion_completa = $curso->descripcion; // Adding description
+                return $curso;
+            });
         return view('aulas_virtuales.create', compact('cursos'));
     }
 
@@ -60,7 +67,14 @@ class AulaVirtualController extends Controller
 
     public function edit(AulaVirtual $aulasVirtuale)
     {
-        $cursos = Curso::orderBy('id', 'desc')->get();
+        $cursos = Curso::with(['tipoCurso'])
+            ->orderBy('id', 'desc')
+            ->get()
+            ->map(function($curso) {
+                $curso->nombre_completo = $curso->nombre;
+                $curso->descripcion_completa = $curso->descripcion; // Adding description
+                return $curso;
+            });
         $aulaVirtual = $aulasVirtuale;
         return view('aulas_virtuales.edit', compact('aulaVirtual', 'cursos'));
     }
@@ -97,43 +111,36 @@ class AulaVirtualController extends Controller
 
     public function show(AulaVirtual $aulasVirtuale)
     {
-        try {
-            if (!auth()->user()->hasRole(1)) {
-                $userId = auth()->id();
-                $tieneAcceso = $aulasVirtuale->cursos()
-                    ->whereHas('matriculas', function($query) use ($userId) {
-                        $query->where('usuario_id', $userId);
-                    })->exists();
+        if (!auth()->user()->hasRole(1)) {
+            $userId = auth()->id();
+            // Verificar si el usuario está matriculado en algún curso del aula virtual
+            $tieneAcceso = $aulasVirtuale->cursos()
+                ->whereHas('matriculas', function($query) use ($userId) {
+                    $query->where('usuario_id', $userId);
+                })->exists();
 
-                if (!$tieneAcceso) {
-                    return redirect()
-                        ->route('aulas_virtuales.index')
-                        ->with('error', 'No tienes acceso a esta aula virtual. Debes estar matriculado en alguno de sus cursos.');
-                }
-
-                $aula = $aulasVirtuale->load([
-                    'cursos' => function($query) use ($userId) {
-                        $query->whereHas('matriculas', function($q) use ($userId) {
-                            $q->where('usuario_id', $userId);
-                        });
-                    },
-                    'contenidos' => function($query) {
-                        $query->orderBy('created_at', 'desc');
-                    }
-                ]);
-            } else {
-                $aula = $aulasVirtuale->load(['cursos', 'contenidos' => function($query) {
-                    $query->orderBy('created_at', 'desc');
-                }]);
+            if (!$tieneAcceso) {
+                return redirect()
+                    ->route('aulas_virtuales.index')
+                    ->with('error', 'No tienes acceso a esta aula virtual.');
             }
 
-            return view('aulas_virtuales.show', compact('aula'));
-        } catch (\Exception $e) {
-            \Log::error('Error en show de AulaVirtual: ' . $e->getMessage());
-            return redirect()
-                ->route('aulas_virtuales.index')
-                ->with('error', 'Ocurrió un error al cargar el aula virtual.');
+            // Cargar solo los cursos en los que el usuario está matriculado
+            $aula = $aulasVirtuale->load([
+                'cursos' => function($query) use ($userId) {
+                    $query->whereHas('matriculas', function($q) use ($userId) {
+                        $q->where('usuario_id', $userId);
+                    });
+                },
+                'contenidos' => function($query) {
+                    $query->orderBy('created_at', 'desc');
+                }
+            ]);
+        } else {
+            $aula = $aulasVirtuale->load(['cursos', 'contenidos']);
         }
+
+        return view('aulas_virtuales.show', compact('aula'));
     }
 
     public function storeContenido(Request $request, AulaVirtual $aulasVirtuale)
