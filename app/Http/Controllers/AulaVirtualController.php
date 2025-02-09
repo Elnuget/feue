@@ -12,7 +12,23 @@ class AulaVirtualController extends Controller
 {
     public function index()
     {
-        $aulasVirtuales = AulaVirtual::with('cursos')->orderBy('id', 'desc')->get();
+        if (auth()->user()->hasRole(1)) {
+            $aulasVirtuales = AulaVirtual::with(['cursos', 'contenidos'])->orderBy('id', 'desc')->get();
+        } else {
+            $userId = auth()->id();
+            $aulasVirtuales = AulaVirtual::whereHas('cursos', function($query) use ($userId) {
+                $query->whereHas('matriculas', function($q) use ($userId) {
+                    $q->where('usuario_id', $userId);
+                });
+            })
+            ->with(['cursos' => function($query) use ($userId) {
+                $query->whereHas('matriculas', function($q) use ($userId) {
+                    $q->where('usuario_id', $userId);
+                });
+            }, 'contenidos'])
+            ->orderBy('id', 'desc')
+            ->get();
+        }
         return view('aulas_virtuales.index', compact('aulasVirtuales'));
     }
 
@@ -81,8 +97,43 @@ class AulaVirtualController extends Controller
 
     public function show(AulaVirtual $aulasVirtuale)
     {
-        $aula = $aulasVirtuale;
-        return view('aulas_virtuales.show', compact('aula'));
+        try {
+            if (!auth()->user()->hasRole(1)) {
+                $userId = auth()->id();
+                $tieneAcceso = $aulasVirtuale->cursos()
+                    ->whereHas('matriculas', function($query) use ($userId) {
+                        $query->where('usuario_id', $userId);
+                    })->exists();
+
+                if (!$tieneAcceso) {
+                    return redirect()
+                        ->route('aulas_virtuales.index')
+                        ->with('error', 'No tienes acceso a esta aula virtual. Debes estar matriculado en alguno de sus cursos.');
+                }
+
+                $aula = $aulasVirtuale->load([
+                    'cursos' => function($query) use ($userId) {
+                        $query->whereHas('matriculas', function($q) use ($userId) {
+                            $q->where('usuario_id', $userId);
+                        });
+                    },
+                    'contenidos' => function($query) {
+                        $query->orderBy('created_at', 'desc');
+                    }
+                ]);
+            } else {
+                $aula = $aulasVirtuale->load(['cursos', 'contenidos' => function($query) {
+                    $query->orderBy('created_at', 'desc');
+                }]);
+            }
+
+            return view('aulas_virtuales.show', compact('aula'));
+        } catch (\Exception $e) {
+            \Log::error('Error en show de AulaVirtual: ' . $e->getMessage());
+            return redirect()
+                ->route('aulas_virtuales.index')
+                ->with('error', 'Ocurrió un error al cargar el aula virtual.');
+        }
     }
 
     public function storeContenido(Request $request, AulaVirtual $aulasVirtuale)
