@@ -73,9 +73,9 @@
 
         <!-- Campos para registrar matrícula -->
         <div class="mt-4">
-            <x-input-label for="tipo_curso_id" :value="__('Tipo de Curso')"/> 📚
+            <x-input-label for="tipo_curso_id" :value="__('Sede')"/> 📚
             <select name="tipo_curso_id" id="tipo_curso_id" required class="block mt-1 w-full">
-                <option value="">Selecciona un Tipo de Curso</option>
+                <option value="">Selecciona una Sede</option>
                 @foreach($tiposCursos as $tipoCurso)
                     <option value="{{ $tipoCurso->id }}">{{ $tipoCurso->nombre }}</option>
                 @endforeach
