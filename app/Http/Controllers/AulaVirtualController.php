@@ -12,8 +12,8 @@ class AulaVirtualController extends Controller
 {
     public function index()
     {
-        if (auth()->user()->hasRole(1)) {
-            // Administrador ve todas las aulas virtuales
+        if (auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente')) {
+            // Administrador y Docente ven todas las aulas virtuales
             $aulasVirtuales = AulaVirtual::with(['cursos', 'contenidos'])->orderBy('id', 'desc')->get();
         } else {
             // Usuario normal solo ve las aulas virtuales de los cursos en los que está matriculado
@@ -111,7 +111,7 @@ class AulaVirtualController extends Controller
 
     public function show(AulaVirtual $aulasVirtuale)
     {
-        if (!auth()->user()->hasRole(1)) {
+        if (!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente')) {
             $userId = auth()->id();
             // Verificar si el usuario está matriculado en algún curso del aula virtual
             $tieneAcceso = $aulasVirtuale->cursos()
@@ -145,7 +145,7 @@ class AulaVirtualController extends Controller
 
     public function storeContenido(Request $request, AulaVirtual $aulasVirtuale)
     {
-        if (!auth()->user()->hasRole(1)) {
+        if (!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente')) {
             abort(403, 'No tienes permiso para realizar esta acción.');
         }
 
@@ -169,7 +169,7 @@ class AulaVirtualController extends Controller
 
     public function destroyContenido($id)
     {
-        if (!auth()->user()->hasRole(1)) {
+        if (!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente')) {
             abort(403, 'No tienes permiso para realizar esta acción.');
         }
 

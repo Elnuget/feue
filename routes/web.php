@@ -15,6 +15,8 @@ use App\Http\Controllers\PagoController;
 use App\Http\Controllers\AsistenciaController;
 use App\Http\Controllers\PruebasController;
 use App\Http\Controllers\AulaVirtualController;
+use App\Http\Controllers\SesionDocenteController;
+use App\Http\Controllers\AsistenciaDocenteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -103,5 +105,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::delete('/aulas_virtuales/contenidos/{id}', [AulaVirtualController::class, 'destroyContenido'])
          ->name('aulas_virtuales.contenidos.destroy');
+
+    // Rutas de Sesiones Docentes
+    Route::resource('sesiones-docentes', SesionDocenteController::class);
+
+    // Rutas para asistencias docentes
+    Route::resource('asistencias', AsistenciaDocenteController::class);
+    Route::get('/asistencias/reporte-mensual', [AsistenciaDocenteController::class, 'reporteMensual'])->name('asistencias.reporte-mensual');
 });
+
 require __DIR__.'/auth.php';

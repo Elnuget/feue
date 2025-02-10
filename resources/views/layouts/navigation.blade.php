@@ -21,26 +21,41 @@
         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
             🏠 {{ __('Panel') }}
         </x-nav-link>
-        <x-nav-link :href="route('matriculas.index')" :active="request()->routeIs('matriculas.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
-            📝 {{ __('Matrículas') }}
-        </x-nav-link>
-        
-        <x-nav-link :href="route('pagos.index')" :active="request()->routeIs('pagos.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
-            💳 {{ __('Pagos') }}
-        </x-nav-link>
-        <x-nav-link :href="route('users.qr', auth()->id())" :active="request()->routeIs('users.qr')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
-            🔲 {{ __('Mi Código QR') }}
-        </x-nav-link>
-        
+
         <!-- Aulas Virtuales - Visible para todos -->
         <x-nav-link :href="route('aulas_virtuales.index')" :active="request()->routeIs('aulas_virtuales.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
             💻 {{ __('Aulas Virtuales') }}
         </x-nav-link>
 
-        @if(auth()->user()->hasRole(1))
-            <x-nav-link :href="route('asistencias.index')" :active="request()->routeIs('asistencias.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
-                📋 {{ __('Asistencias') }}
+        <!-- Sesiones Docentes - Solo visible para Admin y Docentes -->
+        @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
+            <x-nav-link :href="route('sesiones-docentes.index')" :active="request()->routeIs('sesiones-docentes.*')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+                📅 {{ __('Sesiones Docentes') }}
             </x-nav-link>
+        @endif
+
+        <!-- Asistencias Docentes - Solo visible para Admin -->
+        @if(auth()->user()->hasRole(1))
+            <x-nav-link :href="route('asistencias.index')" :active="request()->routeIs('asistencias.*')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+                ✅ {{ __('Asistencias Docentes') }}
+            </x-nav-link>
+        @endif
+
+        @if(!auth()->user()->hasRole('Docente'))
+            <x-nav-link :href="route('matriculas.index')" :active="request()->routeIs('matriculas.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+                📝 {{ __('Matrículas') }}
+            </x-nav-link>
+            
+            <x-nav-link :href="route('pagos.index')" :active="request()->routeIs('pagos.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+                💳 {{ __('Pagos') }}
+            </x-nav-link>
+            
+            <x-nav-link :href="route('users.qr', auth()->id())" :active="request()->routeIs('users.qr')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+                🔲 {{ __('Mi Código QR') }}
+            </x-nav-link>
+        @endif
+
+        @if(auth()->user()->hasRole(1))
             <x-nav-link :href="route('matriculas.listas')" :active="request()->routeIs('matriculas.listas')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
                 📋 {{ __('Listas') }}
             </x-nav-link>

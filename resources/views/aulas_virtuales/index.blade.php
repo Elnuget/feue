@@ -10,7 +10,7 @@
                         <h2 class="text-xl md:text-2xl font-bold text-gray-700 dark:text-gray-200">
                             Aulas Virtuales
                         </h2>
-                        @if(auth()->user()->hasRole(1))
+                        @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
                             <a href="{{ route('aulas_virtuales.create') }}" 
                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition">
                                 Crear Aula Virtual
@@ -33,7 +33,7 @@
                                                 📓 Entrar
                                             </a>
                                         </div>
-                                        @if(auth()->user()->hasRole(1))
+                                        @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
                                             <div class="flex items-center gap-2">
                                                 <a href="{{ route('aulas_virtuales.edit', $aula) }}"
                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">

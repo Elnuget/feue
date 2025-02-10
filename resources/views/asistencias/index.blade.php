@@ -1,248 +1,195 @@
 <x-app-layout>
-    @section('page_title', 'Asistencias')
-    @if(!auth()->user()->hasRole(1))
-        <script>window.location = "{{ route('dashboard') }}";</script>
-    @endif
-
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Asistencias') }}
+            {{ __('Asistencias Docentes') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <div class="flex space-x-4 mb-4">
-                        <a href="{{ route('asistencias.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                            Registrar Asistencia Manual
-                        </a>
-                        <a href="{{ route('asistencias.scan') }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                            📷 Escanear QR
-                        </a>
-                        <button id="export-excel" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
-                            Exportar a Excel
+                    <div class="flex justify-between items-center mb-6">
+                        <button onclick="openCreateModal()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                            Registrar Asistencia
                         </button>
                     </div>
 
-                    <h2 class="text-xl font-semibold mb-4">Asistencias Mensuales</h2>
-                    <div class="flex gap-4 mb-4">
-                        <select id="anio" class="w-1/4 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                            <option value="">Seleccione un año</option>
-                            @for($year = date('Y'); $year >= 2020; $year--)
-                                <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>{{ $year }}</option>
-                            @endfor
-                        </select>
-
-                        <select id="mes" class="w-1/4 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                            <option value="">Seleccione un mes</option>
-                            @foreach(['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'] as $index => $mes)
-                                <option value="{{ $index + 1 }}" {{ $index + 1 == date('n') ? 'selected' : '' }}>{{ $mes }}</option>
-                            @endforeach
-                        </select>
-
-                        <select id="tipo_curso" class="w-1/4 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                            <option value="">Seleccione un tipo de curso</option>
-                            @foreach($tiposCursos as $tipoCurso)
-                                <option value="{{ $tipoCurso->id }}">{{ $tipoCurso->nombre }}</option>
-                            @endforeach
-                        </select>
-
-                        <select id="curso" class="w-1/4 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300" disabled>
-                            <option value="">Seleccione un curso</option>
-                        </select>
-                    </div>
-
-                    <!-- Tabla de asistencias mensuales -->
-                    <div id="tabla-asistencias" class="hidden overflow-x-auto mt-4">
-                        <table class="min-w-full divide-y divide-gray-200 border">
-                            <thead class="bg-gray-50">
-                                <!-- Aquí se agregarán dinámicamente las cabeceras de los días -->
+                    <!-- Tabla de Asistencias -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Docente</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Fecha</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Hora Entrada</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estado</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                                </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <!-- Aquí se agregarán dinámicamente las filas de usuarios y asistencias -->
+                            <tbody class="bg-white divide-y divide-gray-200 dark:divide-gray-700 dark:bg-gray-800">
+                                @foreach($asistencias as $asistencia)
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">{{ $asistencia->docente->name }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">{{ $asistencia->fecha->format('d/m/Y') }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">{{ $asistencia->hora_entrada ? $asistencia->hora_entrada->format('H:i') : 'N/A' }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            @if($asistencia->estado == 'Presente') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300
+                                            @elseif($asistencia->estado == 'Tarde') bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300
+                                            @elseif($asistencia->estado == 'Ausente') bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300
+                                            @else bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300
+                                            @endif">
+                                            {{ $asistencia->estado }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button onclick="openEditModal({{ $asistencia->id }})" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-200 mr-3">Editar</button>
+                                        <button onclick="openDeleteModal({{ $asistencia->id }})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200">Eliminar</button>
+                                    </td>
+                                </tr>
+                                @endforeach
                             </tbody>
                         </table>
+                    </div>
+
+                    <div class="mt-4">
+                        {{ $asistencias->links() }}
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</x-app-layout>
 
-<!-- Include SheetJS library -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Modal Crear -->
+    <div id="createModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">Registrar Asistencia</h3>
+                <form id="createForm" action="{{ route('asistencias.store') }}" method="POST">
+                    @csrf
+                    <div class="mb-4">
+                        <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Fecha</label>
+                        <input type="date" name="fecha" value="{{ now()->setTimezone('America/Guayaquil')->format('Y-m-d') }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Hora Entrada</label>
+                        <input type="time" name="hora_entrada" value="{{ now()->setTimezone('America/Guayaquil')->format('H:i') }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Estado</label>
+                        <select name="estado" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                            <option value="Presente">Presente</option>
+                            <option value="Tarde">Tarde</option>
+                            <option value="Ausente">Ausente</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Observaciones</label>
+                        <textarea name="observaciones" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="3"></textarea>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" onclick="closeCreateModal()" class="bg-gray-500 text-white px-4 py-2 rounded mr-2">Cancelar</button>
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-<!-- Agrega los scripts necesarios para la funcionalidad de Asistencias Mensuales -->
+    <!-- Modal Editar -->
+    <div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">Editar Asistencia</h3>
+                <form id="editForm" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="mb-4">
+                        <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Estado</label>
+                        <select name="estado" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                            <option value="Presente">Presente</option>
+                            <option value="Tarde">Tarde</option>
+                            <option value="Ausente">Ausente</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Observaciones</label>
+                        <textarea name="observaciones" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="3"></textarea>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" onclick="closeEditModal()" class="bg-gray-500 text-white px-4 py-2 rounded mr-2">Cancelar</button>
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Actualizar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Eliminar -->
+    <div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4">Confirmar Eliminación</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">¿Está seguro que desea eliminar esta asistencia?</p>
+                <form id="deleteForm" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <div class="flex justify-end">
+                        <button type="button" onclick="closeDeleteModal()" class="bg-gray-500 text-white px-4 py-2 rounded mr-2">Cancelar</button>
+                        <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded">Eliminar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const anioSelect = document.getElementById('anio');
-    const mesSelect = document.getElementById('mes');
-    const tipoCursoSelect = document.getElementById('tipo_curso');
-    const cursoSelect = document.getElementById('curso');
-    const tablaAsistencias = document.getElementById('tabla-asistencias');
-
-    // Obtener las listas de usuarios matriculados y asistencias
-    const listas = @json($listas);
-    const asistencias = @json($asistencias);
-    const cursos = @json($cursos);
-
-    anioSelect.addEventListener('change', function() {
-        if (anioSelect.value && mesSelect.value) {
-            tipoCursoSelect.disabled = false;
-            // Optionally reset tipoCursoSelect and cursoSelect
-            tipoCursoSelect.value = '';
-            cursoSelect.disabled = true;
-            cursoSelect.value = '';
-            tablaAsistencias.classList.add('hidden');
-        } else {
-            tipoCursoSelect.disabled = true;
-            tipoCursoSelect.value = '';
-            cursoSelect.disabled = true;
-            cursoSelect.value = '';
-            tablaAsistencias.classList.add('hidden');
+        function openCreateModal() {
+            document.getElementById('createModal').classList.remove('hidden');
         }
-    });
 
-    mesSelect.addEventListener('change', function() {
-        if (mesSelect.value && anioSelect.value) {
-            tipoCursoSelect.disabled = false;
-            // Optionally reset tipoCursoSelect and cursoSelect
-            tipoCursoSelect.value = '';
-            cursoSelect.disabled = true;
-            cursoSelect.value = '';
-            tablaAsistencias.classList.add('hidden');
-        } else {
-            tipoCursoSelect.disabled = true;
-            tipoCursoSelect.value = '';
-            cursoSelect.disabled = true;
-            cursoSelect.value = '';
-            tablaAsistencias.classList.add('hidden');
+        function closeCreateModal() {
+            document.getElementById('createModal').classList.add('hidden');
         }
-    });
 
-    tipoCursoSelect.addEventListener('change', function() {
-        if (tipoCursoSelect.value) {
-            cursoSelect.disabled = false;
-            // Filtrar cursos por tipo de curso seleccionado
-            const cursosFiltrados = cursos.filter(curso => curso.tipo_curso_id == tipoCursoSelect.value);
-            cursoSelect.innerHTML = '<option value="">Seleccione un curso</option>';
-            cursosFiltrados.forEach(curso => {
-                cursoSelect.innerHTML += `<option value="${curso.id}">${curso.nombre} (${curso.horario})</option>`;
-            });
-        } else {
-            cursoSelect.disabled = true;
-            cursoSelect.value = '';
-            tablaAsistencias.classList.add('hidden');
+        function openEditModal(id) {
+            const modal = document.getElementById('editModal');
+            const form = document.getElementById('editForm');
+            form.action = `/asistencias/${id}`;
+            modal.classList.remove('hidden');
         }
-    });
 
-    cursoSelect.addEventListener('change', function() {
-        if (cursoSelect.value) {
-            actualizarTabla();
-        } else {
-            tablaAsistencias.classList.add('hidden');
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
         }
-    });
 
-    function actualizarTabla() {
-        const mes = parseInt(mesSelect.value);
-        const anio = parseInt(anioSelect.value);
-        const cursoId = parseInt(cursoSelect.value);
+        function openDeleteModal(id) {
+            const modal = document.getElementById('deleteModal');
+            const form = document.getElementById('deleteForm');
+            form.action = `/asistencias/${id}`;
+            modal.classList.remove('hidden');
+        }
 
-        if (mes && anio && cursoId) {
-            // Mostrar la tabla
-            tablaAsistencias.classList.remove('hidden');
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+        }
 
-            const diasEnMes = new Date(anio, mes, 0).getDate();
-            const headerRow = tablaAsistencias.querySelector('thead');
-            headerRow.innerHTML = `
-                <tr>
-                    <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">#</th>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
-                    <!-- Días del mes -->
-                    ${Array.from({ length: diasEnMes }, (_, i) => `
-                        <th class="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-8">${i + 1}</th>
-                    `).join('')}
-                </tr>
-            `;
-
-            // Filtrar listas sólo por curso, sin filtrar por año o mes
-            const usuariosMatriculados = listas.filter(lista =>
-                lista.curso_id === cursoId
-            );
-
-            // Ordenar usuarios matriculados alfabéticamente por nombre
-            usuariosMatriculados.sort((a, b) => {
-                const nameA = a.usuario.name.toUpperCase();
-                const nameB = b.usuario.name.toUpperCase();
-                if (nameA < nameB) {
-                    return -1;
+        // Cerrar modales al hacer clic fuera de ellos
+        window.onclick = function(event) {
+            const modals = [
+                document.getElementById('createModal'),
+                document.getElementById('editModal'),
+                document.getElementById('deleteModal')
+            ];
+            
+            modals.forEach(modal => {
+                if (event.target == modal) {
+                    modal.classList.add('hidden');
                 }
-                if (nameA > nameB) {
-                    return 1;
-                }
-                return 0;
-            });
-
-            const tbody = tablaAsistencias.querySelector('tbody');
-            tbody.innerHTML = '';
-
-            usuariosMatriculados.forEach((lista, index) => {
-                const user = lista.usuario;
-
-                // Filtrar asistencias del usuario en el mes y año seleccionados
-                const asistenciasUsuario = asistencias.filter(asistencia => {
-                    return asistencia.user_id === user.id &&
-                        new Date(asistencia.fecha_hora).getFullYear() === anio &&
-                        new Date(asistencia.fecha_hora).getMonth() + 1 === mes;
-                });
-
-                // Crear un array de días con asistencia
-                const diasConAsistencia = asistenciasUsuario.map(asistencia => new Date(asistencia.fecha_hora).getDate());
-
-                let row = `
-                    <tr>
-                        <td class="px-2 py-2 text-center text-sm text-gray-900">${index + 1}</td>
-                        <td class="px-4 py-2 text-left text-sm text-gray-900">${user ? user.name : 'N/A'}</td>
-                `;
-
-                // Agregar celdas para cada día
-                for (let dia = 1; dia <= diasEnMes; dia++) {
-                    if (diasConAsistencia.includes(dia)) {
-                        // Marcar con un check
-                        row += `
-                            <td class="px-1 py-2 text-center text-sm text-green-500">✔️</td>
-                        `;
-                    } else {
-                        row += `
-                            <td class="px-1 py-2 text-center text-sm text-gray-900"></td>
-                        `;
-                    }
-                }
-
-                row += '</tr>';
-                tbody.innerHTML += row;
             });
         }
-    }
-
-    // Trigger change event to initialize the selects with default values
-    anioSelect.dispatchEvent(new Event('change'));
-    mesSelect.dispatchEvent(new Event('change'));
-
-    document.getElementById('export-excel').addEventListener('click', function() {
-        const table = document.getElementById('tabla-asistencias').querySelector('table');
-        const tipoCurso = tipoCursoSelect.options[tipoCursoSelect.selectedIndex].text || 'TipoCurso';
-        const curso = cursoSelect.options[cursoSelect.selectedIndex].text || 'Curso';
-        let titulo = `${tipoCurso}_${curso}`.replace(/\s+/g, '_');
-        
-        /* Convert table to workbook with a fixed sheet name */
-        const workbook = XLSX.utils.table_to_book(table, { sheet: 'Asistencias' });
-
-        /* Export to Excel with the full title in the filename */
-        XLSX.writeFile(workbook, `${titulo}.xlsx`);
-    });
-});
 </script>
+    @endpush
+</x-app-layout>
