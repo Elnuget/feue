@@ -68,23 +68,70 @@ class AsistenciaDocenteController extends Controller
         return view('asistencias.show', compact('asistencia'));
     }
 
-    public function edit(AsistenciaDocente $asistencia)
+    public function edit(AsistenciaDocente $asistenciaDocente)
     {
-        $sesiones = SesionDocente::where('user_id', $asistencia->user_id)
-            ->whereDate('fecha', $asistencia->fecha)
-            ->get();
+        try {
+            \Log::info('Buscando asistencia con ID: ' . $asistenciaDocente->id);
+            
+            // Verificar si el modelo existe
+            if (!$asistenciaDocente->exists) {
+                \Log::error('Asistencia no encontrada con ID: ' . $asistenciaDocente->id);
+                return response()->json([
+                    'error' => 'Asistencia no encontrada'
+                ], 404);
+            }
 
-        return view('asistencias.edit', compact('asistencia', 'sesiones'));
+            // Cargar la relación docente
+            $asistenciaDocente->load('docente');
+
+            if (!$asistenciaDocente->docente) {
+                \Log::error('Docente no encontrado para asistencia ID: ' . $asistenciaDocente->id);
+                return response()->json([
+                    'error' => 'No se encontró el docente asociado'
+                ], 404);
+            }
+
+            $data = [
+                'id' => $asistenciaDocente->id,
+                'docente' => [
+                    'name' => $asistenciaDocente->docente->name
+                ],
+                'fecha' => $asistenciaDocente->fecha->format('Y-m-d'),
+                'hora_entrada' => $asistenciaDocente->hora_entrada->format('H:i'),
+                'estado' => $asistenciaDocente->estado,
+                'observaciones' => $asistenciaDocente->observaciones ?? ''
+            ];
+
+            \Log::info('Datos de asistencia recuperados:', $data);
+
+            return response()->json($data);
+
+        } catch (\Exception $e) {
+            \Log::error('Error en edit: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            return response()->json([
+                'error' => 'Error al cargar los datos: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function update(Request $request, AsistenciaDocente $asistenciaDocente)
     {
         $request->validate([
+            'fecha' => 'required|date',
+            'hora_entrada' => 'required',
             'estado' => 'required|in:Presente,Tarde,Ausente',
             'observaciones' => 'nullable|string|max:500'
         ]);
 
-        $asistenciaDocente->update($request->only(['estado', 'observaciones']));
+        $fechaHoraEntrada = Carbon::parse($request->fecha . ' ' . $request->hora_entrada, 'America/Guayaquil');
+
+        $asistenciaDocente->update([
+            'fecha' => $request->fecha,
+            'hora_entrada' => $fechaHoraEntrada,
+            'estado' => $request->estado,
+            'observaciones' => $request->observaciones
+        ]);
 
         return redirect()->route('asistencias-docentes.index')
             ->with('success', 'Asistencia actualizada correctamente');

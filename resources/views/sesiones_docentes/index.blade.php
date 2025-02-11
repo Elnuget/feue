@@ -33,7 +33,13 @@
                                 @foreach($sesiones as $sesion)
                                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                         <td class="px-4 py-3 text-sm">{{ $sesion->docente->name }}</td>
-                                        <td class="px-4 py-3 text-sm">{{ $sesion->curso->nombre }}</td>
+                                        <td class="px-4 py-3 text-sm">
+                                            {{ $sesion->curso->nombre }}
+                                            <br>
+                                            <span class="text-xs text-gray-500">
+                                                {{ $sesion->curso->tipo_curso }} | {{ $sesion->curso->horario }}
+                                            </span>
+                                        </td>
                                         <td class="px-4 py-3 text-sm">{{ $sesion->fecha->format('d/m/Y') }}</td>
                                         <td class="px-4 py-3 text-sm">{{ $sesion->hora_inicio }} - {{ $sesion->hora_fin }}</td>
                                         <td class="px-4 py-3 text-sm">{{ $sesion->aula ?? 'N/A' }}</td>
@@ -84,7 +90,9 @@
                 <x-input-label for="curso_id" value="{{ __('Curso') }}" />
                 <select name="curso_id" id="curso_id" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" required>
                     @foreach($cursos as $curso)
-                        <option value="{{ $curso->id }}">{{ $curso->nombre }}</option>
+                        <option value="{{ $curso->id }}">
+                            {{ $curso->nombre }} - {{ $curso->tipoCurso->nombre ?? 'Sin tipo' }} | {{ $curso->horario }}
+                        </option>
                     @endforeach
                 </select>
             </div>
@@ -164,7 +172,7 @@
                     <select name="curso_id" id="curso_id" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" required>
                         @foreach($cursos as $curso)
                             <option value="{{ $curso->id }}" {{ $sesion->curso_id == $curso->id ? 'selected' : '' }}>
-                                {{ $curso->nombre }}
+                                {{ $curso->nombre }} - {{ $curso->tipoCurso->nombre ?? 'Sin tipo' }} | {{ $curso->horario }}
                             </option>
                         @endforeach
                     </select>
@@ -248,4 +256,4 @@
         // Aquí puedes agregar cualquier JavaScript adicional que necesites
     </script>
     @endpush
-</x-app-layout> 
+</x-app-layout>

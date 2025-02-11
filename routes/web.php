@@ -110,7 +110,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('sesiones-docentes', SesionDocenteController::class);
 
     // Rutas para asistencias docentes
-    Route::resource('asistencias-docentes', AsistenciaDocenteController::class);
+    Route::resource('asistencias-docentes', AsistenciaDocenteController::class)->parameters([
+        'asistencias-docentes' => 'asistenciaDocente'
+    ])->names([
+        'index' => 'asistencias-docentes.index',
+        'create' => 'asistencias-docentes.create',
+        'store' => 'asistencias-docentes.store',
+        'show' => 'asistencias-docentes.show',
+        'edit' => 'asistencias-docentes.edit',
+        'update' => 'asistencias-docentes.update',
+        'destroy' => 'asistencias-docentes.destroy',
+    ]);
     Route::get('/asistencias/reporte-mensual', [AsistenciaDocenteController::class, 'reporteMensual'])->name('asistencias.reporte-mensual');
 });
 

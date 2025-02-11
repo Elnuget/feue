@@ -26,7 +26,7 @@ class AsistenciaDocente extends Model
     // Relación con el usuario (docente)
     public function docente(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
     // Relación con la sesión del docente
@@ -34,4 +34,4 @@ class AsistenciaDocente extends Model
     {
         return $this->belongsTo(SesionDocente::class, 'sesion_docente_id');
     }
-} 
+}

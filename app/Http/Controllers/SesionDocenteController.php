@@ -12,7 +12,7 @@ class SesionDocenteController extends Controller
 {
     public function index()
     {
-        $sesiones = SesionDocente::with(['docente', 'curso'])
+        $sesiones = SesionDocente::with(['docente', 'curso.tipoCurso'])
             ->when(Auth::user()->hasRole('Docente'), function ($query) {
                 return $query->where('user_id', Auth::id());
             })
@@ -21,14 +21,16 @@ class SesionDocenteController extends Controller
             ->paginate(10);
 
         $docentes = User::role('Docente')->get();
-        $cursos = Curso::all();
+        $cursos = Curso::with('tipoCurso')
+            ->orderBy('id', 'desc')
+            ->get();
 
         return view('sesiones_docentes.index', compact('sesiones', 'docentes', 'cursos'));
     }
 
     public function create()
     {
-        $cursos = Curso::all();
+        $cursos = Curso::orderBy('id', 'desc')->get();
         $docentes = User::role('Docente')->get();
         return view('sesiones_docentes.create', compact('cursos', 'docentes'));
     }
@@ -91,4 +93,4 @@ class SesionDocenteController extends Controller
         return redirect()->route('sesiones-docentes.index')
             ->with('deleted', 'Sesión eliminada exitosamente.');
     }
-} 
+}
