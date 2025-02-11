@@ -36,8 +36,14 @@
 
         <!-- Asistencias Docentes - Solo visible para Admin -->
         @if(auth()->user()->hasRole(1))
-            <x-nav-link :href="route('asistencias.index')" :active="request()->routeIs('asistencias.*')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+            <x-nav-link :href="route('asistencias-docentes.index')" :active="request()->routeIs('asistencias-docente.*')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
                 ✅ {{ __('Asistencias Docentes') }}
+            </x-nav-link>
+        @endif
+        <!-- Asistencias Estudiante - Solo visible para Admin -->
+        @if(auth()->user()->hasRole(1))
+            <x-nav-link :href="route('asistencias.index')" :active="request()->routeIs('asistencias.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+                📋 {{ __('Asistencias') }}
             </x-nav-link>
         @endif
 

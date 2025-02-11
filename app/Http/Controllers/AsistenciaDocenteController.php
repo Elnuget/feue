@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AsistenciaDocente;
 use App\Models\SesionDocente;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -22,13 +23,18 @@ class AsistenciaDocenteController extends Controller
         $asistencias = AsistenciaDocente::with(['docente', 'sesion'])
             ->orderBy('id', 'desc')
             ->paginate(10);
+            
+        $docentes = User::whereHas('roles', function($query) {
+            $query->where('name', 'Docente');
+        })->get();
 
-        return view('asistencias.index', compact('asistencias'));
+        return view('asistencias_docentes.index', compact('asistencias', 'docentes'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
+            'user_id' => 'required|exists:users,id',
             'fecha' => 'required|date',
             'hora_entrada' => 'required',
             'estado' => 'required|in:Presente,Tarde,Ausente',
@@ -39,13 +45,13 @@ class AsistenciaDocenteController extends Controller
         $fechaHoraEntrada = Carbon::parse($request->fecha . ' ' . $request->hora_entrada, 'America/Guayaquil');
 
         // Buscar si existe una sesión docente para esta fecha y hora
-        $sesion = SesionDocente::where('user_id', Auth::id())
+        $sesion = SesionDocente::where('user_id', $request->user_id)
             ->whereDate('fecha', $request->fecha)
             ->where('hora_inicio', '<=', $fechaHoraEntrada)
             ->first();
 
         $asistencia = AsistenciaDocente::create([
-            'user_id' => Auth::id(),
+            'user_id' => $request->user_id,
             'fecha' => $request->fecha,
             'hora_entrada' => $fechaHoraEntrada,
             'estado' => $request->estado,
@@ -53,7 +59,7 @@ class AsistenciaDocenteController extends Controller
             'observaciones' => $request->observaciones
         ]);
 
-        return redirect()->route('asistencias.index')
+        return redirect()->route('asistencias-docentes.index')
             ->with('success', 'Asistencia registrada correctamente');
     }
 
@@ -71,24 +77,24 @@ class AsistenciaDocenteController extends Controller
         return view('asistencias.edit', compact('asistencia', 'sesiones'));
     }
 
-    public function update(Request $request, AsistenciaDocente $asistencia)
+    public function update(Request $request, AsistenciaDocente $asistenciaDocente)
     {
         $request->validate([
             'estado' => 'required|in:Presente,Tarde,Ausente',
             'observaciones' => 'nullable|string|max:500'
         ]);
 
-        $asistencia->update($request->only(['estado', 'observaciones']));
+        $asistenciaDocente->update($request->only(['estado', 'observaciones']));
 
-        return redirect()->route('asistencias.index')
+        return redirect()->route('asistencias-docentes.index')
             ->with('success', 'Asistencia actualizada correctamente');
     }
 
-    public function destroy(AsistenciaDocente $asistencia)
+    public function destroy(AsistenciaDocente $asistenciaDocente)
     {
-        $asistencia->delete();
+        $asistenciaDocente->delete();
 
-        return redirect()->route('asistencias.index')
+        return redirect()->route('asistencias-docentes.index')
             ->with('success', 'Asistencia eliminada correctamente');
     }
 
@@ -104,4 +110,4 @@ class AsistenciaDocenteController extends Controller
 
         return view('asistencias.reporte-mensual', compact('asistencias', 'mes'));
     }
-} 
+}
