@@ -9,7 +9,7 @@
                         <h2 class="text-xl md:text-2xl font-bold text-gray-700 dark:text-gray-200">
                             {{ $aula->nombre }}
                         </h2>
-                        @if(auth()->user()->hasRole(1))
+                        @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
                             <button onclick="toggleModal()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition">
                                 Agregar Contenido
                             </button>
@@ -24,7 +24,7 @@
                                     <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">
                                         {{ $contenido->titulo }}
                                     </h3>
-                                    @if(auth()->user()->hasRole(1))
+                                    @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
                                         <form action="{{ route('aulas_virtuales.contenidos.destroy', $contenido->id) }}" 
                                               method="POST" 
                                               class="ml-4">
@@ -73,7 +73,7 @@
                     </div>
 
                     <!-- Modal para agregar contenido -->
-                    @if(auth()->user()->hasRole(1))
+                    @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
                         <div id="contenidoModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
                             <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-2xl">
                                 <div class="flex justify-between items-center mb-4">
@@ -197,4 +197,4 @@
         }
     </script>
     @endpush
-</x-app-layout> 
+</x-app-layout>
