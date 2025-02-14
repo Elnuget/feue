@@ -245,50 +245,54 @@ class MatriculaController extends Controller
         $tiposCursos = TipoCurso::all();
         $tipoCursoId = $request->query('tipo_curso');
         $cursoId = $request->query('curso_id');
+        $perPage = $request->query('per_page', 50); // Valor por defecto: 50
 
-        // Filter courses based on selected tipo_curso
-        if ($tipoCursoId) {
-            $cursos = Curso::where('tipo_curso_id', $tipoCursoId)->get(); // Fetch all courses regardless of status
-        } else {
-            $cursos = Curso::all(); // Fetch all courses regardless of status
-        }
+        // Validar que perPage sea uno de los valores permitidos
+        $perPage = in_array($perPage, [50, 100, 200]) ? $perPage : 50;
 
-        // Filter matriculas based on selected curso_id or tipo_curso
-        if ($cursoId) {
-            $matriculas = Matricula::where('curso_id', $cursoId)
-                ->with(['usuario', 'usuario.profile']) // Aseguramos que los perfiles estén cargados
-                ->get()
-                ->sortBy(function($matricula) {
-                    return $matricula->usuario->name;
-                });
-        } elseif ($tipoCursoId) {
-            $cursoIds = Curso::where('tipo_curso_id', $tipoCursoId)->pluck('id');
-            $matriculas = Matricula::whereIn('curso_id', $cursoIds)
-                ->with(['usuario', 'usuario.profile']) // Ensure profiles are loaded
-                ->get()
-                ->sortBy(function($matricula) {
-                    return $matricula->usuario->name;
-                });
-        } else {
-            $matriculas = Matricula::with(['usuario', 'usuario.profile']) // Ensure profiles are loaded
-                ->get()
-                ->sortBy(function($matricula) {
-                    return $matricula->usuario->name;
-                });
-        }
+        // Optimizar la consulta de cursos
+        $cursos = Curso::when($tipoCursoId, function($query) use ($tipoCursoId) {
+            return $query->where('tipo_curso_id', $tipoCursoId);
+        })->get();
 
-        // Generar QRs usando endroid/qr-code
+        // Optimizar la consulta de matrículas con eager loading
+        $matriculas = Matricula::with([
+            'usuario' => function($query) {
+                $query->select('id', 'name', 'email');
+            },
+            'usuario.profile' => function($query) {
+                $query->select('id', 'user_id', 'photo', 'phone', 'carnet');
+            }
+        ])
+        ->when($cursoId, function($query) use ($cursoId) {
+            return $query->where('curso_id', $cursoId);
+        })
+        ->when($tipoCursoId && !$cursoId, function($query) use ($cursos) {
+            return $query->whereIn('curso_id', $cursos->pluck('id'));
+        })
+        ->select('id', 'usuario_id', 'curso_id', 'valor_pendiente', 'estado_matricula')
+        ->orderBy('id')
+        ->paginate($perPage);
+
+        // Generar QRs solo para la página actual
         $qrCodes = [];
-        $writer = new PngWriter();
-        foreach ($matriculas as $matricula) {
-            $qrCode = EndroidQrCode::create($matricula->usuario->id)
-                            ->setSize(200)
-                            ->setMargin(0);
-            $result = $writer->write($qrCode);
-            $qrCodes[$matricula->usuario->id] = base64_encode($result->getString());
+        if ($matriculas->count() > 0) {
+            $writer = new PngWriter();
+            foreach ($matriculas as $matricula) {
+                try {
+                    $qrCode = EndroidQrCode::create($matricula->usuario->id)
+                        ->setSize(200)
+                        ->setMargin(10);
+                    
+                    $result = $writer->write($qrCode);
+                    $qrCodes[$matricula->usuario->id] = base64_encode($result->getString());
+                } catch (\Exception $e) {
+                    \Log::error('Error generando QR: ' . $e->getMessage());
+                }
+            }
         }
 
-        return view('matriculas.listas', compact('tiposCursos', 'cursos', 'matriculas', 'cursoId', 'tipoCursoId', 'qrCodes'));
+        return view('matriculas.listas', compact('tiposCursos', 'cursos', 'matriculas', 'cursoId', 'tipoCursoId', 'qrCodes', 'perPage'));
     }
 
     public function exportPdf(Request $request)

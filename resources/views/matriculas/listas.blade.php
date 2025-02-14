@@ -45,7 +45,7 @@
                 <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                     <form method="GET" action="{{ route('matriculas.listas') }}" id="cursoForm" class="mb-6">
                         <div class="flex gap-4 mb-4">
-                            <select id="tipo_curso" name="tipo_curso" class="w-1/2 rounded-md border-gray-300">
+                            <select id="tipo_curso" name="tipo_curso" class="w-1/3 rounded-md border-gray-300">
                                 <option value="">Seleccione un tipo de curso</option>
                                 @foreach($tiposCursos as $tipoCurso)
                                     <option value="{{ $tipoCurso->id }}" {{ $tipoCursoId == $tipoCurso->id ? 'selected' : '' }}>
@@ -53,13 +53,18 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <select id="curso_id" name="curso_id" class="w-1/2 rounded-md border-gray-300">
+                            <select id="curso_id" name="curso_id" class="w-1/3 rounded-md border-gray-300">
                                 <option value="">Seleccione un curso</option>
                                 @foreach($cursos as $curso)
                                     <option value="{{ $curso->id }}" {{ $cursoId == $curso->id ? 'selected' : '' }}>
                                         {{ $curso->nombre }} ({{ $curso->horario }})
                                     </option>
                                 @endforeach
+                            </select>
+                            <select id="per_page" name="per_page" class="w-1/3 rounded-md border-gray-300">
+                                <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50 registros por página</option>
+                                <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100 registros por página</option>
+                                <option value="200" {{ $perPage == 200 ? 'selected' : '' }}>200 registros por página</option>
                             </select>
                         </div>
                     </form>
@@ -83,8 +88,7 @@
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
                                             {{ __('Valor Pendiente en Moneda') }}
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700"
-                                            style="width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
                                             {{ __('Carnet') }}
                                         </th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
@@ -97,18 +101,17 @@
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     @foreach($matriculas as $index => $matricula)
-                                        <tr class="{{ ($matricula->estado_matricula == 'Entregado' || ($matricula->usuario->profile && $matricula->usuario->profile->carnet == 'Entregado')) ? 'bg-pastel-orange' : ($index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-700' : 'bg-white dark:bg-gray-800') }}">
+                                        <tr class="{{ ($matricula->estado_matricula == 'Entregado' || ($matricula->usuario->profile && $matricula->usuario->profile->carnet == 'Entregado')) ? 'bg-pastel-orange' : ($loop->even ? 'bg-gray-50 dark:bg-gray-700' : 'bg-white dark:bg-gray-800') }}">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
                                                 <input type="checkbox" class="select-row" value="{{ $matricula->id }}">
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
-                                                {{ $loop->iteration }}
+                                                {{ ($matriculas->currentPage() - 1) * $matriculas->perPage() + $loop->iteration }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
-                                                @if($matricula->usuario->profile 
-                                                    && $matricula->usuario->profile->photo 
-                                                    && file_exists(storage_path('app/public/' . $matricula->usuario->profile->photo)))
-                                                    <img src="{{ asset('storage/' . $matricula->usuario->profile->photo) }}" 
+                                                @if($matricula->usuario->profile && $matricula->usuario->profile->photo)
+                                                    <img loading="lazy" 
+                                                         src="{{ asset('storage/' . $matricula->usuario->profile->photo) }}" 
                                                          alt="Profile Photo" 
                                                          class="w-10 h-10 rounded-full object-cover">
                                                 @else
@@ -125,21 +128,16 @@
                                                     ${{ number_format($matricula->valor_pendiente, 2) }}
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700"
-                                                style="width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
                                                 {{ ($matricula->usuario->profile && $matricula->usuario->profile->carnet == 'Entregado') ? 'Entregado' : 'NO' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
-                                                {{ $matricula->usuario->profile->phone ?? 'N/A' }}
                                                 @if($matricula->usuario->profile && $matricula->usuario->profile->phone)
+                                                    {{ $matricula->usuario->profile->phone }}
                                                     @php
                                                         $phone = $matricula->usuario->profile->phone;
-                                                        // Limpia el número de cualquier carácter no numérico
                                                         $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
-                                                        
-                                                        // Si el número no empieza con 593, añadirlo
                                                         if (!str_starts_with($cleanPhone, '593')) {
-                                                            // Si empieza con 0, quitarlo antes de añadir 593
                                                             $cleanPhone = ltrim($cleanPhone, '0');
                                                             $cleanPhone = '593' . $cleanPhone;
                                                         }
@@ -149,6 +147,8 @@
                                                        class="inline-block ml-2 text-green-500 hover:text-green-600 transition-colors duration-200">
                                                         <i class="fab fa-whatsapp text-lg"></i>
                                                     </a>
+                                                @else
+                                                    N/A
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
@@ -158,6 +158,9 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
+                        <div class="mt-4">
+                            {{ $matriculas->withQueryString()->links() }}
                         </div>
                     @else
                         <div class="text-center py-6">
@@ -180,49 +183,90 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Usar constantes para elementos que se usan múltiples veces
+    const form = document.getElementById('cursoForm');
     const tipoCursoSelect = document.getElementById('tipo_curso');
     const cursoSelect = document.getElementById('curso_id');
     const selectAllCheckbox = document.getElementById('select-all');
-    // Cambiar la selección para omitir el checkbox del encabezado
     const rowCheckboxes = document.querySelectorAll('tbody .select-row');
     const printCredentialsButton = document.getElementById('print-credentials');
 
+    // Debounce function para optimizar eventos
+    const debounce = (func, wait) => {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    };
+
+    // Optimizar el manejo de cursos con memoización
+    const cursosPorTipo = {};
     const cursos = @json($cursos);
 
-    tipoCursoSelect.addEventListener('change', function() {
+    const actualizarCursos = (tipoCursoId) => {
+        if (!cursosPorTipo[tipoCursoId]) {
+            cursosPorTipo[tipoCursoId] = cursos.filter(curso => curso.tipo_curso_id == tipoCursoId);
+        }
+        return cursosPorTipo[tipoCursoId];
+    };
+
+    // Event Listeners optimizados
+    tipoCursoSelect.addEventListener('change', debounce(function() {
         if (tipoCursoSelect.value) {
             cursoSelect.disabled = false;
-            const cursosFiltrados = cursos.filter(curso => curso.tipo_curso_id == tipoCursoSelect.value);
-            cursoSelect.innerHTML = '<option value="">Seleccione un curso</option>';
-            cursosFiltrados.forEach(curso => {
-                cursoSelect.innerHTML += `<option value="${curso.id}">${curso.nombre} (${curso.horario})</option>`;
-            });
+            const cursosFiltrados = actualizarCursos(tipoCursoSelect.value);
+            cursoSelect.innerHTML = '<option value="">Seleccione un curso</option>' +
+                cursosFiltrados.map(curso => 
+                    `<option value="${curso.id}">${curso.nombre} (${curso.horario})</option>`
+                ).join('');
         } else {
             cursoSelect.disabled = true;
             cursoSelect.innerHTML = '<option value="">Seleccione un curso</option>';
         }
-        document.getElementById('cursoForm').submit();
+        form.submit();
+    }, 300));
+
+    cursoSelect.addEventListener('change', debounce(function() {
+        form.submit();
+    }, 300));
+
+    // Agregar evento para el selector de registros por página
+    document.getElementById('per_page')?.addEventListener('change', debounce(function() {
+        form.submit();
+    }, 300));
+
+    // Optimizar selección de checkboxes
+    selectAllCheckbox?.addEventListener('change', function() {
+        const isChecked = this.checked;
+        rowCheckboxes.forEach(checkbox => checkbox.checked = isChecked);
     });
 
-    cursoSelect.addEventListener('change', function() {
-        document.getElementById('cursoForm').submit();
-    });
-
-    selectAllCheckbox.addEventListener('change', function() {
-        rowCheckboxes.forEach(checkbox => {
-            checkbox.checked = selectAllCheckbox.checked;
-        });
-    });
-
-    printCredentialsButton.addEventListener('click', function() {
+    // Optimizar impresión de credenciales
+    printCredentialsButton?.addEventListener('click', function() {
         const selectedIds = Array.from(rowCheckboxes)
-            .filter(checkbox => checkbox.checked)
-            .map(checkbox => checkbox.value);
+            .reduce((acc, checkbox) => {
+                if (checkbox.checked) acc.push(checkbox.value);
+                return acc;
+            }, []);
 
         if (selectedIds.length > 0) {
-            const url = "{{ route('matriculas.printCredentials') }}?ids=" + selectedIds.join(',');
+            const url = `{{ route('matriculas.printCredentials') }}?ids=${selectedIds.join(',')}`;
             window.open(url, '_blank');
-            window.location.reload(); // Recargar la vista de listas
+            
+            // Recargar usando fetch para evitar recarga completa
+            fetch(window.location.href)
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const newDoc = parser.parseFromString(html, 'text/html');
+                    document.querySelector('table').innerHTML = newDoc.querySelector('table').innerHTML;
+                })
+                .catch(error => console.error('Error al recargar:', error));
         } else {
             alert('Por favor, seleccione al menos una fila.');
         }
