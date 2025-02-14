@@ -149,22 +149,41 @@ class AulaVirtualController extends Controller
             abort(403, 'No tienes permiso para realizar esta acción.');
         }
 
-        $request->validate([
-            'titulo' => 'required|string|max:255',
-            'contenido' => 'nullable|string',
-            'enlace' => 'nullable|url',
-            'archivo' => 'nullable|file|max:25600',
-        ]);
+        try {
+            $request->validate([
+                'titulo' => 'required|string|max:255',
+                'contenido' => 'nullable|string',
+                'enlace' => 'nullable|url',
+                'archivo' => 'nullable|file|max:25600|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,zip,rar,txt,jpg,jpeg,png,mp4,avi,mov',
+            ], [
+                'archivo.max' => 'El archivo es demasiado grande. El tamaño máximo permitido es 25MB. Para archivos más grandes, se recomienda subirlos a Google Drive y compartir el enlace.',
+                'archivo.mimes' => 'El tipo de archivo no está permitido. Los formatos permitidos son: PDF, Word, Excel, PowerPoint, ZIP, RAR, TXT, imágenes y videos.',
+                'enlace.url' => 'El enlace proporcionado no es válido. Asegúrate de incluir http:// o https://',
+            ]);
 
-        $data = $request->only(['titulo', 'contenido', 'enlace']);
-        
-        if ($request->hasFile('archivo')) {
-            $data['archivo'] = $request->file('archivo')->store('aulas_virtuales/archivos', 'public');
+            $data = $request->only(['titulo', 'contenido', 'enlace']);
+            
+            if ($request->hasFile('archivo')) {
+                $archivo = $request->file('archivo');
+                $tamanioEnMB = $archivo->getSize() / 1024 / 1024;
+                
+                if ($tamanioEnMB > 20) {
+                    return redirect()->back()
+                        ->with('warning', 'El archivo que intentas subir es de ' . number_format($tamanioEnMB, 2) . 'MB. Para archivos grandes, te recomendamos subirlo a Google Drive y compartir el enlace en su lugar.')
+                        ->withInput();
+                }
+                
+                $data['archivo'] = $archivo->store('aulas_virtuales/archivos', 'public');
+            }
+
+            $aulasVirtuale->contenidos()->create($data);
+
+            return redirect()->back()->with('success', 'Contenido agregado exitosamente');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Hubo un error al procesar tu solicitud. Por favor, intenta nuevamente.')
+                ->withInput();
         }
-
-        $aulasVirtuale->contenidos()->create($data);
-
-        return redirect()->back()->with('success', 'Contenido agregado exitosamente');
     }
 
     public function destroyContenido($id)
