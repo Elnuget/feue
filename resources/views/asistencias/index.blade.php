@@ -83,15 +83,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const cursoSelect = document.getElementById('curso');
     const tablaAsistencias = document.getElementById('tabla-asistencias');
 
-    // Obtener las listas de usuarios matriculados y asistencias
-    const listas = @json($listas);
-    const asistencias = @json($asistencias);
+    // Obtener los cursos
     const cursos = @json($cursos);
 
-    anioSelect.addEventListener('change', function() {
+    anioSelect.addEventListener('change', resetSelections);
+    mesSelect.addEventListener('change', resetSelections);
+
+    function resetSelections() {
         if (anioSelect.value && mesSelect.value) {
             tipoCursoSelect.disabled = false;
-            // Optionally reset tipoCursoSelect and cursoSelect
             tipoCursoSelect.value = '';
             cursoSelect.disabled = true;
             cursoSelect.value = '';
@@ -103,29 +103,11 @@ document.addEventListener('DOMContentLoaded', function() {
             cursoSelect.value = '';
             tablaAsistencias.classList.add('hidden');
         }
-    });
-
-    mesSelect.addEventListener('change', function() {
-        if (mesSelect.value && anioSelect.value) {
-            tipoCursoSelect.disabled = false;
-            // Optionally reset tipoCursoSelect and cursoSelect
-            tipoCursoSelect.value = '';
-            cursoSelect.disabled = true;
-            cursoSelect.value = '';
-            tablaAsistencias.classList.add('hidden');
-        } else {
-            tipoCursoSelect.disabled = true;
-            tipoCursoSelect.value = '';
-            cursoSelect.disabled = true;
-            cursoSelect.value = '';
-            tablaAsistencias.classList.add('hidden');
-        }
-    });
+    }
 
     tipoCursoSelect.addEventListener('change', function() {
         if (tipoCursoSelect.value) {
             cursoSelect.disabled = false;
-            // Filtrar cursos por tipo de curso seleccionado
             const cursosFiltrados = cursos.filter(curso => curso.tipo_curso_id == tipoCursoSelect.value);
             cursoSelect.innerHTML = '<option value="">Seleccione un curso</option>';
             cursosFiltrados.forEach(curso => {
@@ -140,108 +122,96 @@ document.addEventListener('DOMContentLoaded', function() {
 
     cursoSelect.addEventListener('change', function() {
         if (cursoSelect.value) {
-            actualizarTabla();
+            cargarDatosAsistencia();
         } else {
             tablaAsistencias.classList.add('hidden');
         }
     });
 
-    function actualizarTabla() {
+    async function cargarDatosAsistencia() {
         const mes = parseInt(mesSelect.value);
         const anio = parseInt(anioSelect.value);
         const cursoId = parseInt(cursoSelect.value);
 
-        if (mes && anio && cursoId) {
-            // Mostrar la tabla
+        if (!mes || !anio || !cursoId) return;
+
+        try {
+            // Mostrar indicador de carga
+            tablaAsistencias.innerHTML = '<div class="text-center py-4">Cargando datos...</div>';
             tablaAsistencias.classList.remove('hidden');
 
-            const diasEnMes = new Date(anio, mes, 0).getDate();
-            const headerRow = tablaAsistencias.querySelector('thead');
-            headerRow.innerHTML = `
-                <tr>
-                    <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">#</th>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
-                    <!-- Días del mes -->
-                    ${Array.from({ length: diasEnMes }, (_, i) => `
-                        <th class="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-8">${i + 1}</th>
-                    `).join('')}
-                </tr>
-            `;
-
-            // Filtrar listas sólo por curso, sin filtrar por año o mes
-            const usuariosMatriculados = listas.filter(lista =>
-                lista.curso_id === cursoId
-            );
-
-            // Ordenar usuarios matriculados alfabéticamente por nombre
-            usuariosMatriculados.sort((a, b) => {
-                const nameA = a.usuario.name.toUpperCase();
-                const nameB = b.usuario.name.toUpperCase();
-                if (nameA < nameB) {
-                    return -1;
-                }
-                if (nameA > nameB) {
-                    return 1;
-                }
-                return 0;
+            const response = await fetch('/asistencias/get-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({ anio, mes, curso_id: cursoId })
             });
 
-            const tbody = tablaAsistencias.querySelector('tbody');
-            tbody.innerHTML = '';
+            if (!response.ok) throw new Error('Error al cargar los datos');
 
-            usuariosMatriculados.forEach((lista, index) => {
-                const user = lista.usuario;
-
-                // Filtrar asistencias del usuario en el mes y año seleccionados
-                const asistenciasUsuario = asistencias.filter(asistencia => {
-                    return asistencia.user_id === user.id &&
-                        new Date(asistencia.fecha_hora).getFullYear() === anio &&
-                        new Date(asistencia.fecha_hora).getMonth() + 1 === mes;
-                });
-
-                // Crear un array de días con asistencia
-                const diasConAsistencia = asistenciasUsuario.map(asistencia => new Date(asistencia.fecha_hora).getDate());
-
-                let row = `
-                    <tr>
-                        <td class="px-2 py-2 text-center text-sm text-gray-900">${index + 1}</td>
-                        <td class="px-4 py-2 text-left text-sm text-gray-900">${user ? user.name : 'N/A'}</td>
-                `;
-
-                // Agregar celdas para cada día
-                for (let dia = 1; dia <= diasEnMes; dia++) {
-                    if (diasConAsistencia.includes(dia)) {
-                        // Marcar con un check
-                        row += `
-                            <td class="px-1 py-2 text-center text-sm text-green-500">✔️</td>
-                        `;
-                    } else {
-                        row += `
-                            <td class="px-1 py-2 text-center text-sm text-gray-900"></td>
-                        `;
-                    }
-                }
-
-                row += '</tr>';
-                tbody.innerHTML += row;
-            });
+            const data = await response.json();
+            actualizarTabla(data.matriculas, data.asistencias, mes, anio);
+        } catch (error) {
+            console.error('Error:', error);
+            tablaAsistencias.innerHTML = '<div class="text-center py-4 text-red-500">Error al cargar los datos</div>';
         }
     }
 
-    // Trigger change event to initialize the selects with default values
-    anioSelect.dispatchEvent(new Event('change'));
-    mesSelect.dispatchEvent(new Event('change'));
+    function actualizarTabla(matriculas, asistencias, mes, anio) {
+        const diasEnMes = new Date(anio, mes, 0).getDate();
+        
+        // Crear estructura de la tabla
+        let tablaHTML = `
+            <table class="min-w-full divide-y divide-gray-200 border">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">#</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
+                        ${Array.from({ length: diasEnMes }, (_, i) => `
+                            <th class="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-8">${i + 1}</th>
+                        `).join('')}
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+        `;
 
+        // Generar filas de la tabla
+        matriculas.forEach((matricula, index) => {
+            const asistenciasUsuario = asistencias.filter(a => a.user_id === matricula.usuario.id);
+            const diasConAsistencia = asistenciasUsuario.map(a => new Date(a.fecha_hora).getDate());
+
+            tablaHTML += `
+                <tr>
+                    <td class="px-2 py-2 text-center text-sm text-gray-900">${index + 1}</td>
+                    <td class="px-4 py-2 text-left text-sm text-gray-900">${matricula.usuario.name}</td>
+                    ${Array.from({ length: diasEnMes }, (_, dia) => `
+                        <td class="px-1 py-2 text-center text-sm ${diasConAsistencia.includes(dia + 1) ? 'text-green-500' : 'text-gray-900'}">
+                            ${diasConAsistencia.includes(dia + 1) ? '✔️' : ''}
+                        </td>
+                    `).join('')}
+                </tr>
+            `;
+        });
+
+        tablaHTML += '</tbody></table>';
+        tablaAsistencias.innerHTML = tablaHTML;
+    }
+
+    // Exportar a Excel
     document.getElementById('export-excel').addEventListener('click', function() {
-        const table = document.getElementById('tabla-asistencias').querySelector('table');
+        const table = document.querySelector('#tabla-asistencias table');
+        if (!table) {
+            alert('Por favor, primero cargue los datos de asistencia');
+            return;
+        }
+
         const tipoCurso = tipoCursoSelect.options[tipoCursoSelect.selectedIndex].text || 'TipoCurso';
         const curso = cursoSelect.options[cursoSelect.selectedIndex].text || 'Curso';
         let titulo = `${tipoCurso}_${curso}`.replace(/\s+/g, '_');
         
-        /* Convert table to workbook with a fixed sheet name */
         const workbook = XLSX.utils.table_to_book(table, { sheet: 'Asistencias' });
-
-        /* Export to Excel with the full title in the filename */
         XLSX.writeFile(workbook, `${titulo}.xlsx`);
     });
 });

@@ -13,21 +13,34 @@ class AsistenciaController extends Controller
 {
     public function index()
     {
-        $asistencias = Asistencia::with('user')->get();
-        $listas = Matricula::with('usuario')->get()->map(function($lista) {
-            $lista->anio = $lista->created_at->year;
-            $lista->mes = $lista->created_at->month;
-            return $lista;
-        });
-
-        // Verificar asistencias para cada usuario en las matrículas
-        $listas->each(function($lista) use ($asistencias) {
-            $lista->usuario->asistencias = $asistencias->where('user_id', $lista->usuario->id);
-        });
-
         $cursos = Curso::all();
         $tiposCursos = TipoCurso::all();
-        return view('asistencias.index', compact('asistencias', 'listas', 'cursos', 'tiposCursos'));
+        return view('asistencias.index', compact('cursos', 'tiposCursos'));
+    }
+
+    public function getAsistencias(Request $request)
+    {
+        $request->validate([
+            'anio' => 'required|integer',
+            'mes' => 'required|integer',
+            'curso_id' => 'required|integer'
+        ]);
+
+        $matriculas = Matricula::where('curso_id', $request->curso_id)
+            ->with(['usuario' => function($query) {
+                $query->orderBy('name');
+            }])
+            ->get();
+
+        $asistencias = Asistencia::whereIn('user_id', $matriculas->pluck('usuario_id'))
+            ->whereYear('fecha_hora', $request->anio)
+            ->whereMonth('fecha_hora', $request->mes)
+            ->get();
+
+        return response()->json([
+            'matriculas' => $matriculas,
+            'asistencias' => $asistencias
+        ]);
     }
 
     public function create()

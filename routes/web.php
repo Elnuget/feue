@@ -122,6 +122,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'destroy' => 'asistencias-docentes.destroy',
     ]);
     Route::get('/asistencias/reporte-mensual', [AsistenciaDocenteController::class, 'reporteMensual'])->name('asistencias.reporte-mensual');
+    Route::post('/asistencias/get-data', [AsistenciaController::class, 'getAsistencias'])->name('asistencias.getData');
 });
 
 require __DIR__.'/auth.php';
