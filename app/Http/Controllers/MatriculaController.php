@@ -334,12 +334,75 @@ class MatriculaController extends Controller
             $sheet->setCellValue('B' . ($index + 2), $matricula->usuario->name);
         }
 
-        $writer = new Xlsx($spreadsheet);
-        $fileName = 'listas_matriculados_' . $curso->nombre . '_' . $curso->horario . '.xlsx';
-        $temp_file = tempnam(sys_get_temp_dir(), $fileName);
-        $writer->save($temp_file);
+        // Ajustar el ancho de las columnas
+        foreach(range('A','B') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
 
-        return response()->download($temp_file, $fileName)->deleteFileAfterSend(true);
+        $writer = new Xlsx($spreadsheet);
+        
+        // Sanitizar el nombre del archivo
+        $fileName = 'listas_matriculados_' . preg_replace('/[^a-zA-Z0-9]/', '_', $curso->nombre) . '.xlsx';
+        
+        // Crear una respuesta directa
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $fileName . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
+    }
+
+    public function exportPendientesExcel(Request $request)
+    {
+        $cursoId = $request->input('curso_id');
+        $curso = \App\Models\Curso::findOrFail($cursoId);
+
+        $matriculas = Matricula::where('curso_id', $cursoId)
+                               ->where('valor_pendiente', '>', 0)
+                               ->with(['usuario' => function($query) {
+                                   $query->with('profile');
+                               }])
+                               ->get()
+                               ->sortBy(function($matricula) {
+                                   return $matricula->usuario->name;
+                               });
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        
+        // Establecer encabezados
+        $sheet->setCellValue('A1', '#');
+        $sheet->setCellValue('B1', 'Nombre del Matriculado');
+        $sheet->setCellValue('C1', 'Valor Pendiente');
+        $sheet->setCellValue('D1', 'Celular');
+
+        // Llenar datos
+        foreach ($matriculas as $index => $matricula) {
+            $rowIndex = $index + 2;
+            $sheet->setCellValue('A' . $rowIndex, $index + 1);
+            $sheet->setCellValue('B' . $rowIndex, $matricula->usuario->name);
+            $sheet->setCellValue('C' . $rowIndex, $matricula->valor_pendiente);
+            $sheet->setCellValue('D' . $rowIndex, $matricula->usuario->profile->phone ?? 'N/A');
+        }
+
+        // Ajustar el ancho de las columnas
+        foreach(range('A','D') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        
+        // Sanitizar el nombre del archivo
+        $fileName = 'pendientes_' . preg_replace('/[^a-zA-Z0-9]/', '_', $curso->nombre) . '.xlsx';
+        
+        // Crear una respuesta directa
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $fileName . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
     }
 
     public function printCredentials(Request $request)

@@ -20,6 +20,9 @@
                                 <a href="{{ route('matriculas.exportExcel', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                                     {{ __('Exportar Excel') }}
                                 </a>
+                                <a href="{{ route('matriculas.exportPendientesExcel', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
+                                    {{ __('Exportar Pendientes') }}
+                                </a>
                             @endif
                         </div>
                         <div x-show="openOptions" class="w-full mt-4">

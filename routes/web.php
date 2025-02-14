@@ -94,6 +94,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/listas', [MatriculaController::class, 'listas'])->name('matriculas.listas');
     Route::get('/listas/export-pdf', [MatriculaController::class, 'exportPdf'])->name('matriculas.exportPdf');
     Route::get('/listas/export-excel', [MatriculaController::class, 'exportExcel'])->name('matriculas.exportExcel');
+    Route::get('/listas/export-pendientes-excel', [MatriculaController::class, 'exportPendientesExcel'])->name('matriculas.exportPendientesExcel');
     Route::get('/asistencias/scan', [AsistenciaController::class, 'scanQR'])->name('asistencias.scan');
     Route::post('/asistencias/register-scan', [AsistenciaController::class, 'registerScan'])->name('asistencias.registerScan');
     Route::resource('asistencias', AsistenciaController::class);
