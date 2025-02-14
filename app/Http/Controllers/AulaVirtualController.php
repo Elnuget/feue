@@ -153,7 +153,7 @@ class AulaVirtualController extends Controller
             'titulo' => 'required|string|max:255',
             'contenido' => 'nullable|string',
             'enlace' => 'nullable|url',
-            'archivo' => 'nullable|file|max:10240',
+            'archivo' => 'nullable|file|max:25600',
         ]);
 
         $data = $request->only(['titulo', 'contenido', 'enlace']);
