@@ -53,6 +53,7 @@
                                                                name="cursos[]" 
                                                                id="curso_{{ $curso->id }}" 
                                                                value="{{ $curso->id }}"
+                                                               onchange="updateCursoId(this)"
                                                                class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                                                {{ old('cursos') && in_array($curso->id, old('cursos')) ? 'checked' : '' }}>
                                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $curso->estado === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
@@ -84,6 +85,7 @@
                         </div>
 
                         <div class="flex justify-end mt-6 space-x-3">
+                            <input type="hidden" name="curso_id" id="curso_id" value="">
                             <a href="{{ route('aulas_virtuales.index') }}" 
                                class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition">
                                 Cancelar
@@ -98,4 +100,26 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+        function updateCursoId(checkbox) {
+            if (checkbox.checked) {
+                document.getElementById('curso_id').value = checkbox.value;
+            } else {
+                // Si se desmarca, buscar el siguiente checkbox marcado
+                const checkedBoxes = document.querySelectorAll('input[name="cursos[]"]:checked');
+                document.getElementById('curso_id').value = checkedBoxes.length > 0 ? checkedBoxes[0].value : '';
+            }
+        }
+
+        // Inicializar curso_id con el primer curso seleccionado al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkedBoxes = document.querySelectorAll('input[name="cursos[]"]:checked');
+            if (checkedBoxes.length > 0) {
+                document.getElementById('curso_id').value = checkedBoxes[0].value;
+            }
+        });
+    </script>
+    @endpush
 </x-app-layout>

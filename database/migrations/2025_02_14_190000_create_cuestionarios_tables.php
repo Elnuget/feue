@@ -50,7 +50,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('intento_id')->constrained('intentos_cuestionario')->onDelete('cascade');
             $table->foreignId('pregunta_id')->constrained()->onDelete('cascade');
-            $table->foreignId('opcion_id')->constrained()->onDelete('cascade');
+            $table->foreignId('opcion_id')->constrained('opciones')->onDelete('cascade');
             $table->timestamps();
         });
     }

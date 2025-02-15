@@ -32,6 +32,9 @@
             <x-nav-link :href="route('sesiones-docentes.index')" :active="request()->routeIs('sesiones-docentes.*')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
                 📅 {{ __('Sesiones Docentes') }}
             </x-nav-link>
+            <x-nav-link :href="route('matriculas.listas')" :active="request()->routeIs('matriculas.listas')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+                📋 {{ __('Listas') }}
+            </x-nav-link>
         @endif
 
         <!-- Asistencias Docentes - Solo visible para Admin -->
@@ -62,9 +65,7 @@
         @endif
 
         @if(auth()->user()->hasRole(1))
-            <x-nav-link :href="route('matriculas.listas')" :active="request()->routeIs('matriculas.listas')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
-                📋 {{ __('Listas') }}
-            </x-nav-link>
+            
             <x-nav-link :href="route('tipos_cursos.index')" :active="request()->routeIs('tipos_cursos.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
                 🎨 {{ __('Tipos de Cursos') }}
             </x-nav-link>

@@ -50,11 +50,16 @@ class AulaVirtualController extends Controller
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
+            'curso_id' => 'required|exists:cursos,id',
             'cursos' => 'nullable|array',
             'cursos.*' => 'exists:cursos,id'
         ]);
 
-        $aulaVirtual = AulaVirtual::create($validated);
+        $aulaVirtual = AulaVirtual::create([
+            'nombre' => $validated['nombre'],
+            'descripcion' => $validated['descripcion'],
+            'curso_id' => $validated['curso_id']
+        ]);
         
         if ($request->has('cursos')) {
             $aulaVirtual->cursos()->sync($request->cursos);
