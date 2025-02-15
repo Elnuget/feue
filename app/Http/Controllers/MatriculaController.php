@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Storage;
 use Endroid\QrCode\QrCode as EndroidQrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
+use App\Models\IntentoCuestionario;
+use App\Models\AulaVirtual;
 
 class MatriculaController extends Controller
 {
@@ -480,5 +482,38 @@ class MatriculaController extends Controller
 
         // No need to store in session anymore since we'll use a fixed path
         return redirect()->route('matriculas.listas')->with('success', 'Fondo actualizado correctamente.');
+    }
+
+    public function calificaciones(Matricula $matricula)
+    {
+        if (!auth()->user()->hasRole(1) && $matricula->usuario_id != auth()->id()) {
+            return redirect()->route('matriculas.index')
+                ->with('error', 'No tienes permiso para ver estas calificaciones.');
+        }
+
+        // Obtener los intentos de cuestionarios del usuario para el curso de la matrícula
+        $intentos = IntentoCuestionario::whereHas('cuestionario.aulaVirtual', function($query) use ($matricula) {
+                $query->whereHas('cursos', function($q) use ($matricula) {
+                    $q->where('cursos.id', $matricula->curso_id);
+                });
+            })
+            ->where('usuario_id', $matricula->usuario_id)
+            ->whereNotNull('calificacion')
+            ->with(['cuestionario' => function($query) {
+                $query->with('aulaVirtual');
+            }])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Calcular estadísticas
+        $estadisticas = [
+            'promedio' => $intentos->isNotEmpty() ? $intentos->avg('calificacion') : 0,
+            'mejor_nota' => $intentos->isNotEmpty() ? $intentos->max('calificacion') : 0,
+            'peor_nota' => $intentos->isNotEmpty() ? $intentos->min('calificacion') : 0,
+            'total_cuestionarios' => $intentos->groupBy('cuestionario_id')->count(),
+            'cuestionarios_completados' => $intentos->count(),
+        ];
+
+        return view('matriculas.calificaciones', compact('matricula', 'intentos', 'estadisticas'));
     }
 }

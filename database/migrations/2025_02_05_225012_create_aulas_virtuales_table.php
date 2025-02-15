@@ -9,6 +9,7 @@ return new class extends Migration {
     {
         Schema::create('aulas_virtuales', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('curso_id')->constrained()->onDelete('cascade');
             $table->string('nombre');
             $table->text('descripcion')->nullable();
             $table->timestamps();

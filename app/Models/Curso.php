@@ -20,4 +20,12 @@ class Curso extends Model
     {
         return $this->hasMany(Matricula::class);
     }
+
+    /**
+     * Obtener las aulas virtuales asociadas al curso.
+     */
+    public function aulasVirtuales()
+    {
+        return $this->belongsToMany(AulaVirtual::class, 'aula_virtual_curso');
+    }
 }

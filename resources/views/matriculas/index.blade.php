@@ -239,6 +239,12 @@
                                                         🗑️
                                                     </button>
                                                 </form>
+                                                <!-- Nuevo botón de calificaciones -->
+                                                <a href="{{ route('matriculas.calificaciones', $matricula) }}" 
+                                                   class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-1 px-2 rounded transition"
+                                                   title="Ver calificaciones">
+                                                    📊
+                                                </a>
                                             </td>
                                         @endif
                                     </tr>

@@ -17,6 +17,7 @@ use App\Http\Controllers\PruebasController;
 use App\Http\Controllers\AulaVirtualController;
 use App\Http\Controllers\SesionDocenteController;
 use App\Http\Controllers\AsistenciaDocenteController;
+use App\Http\Controllers\CuestionarioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -124,6 +125,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ]);
     Route::get('/asistencias/reporte-mensual', [AsistenciaDocenteController::class, 'reporteMensual'])->name('asistencias.reporte-mensual');
     Route::post('/asistencias/get-data', [AsistenciaController::class, 'getAsistencias'])->name('asistencias.getData');
+
+    // Dentro del grupo de rutas con middleware auth
+    Route::get('/cuestionarios/{cuestionario}/revision', [CuestionarioController::class, 'revision'])
+         ->name('cuestionarios.revision');
+
+    Route::get('/matriculas/{matricula}/calificaciones', [MatriculaController::class, 'calificaciones'])
+         ->name('matriculas.calificaciones');
+});
+
+// Rutas para cuestionarios
+Route::middleware(['auth'])->group(function () {
+    Route::get('/aulas-virtuales/{aulaVirtual}/cuestionarios/create', [CuestionarioController::class, 'create'])
+         ->name('cuestionarios.create');
+    
+    Route::post('/aulas-virtuales/{aulaVirtual}/cuestionarios', [CuestionarioController::class, 'store'])
+         ->name('cuestionarios.store');
+    
+    Route::get('/cuestionarios/{cuestionario}', [CuestionarioController::class, 'show'])
+         ->name('cuestionarios.show');
+    
+    Route::post('/intentos/{intento}/respuestas', [CuestionarioController::class, 'guardarRespuesta'])
+         ->name('cuestionarios.guardar-respuesta');
+    
+    Route::post('/intentos/{intento}/finalizar', [CuestionarioController::class, 'finalizar'])
+         ->name('cuestionarios.finalizar');
 });
 
 require __DIR__.'/auth.php';

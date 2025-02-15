@@ -12,6 +12,7 @@ class AulaVirtual extends Model
     protected $table = 'aulas_virtuales';
 
     protected $fillable = [
+        'curso_id',
         'nombre',
         'descripcion'
     ];
@@ -21,12 +22,16 @@ class AulaVirtual extends Model
      */
     public function cursos()
     {
-        return $this->belongsToMany(Curso::class, 'aula_virtual_curso')
-                    ->withTimestamps();
+        return $this->belongsToMany(Curso::class, 'aula_virtual_curso');
     }
 
     public function contenidos()
     {
         return $this->hasMany(AulaVirtualContenido::class);
+    }
+
+    public function cuestionarios()
+    {
+        return $this->hasMany(Cuestionario::class);
     }
 }
