@@ -7,21 +7,24 @@ use Illuminate\Database\Eloquent\Model;
 class Cuestionario extends Model
 {
     protected $fillable = [
-        'aula_virtual_id',
         'titulo',
         'descripcion',
         'tiempo_limite',
         'intentos_permitidos',
-        'activo',
         'permite_revision',
         'retroalimentacion',
-        'config_revision'
+        'activo',
+        'aula_virtual_id',
+        'fecha_inicio',
+        'fecha_fin'
     ];
 
     protected $casts = [
         'config_revision' => 'array',
         'permite_revision' => 'boolean',
-        'activo' => 'boolean'
+        'activo' => 'boolean',
+        'fecha_inicio' => 'datetime',
+        'fecha_fin' => 'datetime'
     ];
 
     public function aulaVirtual()

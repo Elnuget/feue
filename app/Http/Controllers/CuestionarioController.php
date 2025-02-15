@@ -6,8 +6,10 @@ use App\Models\Cuestionario;
 use App\Models\AulaVirtual;
 use App\Models\IntentoCuestionario;
 use App\Models\RespuestaUsuario;
+use App\Models\Pregunta;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class CuestionarioController extends Controller
 {
@@ -17,7 +19,16 @@ class CuestionarioController extends Controller
             abort(403, 'No tienes permiso para realizar esta acción.');
         }
 
-        return view('cuestionarios.create', compact('aulaVirtual'));
+        // Crear el cuestionario primero con valores por defecto
+        $cuestionario = $aulaVirtual->cuestionarios()->create([
+            'titulo' => 'Nuevo Cuestionario',
+            'activo' => false,
+            'tiempo_limite' => 30, // 30 minutos por defecto
+            'intentos_permitidos' => 1, // 1 intento por defecto
+            'permite_revision' => false
+        ]);
+
+        return view('cuestionarios.create', compact('aulaVirtual', 'cuestionario'));
     }
 
     public function store(Request $request, AulaVirtual $aulaVirtual)
@@ -53,27 +64,13 @@ class CuestionarioController extends Controller
                     throw new \Exception('El cuestionario no pertenece a esta aula virtual');
                 }
 
-                // Log para debug
-                \Log::info('Datos de preguntas recibidos:', [
-                    'preguntas' => $request->preguntas
-                ]);
-
                 foreach ($request->preguntas as $preguntaData) {
-                    // Validar datos básicos de la pregunta
-                    if (empty($preguntaData['pregunta']) || empty($preguntaData['tipo'])) {
-                        throw new \Exception('Datos de pregunta incompletos');
-                    }
-
                     $pregunta = $cuestionario->preguntas()->create([
                         'pregunta' => $preguntaData['pregunta'],
                         'tipo' => $preguntaData['tipo'],
                     ]);
 
                     if ($preguntaData['tipo'] === 'verdadero_falso') {
-                        if (!isset($preguntaData['respuesta_correcta'])) {
-                            throw new \Exception('No se especificó la respuesta correcta para verdadero/falso');
-                        }
-
                         $pregunta->opciones()->createMany([
                             [
                                 'texto' => 'Verdadero',
@@ -85,14 +82,6 @@ class CuestionarioController extends Controller
                             ]
                         ]);
                     } else {
-                        if (!isset($preguntaData['opciones']) || !is_array($preguntaData['opciones'])) {
-                            throw new \Exception('No se encontraron opciones para opción múltiple');
-                        }
-
-                        if (!isset($preguntaData['opciones_correcta'])) {
-                            throw new \Exception('No se especificó la opción correcta');
-                        }
-
                         foreach ($preguntaData['opciones'] as $index => $opcion) {
                             if (empty($opcion['texto'])) continue;
 
@@ -102,13 +91,6 @@ class CuestionarioController extends Controller
                             ]);
                         }
                     }
-
-                    // Log para debug
-                    \Log::info('Pregunta creada:', [
-                        'pregunta_id' => $pregunta->id,
-                        'tipo' => $pregunta->tipo,
-                        'opciones' => $pregunta->opciones()->get()
-                    ]);
                 }
 
                 \DB::commit();
@@ -248,5 +230,188 @@ class CuestionarioController extends Controller
         }
 
         return view('cuestionarios.revision', compact('cuestionario', 'intento'));
+    }
+
+    public function toggleEstado(Request $request, Cuestionario $cuestionario)
+    {
+        if (!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente')) {
+            abort(403, 'No tienes permiso para realizar esta acción.');
+        }
+
+        $cuestionario->update([
+            'activo' => $request->activo
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function actualizarConfig(Request $request, Cuestionario $cuestionario)
+    {
+        if (!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente')) {
+            abort(403, 'No tienes permiso para realizar esta acción.');
+        }
+
+        $validated = $request->validate([
+            'campo' => 'required|in:tiempo_limite,intentos_permitidos',
+            'valor' => 'required|numeric|min:1'
+        ]);
+
+        $cuestionario->update([
+            $validated['campo'] => $validated['valor']
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function programar(Request $request, Cuestionario $cuestionario)
+    {
+        if (!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente')) {
+            abort(403, 'No tienes permiso para realizar esta acción.');
+        }
+
+        $validated = $request->validate([
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date|after:fecha_inicio'
+        ]);
+
+        $cuestionario->update([
+            'fecha_inicio' => $validated['fecha_inicio'],
+            'fecha_fin' => $validated['fecha_fin']
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function destroy(Cuestionario $cuestionario)
+    {
+        if (!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente')) {
+            abort(403, 'No tienes permiso para realizar esta acción.');
+        }
+
+        $cuestionario->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function edit(Cuestionario $cuestionario)
+    {
+        if (!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente')) {
+            abort(403, 'No tienes permiso para realizar esta acción.');
+        }
+
+        return view('cuestionarios.edit', compact('cuestionario'));
+    }
+
+    public function update(Request $request, Cuestionario $cuestionario)
+    {
+        if (!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente')) {
+            abort(403, 'No tienes permiso para realizar esta acción.');
+        }
+
+        $validated = $request->validate([
+            'titulo' => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
+            'tiempo_limite' => 'required|integer|min:1',
+            'intentos_permitidos' => 'required|integer|min:1',
+            'permite_revision' => 'boolean',
+            'retroalimentacion' => 'nullable|string'
+        ]);
+
+        $cuestionario->update($validated);
+
+        return redirect()
+            ->route('cuestionarios.show', $cuestionario)
+            ->with('success', 'Cuestionario actualizado exitosamente');
+    }
+
+    public function eliminarPregunta(Pregunta $pregunta)
+    {
+        if (!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente')) {
+            abort(403, 'No tienes permiso para realizar esta acción.');
+        }
+
+        $pregunta->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function agregarPregunta(Request $request, Cuestionario $cuestionario)
+    {
+        if (!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente')) {
+            abort(403, 'No tienes permiso para realizar esta acción.');
+        }
+
+        try {
+            \DB::beginTransaction();
+
+            // Crear la pregunta
+            $pregunta = $cuestionario->preguntas()->create([
+                'pregunta' => $request->pregunta,
+                'tipo' => $request->tipo,
+            ]);
+
+            // Si es verdadero/falso
+            if ($request->tipo === 'verdadero_falso') {
+                if (!$request->has('respuesta_correcta')) {
+                    throw new \Exception('Debe seleccionar una respuesta correcta');
+                }
+                
+                $pregunta->opciones()->createMany([
+                    [
+                        'texto' => 'Verdadero',
+                        'es_correcta' => $request->respuesta_correcta === 'verdadero'
+                    ],
+                    [
+                        'texto' => 'Falso',
+                        'es_correcta' => $request->respuesta_correcta === 'falso'
+                    ]
+                ]);
+            } 
+            // Si es opción múltiple
+            else {
+                if (!$request->has('opciones') || !is_array($request->opciones)) {
+                    throw new \Exception('Debe proporcionar opciones para la pregunta');
+                }
+
+                foreach ($request->opciones as $index => $opcion) {
+                    if (empty($opcion['texto'])) continue;
+
+                    $pregunta->opciones()->create([
+                        'texto' => $opcion['texto'],
+                        'es_correcta' => (string)$index === (string)$request->opciones_correcta
+                    ]);
+                }
+            }
+
+            \DB::commit();
+            return response()->json(['success' => true]);
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    public function obtenerPreguntas(Cuestionario $cuestionario)
+    {
+        $preguntas = $cuestionario->preguntas()
+            ->with('opciones')
+            ->get()
+            ->map(function ($pregunta) {
+                return [
+                    'id' => $pregunta->id,
+                    'pregunta' => $pregunta->pregunta,
+                    'tipo' => $pregunta->tipo,
+                    'imagen_url' => $pregunta->imagen ? Storage::url($pregunta->imagen) : null,
+                    'opciones' => $pregunta->opciones->map(function ($opcion) {
+                        return [
+                            'texto' => $opcion->texto,
+                            'es_correcta' => $opcion->es_correcta
+                        ];
+                    })
+                ];
+            });
+
+        return response()->json($preguntas);
     }
 } 

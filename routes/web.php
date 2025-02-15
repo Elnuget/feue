@@ -132,6 +132,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/matriculas/{matricula}/calificaciones', [MatriculaController::class, 'calificaciones'])
          ->name('matriculas.calificaciones');
+
+    // Nueva ruta para agregar preguntas
+    Route::post('/cuestionarios/{cuestionario}/preguntas', [CuestionarioController::class, 'agregarPregunta'])
+         ->name('cuestionarios.preguntas.store');
+
+    // Dentro del grupo de middleware auth
+    Route::get('/cuestionarios/{cuestionario}/preguntas', [CuestionarioController::class, 'obtenerPreguntas'])
+         ->name('cuestionarios.preguntas.index');
 });
 
 // Rutas para cuestionarios
@@ -150,6 +158,28 @@ Route::middleware(['auth'])->group(function () {
     
     Route::post('/intentos/{intento}/finalizar', [CuestionarioController::class, 'finalizar'])
          ->name('cuestionarios.finalizar');
+
+    // Nuevas rutas para funciones administrativas de cuestionarios
+    Route::post('/cuestionarios/{cuestionario}/toggle-estado', [CuestionarioController::class, 'toggleEstado'])
+         ->name('cuestionarios.toggle-estado');
+    
+    Route::post('/cuestionarios/{cuestionario}/actualizar-config', [CuestionarioController::class, 'actualizarConfig'])
+         ->name('cuestionarios.actualizar-config');
+    
+    Route::post('/cuestionarios/{cuestionario}/programar', [CuestionarioController::class, 'programar'])
+         ->name('cuestionarios.programar');
+    
+    Route::delete('/cuestionarios/{cuestionario}', [CuestionarioController::class, 'destroy'])
+         ->name('cuestionarios.destroy');
+
+    Route::get('/cuestionarios/{cuestionario}/edit', [CuestionarioController::class, 'edit'])
+         ->name('cuestionarios.edit');
+         
+    Route::put('/cuestionarios/{cuestionario}', [CuestionarioController::class, 'update'])
+         ->name('cuestionarios.update');
 });
+
+Route::delete('/preguntas/{pregunta}', [CuestionarioController::class, 'eliminarPregunta'])
+     ->name('preguntas.destroy');
 
 require __DIR__.'/auth.php';
