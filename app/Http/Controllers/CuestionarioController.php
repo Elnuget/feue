@@ -19,14 +19,24 @@ class CuestionarioController extends Controller
             abort(403, 'No tienes permiso para realizar esta acción.');
         }
 
-        // Crear el cuestionario primero con valores por defecto
-        $cuestionario = $aulaVirtual->cuestionarios()->create([
-            'titulo' => 'Nuevo Cuestionario',
-            'activo' => false,
-            'tiempo_limite' => 30, // 30 minutos por defecto
-            'intentos_permitidos' => 1, // 1 intento por defecto
-            'permite_revision' => false
-        ]);
+        // Verificar si ya existe un cuestionario en proceso de creación
+        $cuestionarioExistente = $aulaVirtual->cuestionarios()
+            ->where('activo', false)
+            ->latest()
+            ->first();
+
+        if ($cuestionarioExistente) {
+            $cuestionario = $cuestionarioExistente;
+        } else {
+            // Crear el cuestionario primero con valores por defecto
+            $cuestionario = $aulaVirtual->cuestionarios()->create([
+                'titulo' => 'Nuevo Cuestionario',
+                'activo' => false,
+                'tiempo_limite' => 30,
+                'intentos_permitidos' => 1,
+                'permite_revision' => false
+            ]);
+        }
 
         return view('cuestionarios.create', compact('aulaVirtual', 'cuestionario'));
     }
@@ -40,16 +50,23 @@ class CuestionarioController extends Controller
         try {
             \DB::beginTransaction();
 
-            // Si es el primer envío, crear el cuestionario base
+            // Si es el primer envío, actualizar el cuestionario existente
             if ($request->input('modo') === 'inicial') {
-                $cuestionario = $aulaVirtual->cuestionarios()->create([
+                // Buscar el cuestionario inactivo más reciente
+                $cuestionario = $aulaVirtual->cuestionarios()
+                    ->where('activo', false)
+                    ->latest()
+                    ->firstOrFail();
+
+                // Actualizar el cuestionario existente en lugar de crear uno nuevo
+                $cuestionario->update([
                     'titulo' => $request->titulo,
                     'descripcion' => $request->descripcion,
                     'tiempo_limite' => $request->tiempo_limite,
                     'intentos_permitidos' => $request->intentos_permitidos,
                     'permite_revision' => $request->has('permite_revision'),
                     'retroalimentacion' => $request->retroalimentacion,
-                    'activo' => true,
+                    'activo' => true
                 ]);
 
                 \DB::commit();
@@ -69,6 +86,22 @@ class CuestionarioController extends Controller
                         'pregunta' => $preguntaData['pregunta'],
                         'tipo' => $preguntaData['tipo'],
                     ]);
+
+                    // Procesar imagen si existe
+                    if (!empty($preguntaData['imagen'])) {
+                        // Decodificar la imagen base64
+                        $imagen = $preguntaData['imagen'];
+                        $imagen = str_replace('data:image/png;base64,', '', $imagen);
+                        $imagen = str_replace('data:image/jpeg;base64,', '', $imagen);
+                        $imagen = str_replace(' ', '+', $imagen);
+                        
+                        // Guardar la imagen
+                        $nombreImagen = 'pregunta_' . $pregunta->id . '_' . time() . '.jpg';
+                        Storage::disk('public')->put('preguntas/' . $nombreImagen, base64_decode($imagen));
+                        
+                        // Actualizar la pregunta con la ruta de la imagen
+                        $pregunta->update(['imagen' => 'preguntas/' . $nombreImagen]);
+                    }
 
                     if ($preguntaData['tipo'] === 'verdadero_falso') {
                         $pregunta->opciones()->createMany([
@@ -115,6 +148,7 @@ class CuestionarioController extends Controller
     {
         // Cargar el cuestionario con sus relaciones
         $cuestionario->load(['preguntas', 'preguntas.opciones']);
+        
 
         $intento = IntentoCuestionario::where('cuestionario_id', $cuestionario->id)
             ->where('usuario_id', auth()->id())

@@ -89,6 +89,34 @@
                                            name="pregunta" 
                                            required 
                                            class="w-full rounded-md">
+                                    
+                                    <!-- Agregar esta sección para la imagen -->
+                                    <div class="mt-2 space-y-2">
+                                        <div class="flex items-center space-x-2">
+                                            <input type="file" 
+                                                   id="imagen" 
+                                                   name="imagen" 
+                                                   accept="image/*"
+                                                   class="hidden"
+                                                   onchange="previewImage(event)">
+                                            <label for="imagen" 
+                                                   class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-lg cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">
+                                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                </svg>
+                                                Agregar Imagen
+                                            </label>
+                                            <span id="imagenNombre" class="text-sm text-gray-500 dark:text-gray-400"></span>
+                                        </div>
+                                        <div id="previewContainer" class="hidden mt-2">
+                                            <img id="preview" class="max-w-xs rounded-lg shadow-lg">
+                                            <button type="button" 
+                                                    onclick="removeImage()"
+                                                    class="mt-2 text-red-500 hover:text-red-700">
+                                                Eliminar imagen
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="mb-4">
@@ -247,13 +275,44 @@
             }
         }
 
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview').src = e.target.result;
+                    document.getElementById('previewContainer').classList.remove('hidden');
+                    document.getElementById('imagenNombre').textContent = file.name;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeImage() {
+            document.getElementById('imagen').value = '';
+            document.getElementById('previewContainer').classList.add('hidden');
+            document.getElementById('imagenNombre').textContent = '';
+        }
+
         async function guardarPregunta() {
             try {
-                const formData = new FormData(document.getElementById('preguntaForm'));
+                const form = document.getElementById('preguntaForm');
+                const formData = new FormData(form);
                 const preguntaData = {
                     pregunta: formData.get('pregunta'),
                     tipo: formData.get('tipo'),
                 };
+
+                // Procesar imagen si existe
+                const imageFile = document.getElementById('imagen').files[0];
+                if (imageFile) {
+                    const base64Image = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.readAsDataURL(imageFile);
+                    });
+                    preguntaData.imagen = base64Image;
+                }
 
                 if (preguntaData.tipo === 'verdadero_falso') {
                     preguntaData.respuesta_correcta = formData.get('respuesta_correcta');
@@ -290,8 +349,9 @@
                 if (!response.ok) throw new Error('Error al guardar la pregunta');
                 
                 // Limpiar el formulario
-                document.getElementById('preguntaForm').reset();
+                form.reset();
                 document.getElementById('opcionesContainer').innerHTML = '';
+                removeImage(); // Limpiar la imagen
                 agregarOpcion();
                 agregarOpcion();
                 
@@ -303,7 +363,18 @@
         }
 
         function finalizarCuestionario() {
-            window.location.href = '/aulas_virtuales/{{ $aulaVirtual->id }}';
+            try {
+                // Verificar si hay preguntas guardadas
+                if (!document.getElementById('cuestionarioId').value) {
+                    alert('Debe guardar al menos una pregunta antes de finalizar');
+                    return;
+                }
+
+                // Redirigir directamente al aula virtual sin crear más cuestionarios
+                window.location.href = '/aulas_virtuales/{{ $aulaVirtual->id }}';
+            } catch (error) {
+                alert('Error al finalizar el cuestionario: ' + error.message);
+            }
         }
     </script>
     @endpush

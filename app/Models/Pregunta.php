@@ -9,7 +9,7 @@ class Pregunta extends Model
     protected $fillable = [
         'cuestionario_id',
         'pregunta',
-        'tipo'
+        'tipo',
     ];
 
     public function cuestionario()
