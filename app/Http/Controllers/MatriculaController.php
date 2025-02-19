@@ -257,7 +257,7 @@ class MatriculaController extends Controller
             return $query->where('tipo_curso_id', $tipoCursoId);
         })->get();
 
-        // Optimizar la consulta de matrículas con eager loading
+        // Optimizar la consulta de matrículas con eager loading y ordenamiento por nombre
         $matriculas = Matricula::with([
             'usuario' => function($query) {
                 $query->select('id', 'name', 'email');
@@ -272,8 +272,9 @@ class MatriculaController extends Controller
         ->when($tipoCursoId && !$cursoId, function($query) use ($cursos) {
             return $query->whereIn('curso_id', $cursos->pluck('id'));
         })
-        ->select('id', 'usuario_id', 'curso_id', 'valor_pendiente', 'estado_matricula')
-        ->orderBy('id')
+        ->select('matriculas.*')
+        ->join('users', 'matriculas.usuario_id', '=', 'users.id')
+        ->orderBy('users.name', 'asc')
         ->paginate($perPage);
 
         // Generar QRs solo para la página actual
@@ -319,32 +320,60 @@ class MatriculaController extends Controller
         $cursoId = $request->input('curso_id');
         $curso = \App\Models\Curso::findOrFail($cursoId);
 
+        // Obtener matrículas ordenadas por nombre
         $matriculas = Matricula::where('curso_id', $cursoId)
-                               ->with('usuario')
-                               ->get()
-                               ->sortBy(function($matricula) {
-                                   return $matricula->usuario->name;
-                               });
+                               ->join('users', 'matriculas.usuario_id', '=', 'users.id')
+                               ->select('matriculas.*')
+                               ->orderBy('users.name', 'asc')
+                               ->with(['usuario' => function($query) {
+                                   $query->select('id', 'name');
+                               }])
+                               ->get();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
+        
+        // Establecer encabezados
         $sheet->setCellValue('A1', '#');
         $sheet->setCellValue('B1', 'Nombre del Matriculado');
+        $sheet->setCellValue('C1', 'Estado');
+        $sheet->setCellValue('D1', 'Valor Total');
+        $sheet->setCellValue('E1', 'Valor Pendiente');
 
+        // Estilo para encabezados
+        $headerStyle = [
+            'font' => ['bold' => true],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'E9ECEF']
+            ]
+        ];
+        $sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
+
+        // Llenar datos
         foreach ($matriculas as $index => $matricula) {
-            $sheet->setCellValue('A' . ($index + 2), $index + 1);
-            $sheet->setCellValue('B' . ($index + 2), $matricula->usuario->name);
+            $rowIndex = $index + 2;
+            $sheet->setCellValue('A' . $rowIndex, $index + 1);
+            $sheet->setCellValue('B' . $rowIndex, $matricula->usuario->name);
+            $sheet->setCellValue('C' . $rowIndex, $matricula->estado_matricula);
+            $sheet->setCellValue('D' . $rowIndex, '$' . number_format($matricula->monto_total, 2));
+            $sheet->setCellValue('E' . $rowIndex, '$' . number_format($matricula->valor_pendiente, 2));
         }
 
         // Ajustar el ancho de las columnas
-        foreach(range('A','B') as $column) {
+        foreach(range('A','E') as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
 
+        // Aplicar bordes a toda la tabla
+        $lastRow = $matriculas->count() + 1;
+        $sheet->getStyle('A1:E'.$lastRow)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+
         $writer = new Xlsx($spreadsheet);
         
-        // Sanitizar el nombre del archivo
-        $fileName = 'listas_matriculados_' . preg_replace('/[^a-zA-Z0-9]/', '_', $curso->nombre) . '.xlsx';
+        // Sanitizar el nombre del archivo y agregar fecha
+        $date = date('Y-m-d');
+        $fileName = 'listas_matriculados_' . preg_replace('/[^a-zA-Z0-9]/', '_', $curso->nombre) . '_' . $date . '.xlsx';
         
         // Crear una respuesta directa
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -360,15 +389,16 @@ class MatriculaController extends Controller
         $cursoId = $request->input('curso_id');
         $curso = \App\Models\Curso::findOrFail($cursoId);
 
+        // Obtener matrículas con valores pendientes y ordenarlas por nombre
         $matriculas = Matricula::where('curso_id', $cursoId)
                                ->where('valor_pendiente', '>', 0)
+                               ->join('users', 'matriculas.usuario_id', '=', 'users.id')
+                               ->select('matriculas.*')
+                               ->orderBy('users.name', 'asc')
                                ->with(['usuario' => function($query) {
-                                   $query->with('profile');
-                               }])
-                               ->get()
-                               ->sortBy(function($matricula) {
-                                   return $matricula->usuario->name;
-                               });
+                                   $query->select('id', 'name');
+                               }, 'usuario.profile'])
+                               ->get();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -379,12 +409,22 @@ class MatriculaController extends Controller
         $sheet->setCellValue('C1', 'Valor Pendiente');
         $sheet->setCellValue('D1', 'Celular');
 
+        // Estilo para encabezados
+        $headerStyle = [
+            'font' => ['bold' => true],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'E9ECEF']
+            ]
+        ];
+        $sheet->getStyle('A1:D1')->applyFromArray($headerStyle);
+
         // Llenar datos
         foreach ($matriculas as $index => $matricula) {
             $rowIndex = $index + 2;
             $sheet->setCellValue('A' . $rowIndex, $index + 1);
             $sheet->setCellValue('B' . $rowIndex, $matricula->usuario->name);
-            $sheet->setCellValue('C' . $rowIndex, $matricula->valor_pendiente);
+            $sheet->setCellValue('C' . $rowIndex, '$' . number_format($matricula->valor_pendiente, 2));
             $sheet->setCellValue('D' . $rowIndex, $matricula->usuario->profile->phone ?? 'N/A');
         }
 
@@ -393,10 +433,15 @@ class MatriculaController extends Controller
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
 
+        // Aplicar bordes a toda la tabla
+        $lastRow = $matriculas->count() + 1;
+        $sheet->getStyle('A1:D'.$lastRow)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+
         $writer = new Xlsx($spreadsheet);
         
-        // Sanitizar el nombre del archivo
-        $fileName = 'pendientes_' . preg_replace('/[^a-zA-Z0-9]/', '_', $curso->nombre) . '.xlsx';
+        // Sanitizar el nombre del archivo y agregar fecha
+        $date = date('Y-m-d');
+        $fileName = 'pendientes_' . preg_replace('/[^a-zA-Z0-9]/', '_', $curso->nombre) . '_' . $date . '.xlsx';
         
         // Crear una respuesta directa
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -482,6 +527,38 @@ class MatriculaController extends Controller
 
         // No need to store in session anymore since we'll use a fixed path
         return redirect()->route('matriculas.listas')->with('success', 'Fondo actualizado correctamente.');
+    }
+
+    public function printCertificates(Request $request)
+    {
+        try {
+            $ids = explode(',', $request->query('ids'));
+            $cursoId = $request->query('curso_id');
+            
+            $curso = Curso::findOrFail($cursoId);
+            $matriculas = Matricula::whereIn('id', $ids)
+                ->with(['usuario'])
+                ->get()
+                ->sortBy(function($matricula) {
+                    return $matricula->usuario->name;
+                });
+
+            if ($matriculas->isEmpty()) {
+                return back()->with('error', 'No se encontraron matrículas para imprimir.');
+            }
+
+            $pdf = PDF::loadView('matriculas.print-certificates', [
+                'matriculas' => $matriculas,
+                'curso' => $curso
+            ]);
+
+            $pdf->setPaper('a4', 'landscape');
+            return $pdf->stream('certificados.pdf');
+
+        } catch (\Exception $e) {
+            \Log::error('Error al generar certificados: ' . $e->getMessage());
+            return back()->with('error', 'Error al generar los certificados: ' . $e->getMessage());
+        }
     }
 
     public function calificaciones(Matricula $matricula)

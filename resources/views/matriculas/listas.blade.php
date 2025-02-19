@@ -5,36 +5,46 @@
             <!-- Opciones Card -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg mb-6">
                 <div class="p-6">
-                    <div x-data="{ openOptions: false }" class="flex items-center justify-between flex-wrap gap-4">
-                        <div class="flex items-center space-x-4">
-                            <button @click="openOptions = !openOptions" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    <div x-data="{ openOptions: false }" class="space-y-4">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 flex-wrap">
+                            <button @click="openOptions = !openOptions" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded">
                                 {{ __('Opciones de Fondo') }}
                             </button>
                             @if($matriculas->isNotEmpty())
-                                <button id="print-credentials" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                <button id="print-credentials" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded">
                                     {{ __('Imprimir Credenciales') }}
                                 </button>
-                                <a href="{{ route('matriculas.exportPdf', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                <button id="print-certificates" class="btn btn-primary bg-purple-500 hover:bg-purple-700 text-white text-sm py-1.5 px-3 rounded">
+                                    {{ __('Imprimir Certificados') }}
+                                </button>
+                                <a href="{{ route('matriculas.exportPdf', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded">
                                     {{ __('Exportar PDF') }}
                                 </a>
-                                <a href="{{ route('matriculas.exportExcel', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                                <a href="{{ route('matriculas.exportExcel', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-green-500 hover:bg-green-700 text-white text-sm py-1.5 px-3 rounded">
                                     {{ __('Exportar Excel') }}
                                 </a>
-                                <a href="{{ route('matriculas.exportPendientesExcel', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
+                                <a href="{{ route('matriculas.exportPendientesExcel', ['curso_id' => $cursoId, 'sort' => 'name', 'order' => 'asc']) }}" class="btn btn-primary bg-yellow-500 hover:bg-yellow-700 text-white text-sm py-1.5 px-3 rounded">
                                     {{ __('Exportar Pendientes') }}
                                 </a>
                             @endif
                         </div>
-                        <div x-show="openOptions" class="w-full mt-4">
+                        
+                        <div x-show="openOptions" x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 transform -translate-y-2"
+                             x-transition:enter-end="opacity-100 transform translate-y-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 transform translate-y-0"
+                             x-transition:leave-end="opacity-0 transform -translate-y-2"
+                             class="w-full">
                             <div class="flex items-center space-x-4">
                                 <form action="{{ route('matriculas.uploadBackground') }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-2">
                                     @csrf
                                     <input type="file" name="background" accept="image/*" class="rounded-md border-gray-300" />
-                                    <button type="submit" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                    <button type="submit" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded">
                                         {{ __('Subir Fondo') }}
                                     </button>
                                 </form>
-                                <a href="{{ asset('storage/imagenes_de_fondo_permanentes/background.jpg') }}" download class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                <a href="{{ asset('storage/imagenes_de_fondo_permanentes/background.jpg') }}" download class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded">
                                     {{ __('Descargar Fondo Actual') }}
                                 </a>
                             </div>
@@ -73,90 +83,69 @@
                     </form>
                     @if($matriculas->isNotEmpty())
                         <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-300 dark:border-gray-700 rounded">
+                            <table class="w-full table-auto text-sm divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
-                                            <input type="checkbox" id="select-all">
+                                        <th class="p-2 text-left">
+                                            <input type="checkbox" id="select-all" class="w-4 h-4">
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
-                                            {{ __('#') }}
-                                        </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
-                                            {{ __('Photo') }}
-                                        </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
-                                            {{ __('Nombre del Matriculado') }}
-                                        </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
-                                            {{ __('Valor Pendiente en Moneda') }}
-                                        </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
-                                            {{ __('Carnet') }}
-                                        </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
-                                            {{ __('Celular') }}
-                                        </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-300 dark:border-gray-700">
-                                            Estado
-                                        </th>
+                                        <th class="p-2 text-left">#</th>
+                                        <th class="p-2 text-left">{{ __('Photo') }}</th>
+                                        <th class="p-2 text-left">{{ __('Nombre') }}</th>
+                                        <th class="p-2 text-left">{{ __('Valor') }}</th>
+                                        <th class="p-2 text-left">{{ __('Carnet') }}</th>
+                                        <th class="p-2 text-left">{{ __('Celular') }}</th>
+                                        <th class="p-2 text-left">Estado</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                <tbody>
                                     @foreach($matriculas as $index => $matricula)
                                         <tr class="{{ ($matricula->estado_matricula == 'Entregado' || ($matricula->usuario->profile && $matricula->usuario->profile->carnet == 'Entregado')) ? 'bg-pastel-orange' : ($loop->even ? 'bg-gray-50 dark:bg-gray-700' : 'bg-white dark:bg-gray-800') }}">
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
-                                                <input type="checkbox" class="select-row" value="{{ $matricula->id }}">
+                                            <td class="p-2">
+                                                <input type="checkbox" class="select-row w-4 h-4" value="{{ $matricula->id }}">
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
-                                                {{ ($matriculas->currentPage() - 1) * $matriculas->perPage() + $loop->iteration }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
+                                            <td class="p-2">{{ ($matriculas->currentPage() - 1) * $matriculas->perPage() + $loop->iteration }}</td>
+                                            <td class="p-2">
                                                 @if($matricula->usuario->profile && $matricula->usuario->profile->photo)
-                                                    <img loading="lazy" 
-                                                         src="{{ asset('storage/' . $matricula->usuario->profile->photo) }}" 
-                                                         alt="Profile Photo" 
-                                                         class="w-10 h-10 rounded-full object-cover">
+                                                    <img loading="lazy" src="{{ asset('storage/' . $matricula->usuario->profile->photo) }}" 
+                                                         alt="Profile" class="w-8 h-8 rounded-full object-cover">
                                                 @else
-                                                    <div class="w-10 h-10 flex items-center justify-center bg-gray-200 rounded-full text-gray-500">
-                                                        <i class="fa fa-user"></i>
+                                                    <div class="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full">
+                                                        <i class="fa fa-user text-sm"></i>
                                                     </div>
                                                 @endif
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium {{ ($matricula->estado_matricula == 'Entregado' || ($matricula->usuario->profile && $matricula->usuario->profile->carnet == 'Entregado')) ? 'text-blue-500' : 'text-gray-900 dark:text-gray-100' }} border-b border-gray-300 dark:border-gray-700">
+                                            <td class="p-2 font-medium {{ ($matricula->estado_matricula == 'Entregado' || ($matricula->usuario->profile && $matricula->usuario->profile->carnet == 'Entregado')) ? 'text-blue-500' : 'text-gray-900 dark:text-gray-100' }}">
                                                 {{ $matricula->usuario->name }}
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
+                                            <td class="p-2">
                                                 <span class="{{ $matricula->valor_pendiente == 0 ? 'text-green-500' : 'text-red-500' }}">
                                                     ${{ number_format($matricula->valor_pendiente, 2) }}
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
-                                                {{ ($matricula->usuario->profile && $matricula->usuario->profile->carnet == 'Entregado') ? 'Entregado' : 'NO' }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
+                                            <td class="p-2">{{ ($matricula->usuario->profile && $matricula->usuario->profile->carnet == 'Entregado') ? 'Entregado' : 'NO' }}</td>
+                                            <td class="p-2">
                                                 @if($matricula->usuario->profile && $matricula->usuario->profile->phone)
-                                                    {{ $matricula->usuario->profile->phone }}
-                                                    @php
-                                                        $phone = $matricula->usuario->profile->phone;
-                                                        $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
-                                                        if (!str_starts_with($cleanPhone, '593')) {
-                                                            $cleanPhone = ltrim($cleanPhone, '0');
-                                                            $cleanPhone = '593' . $cleanPhone;
-                                                        }
-                                                    @endphp
-                                                    <a href="https://wa.me/{{ $cleanPhone }}" 
-                                                       target="_blank"
-                                                       class="inline-block ml-2 text-green-500 hover:text-green-600 transition-colors duration-200">
-                                                        <i class="fab fa-whatsapp text-lg"></i>
-                                                    </a>
+                                                    <div class="flex items-center space-x-1">
+                                                        <span>{{ $matricula->usuario->profile->phone }}</span>
+                                                        @php
+                                                            $phone = $matricula->usuario->profile->phone;
+                                                            $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
+                                                            if (!str_starts_with($cleanPhone, '593')) {
+                                                                $cleanPhone = ltrim($cleanPhone, '0');
+                                                                $cleanPhone = '593' . $cleanPhone;
+                                                            }
+                                                        @endphp
+                                                        <a href="https://wa.me/{{ $cleanPhone }}" target="_blank"
+                                                           class="text-green-500 hover:text-green-600">
+                                                            <i class="fab fa-whatsapp"></i>
+                                                        </a>
+                                                    </div>
                                                 @else
                                                     N/A
                                                 @endif
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 border-b border-gray-300 dark:border-gray-700">
-                                                {{ $matricula->estado_matricula }}
-                                            </td>
+                                            <td class="p-2">{{ $matricula->estado_matricula }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -182,6 +171,42 @@
 .bg-pastel-orange {
     background-color: #FFCC99 !important;
 }
+
+/* Estilos adicionales para mejorar la visualización */
+.btn {
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+table {
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #6B7280;
+}
+
+td, th {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 1024px) {
+    .btn {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+    }
+}
 </style>
 
 <script>
@@ -193,6 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectAllCheckbox = document.getElementById('select-all');
     const rowCheckboxes = document.querySelectorAll('tbody .select-row');
     const printCredentialsButton = document.getElementById('print-credentials');
+    const printCertificatesButton = document.getElementById('print-certificates');
 
     // Debounce function para optimizar eventos
     const debounce = (func, wait) => {
@@ -270,6 +296,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.querySelector('table').innerHTML = newDoc.querySelector('table').innerHTML;
                 })
                 .catch(error => console.error('Error al recargar:', error));
+        } else {
+            alert('Por favor, seleccione al menos una fila.');
+        }
+    });
+
+    // Manejo de impresión de certificados
+    printCertificatesButton?.addEventListener('click', function() {
+        const selectedIds = Array.from(rowCheckboxes)
+            .reduce((acc, checkbox) => {
+                if (checkbox.checked) acc.push(checkbox.value);
+                return acc;
+            }, []);
+
+        if (selectedIds.length > 0) {
+            const cursoId = document.getElementById('curso_id').value;
+            if (!cursoId) {
+                alert('Por favor, seleccione un curso.');
+                return;
+            }
+            const url = `{{ route('matriculas.printCertificates') }}?ids=${selectedIds.join(',')}&curso_id=${cursoId}`;
+            window.open(url, '_blank');
         } else {
             alert('Por favor, seleccione al menos una fila.');
         }

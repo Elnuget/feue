@@ -45,6 +45,7 @@ Route::post('/user_profiles/check-cedula', [UserProfileController::class, 'check
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('matriculas/print-credentials', [MatriculaController::class, 'printCredentials'])->name('matriculas.printCredentials');
+    Route::get('matriculas/print-certificates', [MatriculaController::class, 'printCertificates'])->name('matriculas.printCertificates');
     
     Route::resource('roles', RoleController::class);
     Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
