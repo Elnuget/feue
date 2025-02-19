@@ -74,6 +74,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/cursos/create', [CursoController::class, 'create'])->name('cursos.create');
     Route::get('/cursos/{curso}/edit', [CursoController::class, 'edit'])->name('cursos.edit');
     Route::post('/cursos/{curso}/disable', [CursoController::class, 'disable'])->name('cursos.disable');
+    Route::post('/cursos/{curso}/enable', [CursoController::class, 'enable'])->name('cursos.enable');
     Route::post('/cursos/disable-multiple', [CursoController::class, 'disableMultiple'])->name('cursos.disableMultiple');
     Route::delete('/cursos/{curso}', [CursoController::class, 'destroy'])->name('cursos.destroy'); // Ensure correct delete route
     Route::get('/cursos/disable-multiple', function () {

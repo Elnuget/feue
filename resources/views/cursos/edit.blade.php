@@ -33,6 +33,10 @@
                             <label for="horario" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Horario</label>
                             <input type="text" name="horario" id="horario" value="{{ $curso->horario }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:text-gray-300">
                         </div>
+                        <div>
+                            <label for="horas" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Horas</label>
+                            <input type="number" name="horas" id="horas" min="1" value="{{ $curso->horas }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:text-gray-300">
+                        </div>
                     </div>
                     <div>
                         <label for="descripcion" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Descripción</label>

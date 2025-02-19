@@ -8,10 +8,30 @@ use Illuminate\Http\Request;
 
 class CursoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $cursos = Curso::with('tipoCurso')->orderBy('created_at', 'desc')->get();
-        return view('cursos.index', compact('cursos'));
+        $query = Curso::with('tipoCurso');
+
+        // Filtro por estado
+        if ($request->filled('estado')) {
+            $query->where('estado', $request->estado);
+        }
+
+        // Filtro por tipo de curso
+        if ($request->filled('tipo_curso_id')) {
+            $query->where('tipo_curso_id', $request->tipo_curso_id);
+        }
+
+        // Búsqueda por nombre
+        if ($request->filled('search')) {
+            $query->where('nombre', 'LIKE', '%' . $request->search . '%');
+        }
+
+        // Ordenar por fecha de creación
+        $cursos = $query->orderBy('created_at', 'desc')->get();
+        $tiposCursos = TipoCurso::all();
+
+        return view('cursos.index', compact('cursos', 'tiposCursos'));
     }
 
     public function create()
@@ -30,6 +50,7 @@ class CursoController extends Controller
             'tipo_curso_id' => 'required|exists:tipos_cursos,id',
             'imagen' => 'nullable|image|mimes:jpeg,png|max:2048',
             'horario' => 'nullable|string|max:255',
+            'horas' => 'nullable|integer|min:1',
         ]);
 
         $data = $request->except(['imagen']);
@@ -58,6 +79,7 @@ class CursoController extends Controller
             'tipo_curso_id' => 'required|exists:tipos_cursos,id',
             'imagen' => 'nullable|image|mimes:jpeg,png|max:2048',
             'horario' => 'nullable|string|max:255',
+            'horas' => 'nullable|integer|min:1',
         ]);
 
         $data = $request->except(['imagen']);
@@ -92,6 +114,12 @@ class CursoController extends Controller
     {
         $curso->update(['estado' => 'Inactivo']);
         return redirect()->route('cursos.index')->with('success', 'Curso deshabilitado correctamente');
+    }
+
+    public function enable(Curso $curso)
+    {
+        $curso->update(['estado' => 'Activo']);
+        return redirect()->route('cursos.index')->with('success', 'Curso habilitado correctamente');
     }
 
     public function disableMultiple(Request $request)
