@@ -100,6 +100,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/listas/export-pendientes-excel', [MatriculaController::class, 'exportPendientesExcel'])->name('matriculas.exportPendientesExcel');
     Route::get('/asistencias/scan', [AsistenciaController::class, 'scanQR'])->name('asistencias.scan');
     Route::post('/asistencias/register-scan', [AsistenciaController::class, 'registerScan'])->name('asistencias.registerScan');
+    Route::post('/asistencias/register-multiple', [AsistenciaController::class, 'registerMultiple'])->name('asistencias.registerMultiple');
     Route::resource('asistencias', AsistenciaController::class);
     Route::get('/pruebas', [PruebasController::class, 'index'])->name('pruebas');
     Route::post('/user_profiles/{user}/upload_photo', [ProfileController::class, 'uploadPhoto'])->name('profile.uploadPhoto');

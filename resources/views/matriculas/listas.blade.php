@@ -1,5 +1,6 @@
 <x-app-layout>
     @section('page_title', 'Listas')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <div class="py-12 bg-gray-100 dark:bg-gray-900">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Opciones Card -->
@@ -16,6 +17,9 @@
                                 </button>
                                 <button id="print-certificates" class="btn btn-primary bg-purple-500 hover:bg-purple-700 text-white text-sm py-1.5 px-3 rounded">
                                     {{ __('Imprimir Certificados') }}
+                                </button>
+                                <button id="register-attendance" class="btn btn-primary bg-green-500 hover:bg-green-700 text-white text-sm py-1.5 px-3 rounded">
+                                    {{ __('Registrar Asistencia') }}
                                 </button>
                                 <a href="{{ route('matriculas.exportPdf', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded">
                                     {{ __('Exportar PDF') }}
@@ -96,6 +100,7 @@
                                         <th class="p-2 text-left">{{ __('Carnet') }}</th>
                                         <th class="p-2 text-left">{{ __('Celular') }}</th>
                                         <th class="p-2 text-left">Estado</th>
+                                        <th class="p-2 text-left">{{ __('Asistencias') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -115,7 +120,7 @@
                                                     </div>
                                                 @endif
                                             </td>
-                                            <td class="p-2 font-medium {{ ($matricula->estado_matricula == 'Entregado' || ($matricula->usuario->profile && $matricula->usuario->profile->carnet == 'Entregado')) ? 'text-blue-500' : 'text-gray-900 dark:text-gray-100' }}">
+                                            <td class="p-2 font-medium {{ ($matricula->estado_matricula == 'Entregado' || ($matricula->usuario->profile && $matricula->usuario->profile->carnet == 'Entregado')) ? 'text-blue-500' : 'text-gray-900 dark:text-gray-100' }}" data-user-id="{{ $matricula->usuario_id }}">
                                                 {{ $matricula->usuario->name }}
                                             </td>
                                             <td class="p-2">
@@ -146,6 +151,7 @@
                                                 @endif
                                             </td>
                                             <td class="p-2">{{ $matricula->estado_matricula }}</td>
+                                            <td class="p-2">{{ $matricula->asistencias }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -219,6 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const rowCheckboxes = document.querySelectorAll('tbody .select-row');
     const printCredentialsButton = document.getElementById('print-credentials');
     const printCertificatesButton = document.getElementById('print-certificates');
+    const registerAttendanceButton = document.getElementById('register-attendance');
 
     // Debounce function para optimizar eventos
     const debounce = (func, wait) => {
@@ -319,6 +326,47 @@ document.addEventListener('DOMContentLoaded', function() {
             window.open(url, '_blank');
         } else {
             alert('Por favor, seleccione al menos una fila.');
+        }
+    });
+
+    // Manejo de registro de asistencia
+    registerAttendanceButton?.addEventListener('click', async function() {
+        const selectedIds = Array.from(rowCheckboxes)
+            .filter(checkbox => checkbox.checked)
+            .map(checkbox => {
+                const row = checkbox.closest('tr');
+                const userId = row.querySelector('td[data-user-id]').getAttribute('data-user-id');
+                return userId;
+            });
+
+        if (selectedIds.length === 0) {
+            alert('Por favor, seleccione al menos un estudiante.');
+            return;
+        }
+
+        try {
+            const response = await fetch('{{ route("asistencias.registerMultiple") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    user_ids: selectedIds
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Asistencia registrada exitosamente');
+                // Recargar la página para actualizar el contador de asistencias
+                window.location.reload();
+            } else {
+                throw new Error(data.message || 'Error al registrar la asistencia');
+            }
+        } catch (error) {
+            alert('Error al registrar la asistencia: ' + error.message);
         }
     });
 });

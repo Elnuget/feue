@@ -134,6 +134,35 @@ class AsistenciaController extends Controller
         }
     }
 
+    public function registerMultiple(Request $request)
+    {
+        try {
+            $request->validate([
+                'user_ids' => 'required|array',
+                'user_ids.*' => 'required|exists:users,id'
+            ]);
+
+            $now = now();
+            foreach ($request->user_ids as $userId) {
+                Asistencia::create([
+                    'user_id' => $userId,
+                    'fecha_hora' => $now
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Asistencias registradas correctamente'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al registrar las asistencias: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     private function decodeQRCodeData($data)
     {
         // Asegurarse de que el dato es un número válido

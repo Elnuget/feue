@@ -21,6 +21,7 @@ use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
 use App\Models\IntentoCuestionario;
 use App\Models\AulaVirtual;
+use App\Models\Asistencia;
 
 class MatriculaController extends Controller
 {
@@ -277,25 +278,12 @@ class MatriculaController extends Controller
         ->orderBy('users.name', 'asc')
         ->paginate($perPage);
 
-        // Generar QRs solo para la página actual
-        $qrCodes = [];
-        if ($matriculas->count() > 0) {
-            $writer = new PngWriter();
-            foreach ($matriculas as $matricula) {
-                try {
-                    $qrCode = EndroidQrCode::create($matricula->usuario->id)
-                        ->setSize(200)
-                        ->setMargin(10);
-                    
-                    $result = $writer->write($qrCode);
-                    $qrCodes[$matricula->usuario->id] = base64_encode($result->getString());
-                } catch (\Exception $e) {
-                    \Log::error('Error generando QR: ' . $e->getMessage());
-                }
-            }
+        // Obtener el conteo de asistencias para cada usuario
+        foreach ($matriculas as $matricula) {
+            $matricula->asistencias = Asistencia::where('user_id', $matricula->usuario_id)->count();
         }
 
-        return view('matriculas.listas', compact('tiposCursos', 'cursos', 'matriculas', 'cursoId', 'tipoCursoId', 'qrCodes', 'perPage'));
+        return view('matriculas.listas', compact('matriculas', 'tiposCursos', 'cursos', 'tipoCursoId', 'cursoId', 'perPage'));
     }
 
     public function exportPdf(Request $request)
