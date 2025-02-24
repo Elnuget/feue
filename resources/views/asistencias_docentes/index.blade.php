@@ -34,7 +34,7 @@
                                 <tr class="bg-white border-b hover:bg-gray-50">
                                     <td class="py-4 px-6">{{ $asistencia->docente->name }}</td>
                                     <td class="py-4 px-6">{{ $asistencia->fecha->format('d/m/Y') }}</td>
-                                    <td class="py-4 px-6">{{ $asistencia->hora_entrada->format('H:i') }}</td>
+                                    <td class="py-4 px-6">{{ $asistencia->hora_entrada ? $asistencia->hora_entrada->format('H:i') : 'No registrada' }}</td>
                                     <td class="py-4 px-6">
                                         <span class="px-2 py-1 text-xs rounded-full
                                             @if($asistencia->estado === 'Presente') bg-green-100 text-green-800
