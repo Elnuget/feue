@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\SesionDocente;
 use App\Models\Curso;
 use App\Models\User;
+use App\Exports\SesionesDocentesExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -98,5 +100,13 @@ class SesionDocenteController extends Controller
 
         return redirect()->route('sesiones-docentes.index')
             ->with('deleted', 'Sesión eliminada exitosamente.');
+    }
+
+    public function export(Request $request)
+    {
+        $mes = $request->get('mes', now()->format('Y-m'));
+        $nombreArchivo = 'sesiones_docentes_' . $mes . '.xlsx';
+        
+        return Excel::download(new SesionesDocentesExport($mes), $nombreArchivo);
     }
 }

@@ -113,6 +113,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Rutas de Sesiones Docentes
     Route::resource('sesiones-docentes', SesionDocenteController::class);
+    Route::get('sesiones-docentes-export', [SesionDocenteController::class, 'export'])->name('sesiones-docentes.export');
 
     // Rutas para asistencias docentes
     Route::resource('asistencias-docentes', AsistenciaDocenteController::class)->parameters([
