@@ -8,28 +8,34 @@
                 <div class="p-6">
                     <div x-data="{ openOptions: false }" class="space-y-4">
                         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 flex-wrap">
-                            <button @click="openOptions = !openOptions" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded">
-                                {{ __('Opciones de Fondo') }}
-                            </button>
+                            @if(auth()->user()->hasRole(1))
+                                <button @click="openOptions = !openOptions" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded">
+                                    {{ __('Opciones de Fondo') }}
+                                </button>
+                            @endif
                             @if($matriculas->isNotEmpty())
-                                <button id="print-credentials" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded">
-                                    {{ __('Imprimir Credenciales') }}
-                                </button>
-                                <button id="print-certificates" class="btn btn-primary bg-purple-500 hover:bg-purple-700 text-white text-sm py-1.5 px-3 rounded">
-                                    {{ __('Imprimir Certificados') }}
-                                </button>
+                                @if(auth()->user()->hasRole(1))
+                                    <button id="print-credentials" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded">
+                                        {{ __('Imprimir Credenciales') }}
+                                    </button>
+                                    <button id="print-certificates" class="btn btn-primary bg-purple-500 hover:bg-purple-700 text-white text-sm py-1.5 px-3 rounded">
+                                        {{ __('Imprimir Certificados') }}
+                                    </button>
+                                @endif
                                 <button id="register-attendance" class="btn btn-primary bg-green-500 hover:bg-green-700 text-white text-sm py-1.5 px-3 rounded">
                                     {{ __('Registrar Asistencia') }}
                                 </button>
-                                <a href="{{ route('matriculas.exportPdf', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded">
-                                    {{ __('Exportar PDF') }}
-                                </a>
-                                <a href="{{ route('matriculas.exportExcel', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-green-500 hover:bg-green-700 text-white text-sm py-1.5 px-3 rounded">
-                                    {{ __('Exportar Excel') }}
-                                </a>
-                                <a href="{{ route('matriculas.exportPendientesExcel', ['curso_id' => $cursoId, 'sort' => 'name', 'order' => 'asc']) }}" class="btn btn-primary bg-yellow-500 hover:bg-yellow-700 text-white text-sm py-1.5 px-3 rounded">
-                                    {{ __('Exportar Pendientes') }}
-                                </a>
+                                @if(auth()->user()->hasRole(1))
+                                    <a href="{{ route('matriculas.exportPdf', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded">
+                                        {{ __('Exportar PDF') }}
+                                    </a>
+                                    <a href="{{ route('matriculas.exportExcel', ['curso_id' => $cursoId]) }}" class="btn btn-primary bg-green-500 hover:bg-green-700 text-white text-sm py-1.5 px-3 rounded">
+                                        {{ __('Exportar Excel') }}
+                                    </a>
+                                    <a href="{{ route('matriculas.exportPendientesExcel', ['curso_id' => $cursoId, 'sort' => 'name', 'order' => 'asc']) }}" class="btn btn-primary bg-yellow-500 hover:bg-yellow-700 text-white text-sm py-1.5 px-3 rounded">
+                                        {{ __('Exportar Pendientes') }}
+                                    </a>
+                                @endif
                             @endif
                         </div>
                         
