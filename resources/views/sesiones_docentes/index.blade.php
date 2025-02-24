@@ -12,6 +12,27 @@
 
     <div class="py-6">
         <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Filtro de mes -->
+            <div class="mb-4 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
+                <form action="{{ route('sesiones-docentes.index') }}" method="GET" class="flex items-center space-x-4">
+                    <div class="flex-1">
+                        <x-input-label for="mes" value="{{ __('Filtrar por Mes') }}" />
+                        <input 
+                            type="month" 
+                            id="mes" 
+                            name="mes" 
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                            value="{{ request('mes', now()->format('Y-m')) }}"
+                        >
+                    </div>
+                    <div class="flex items-end">
+                        <x-primary-button type="submit" class="mb-1">
+                            {{ __('Filtrar') }}
+                        </x-primary-button>
+                    </div>
+                </form>
+            </div>
+            
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="overflow-x-auto">
@@ -58,9 +79,6 @@
                                 @endforeach
                             </tbody>
                         </table>
-                    </div>
-                    <div class="mt-4">
-                        {{ $sesiones->links() }}
                     </div>
                 </div>
             </div>

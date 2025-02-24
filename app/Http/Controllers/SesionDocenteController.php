@@ -10,15 +10,21 @@ use Illuminate\Support\Facades\Auth;
 
 class SesionDocenteController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $mes = $request->get('mes', now()->format('Y-m'));
+        
+        $fechaInicio = \Carbon\Carbon::createFromFormat('Y-m', $mes)->startOfMonth();
+        $fechaFin = \Carbon\Carbon::createFromFormat('Y-m', $mes)->endOfMonth();
+        
         $sesiones = SesionDocente::with(['docente', 'curso.tipoCurso'])
             ->when(Auth::user()->hasRole('Docente'), function ($query) {
                 return $query->where('user_id', Auth::id());
             })
+            ->whereBetween('fecha', [$fechaInicio, $fechaFin])
             ->orderBy('fecha', 'desc')
             ->orderBy('hora_inicio', 'asc')
-            ->paginate(10);
+            ->get();
 
         $docentes = User::role('Docente')->get();
         $cursos = Curso::with('tipoCurso')
