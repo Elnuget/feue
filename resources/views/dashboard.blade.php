@@ -36,6 +36,11 @@
                         <i class="fas fa-calendar-alt text-3xl mb-2"></i>
                         Sesiones Docentes
                     </a>
+
+                    <a href="{{ route('matriculas.listas') }}" class="bg-red-500 hover:bg-red-700 text-white text-center font-bold py-6 px-4 rounded-lg shadow-lg flex flex-col items-center">
+                        <i class="fas fa-list text-3xl mb-2"></i>
+                        Listas
+                    </a>
                 @endif
             </div>
         </div>
