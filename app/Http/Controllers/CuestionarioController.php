@@ -322,9 +322,18 @@ class CuestionarioController extends Controller
             abort(403, 'No tienes permiso para realizar esta acción.');
         }
 
-        $cuestionario->delete();
+        try {
+            $aulaVirtual = $cuestionario->aulaVirtual;
+            $cuestionario->delete();
 
-        return response()->json(['success' => true]);
+            return redirect()
+                ->route('aulas_virtuales.show', $aulaVirtual)
+                ->with('success', 'El cuestionario ha sido eliminado exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'No se pudo eliminar el cuestionario. Por favor, intente nuevamente.');
+        }
     }
 
     public function edit(Cuestionario $cuestionario)

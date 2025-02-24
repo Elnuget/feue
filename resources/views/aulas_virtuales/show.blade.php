@@ -84,6 +84,88 @@
                         @endforeach
                     </div>
 
+                    <!-- Lista de cuestionarios -->
+                    <div class="mt-8">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
+                            Cuestionarios
+                        </h3>
+                        
+                        @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
+                            <div class="mb-4">
+                                <a href="{{ route('cuestionarios.create', $aula) }}" 
+                                   class="inline-flex items-center bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition">
+                                    <span class="mr-2">📝</span> Crear Cuestionario
+                                </a>
+                            </div>
+                        @endif
+
+                        <div class="space-y-4">
+                            @forelse($aula->cuestionarios as $cuestionario)
+                                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-300">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                                {{ $cuestionario->titulo }}
+                                            </h4>
+                                            @if($cuestionario->descripcion)
+                                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                    {{ $cuestionario->descripcion }}
+                                                </p>
+                                            @endif
+                                            <div class="mt-2 flex flex-wrap gap-2">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                    ⏱️ {{ $cuestionario->tiempo_limite }} minutos
+                                                </span>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                                    🔄 {{ $cuestionario->intentos_permitidos }} intentos permitidos
+                                                </span>
+                                                @if($cuestionario->activo)
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                        ✅ Activo
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                                        ❌ Inactivo
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="flex space-x-2">
+                                            @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
+                                                <a href="{{ route('cuestionarios.edit', $cuestionario) }}" 
+                                                   class="text-yellow-500 hover:text-yellow-700 transition-colors">
+                                                    ✏️
+                                                </a>
+                                                <form action="{{ route('cuestionarios.destroy', $cuestionario) }}" 
+                                                      method="POST" 
+                                                      class="inline"
+                                                      onsubmit="return confirm('¿Estás seguro de que deseas eliminar este cuestionario? Esta acción no se puede deshacer.')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <input type="hidden" name="redirect_to" value="{{ route('aulas_virtuales.show', $aula) }}">
+                                                    <button type="submit" 
+                                                            class="text-red-500 hover:text-red-700 transition-colors">
+                                                        🗑️
+                                                    </button>
+                                                </form>
+                                            @endif
+                                            @if($cuestionario->activo)
+                                                <a href="{{ route('cuestionarios.show', $cuestionario) }}" 
+                                                   class="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition">
+                                                    Realizar 📝
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <p class="text-gray-500 dark:text-gray-400 text-center py-4">
+                                    No hay cuestionarios disponibles en esta aula virtual.
+                                </p>
+                            @endforelse
+                        </div>
+                    </div>
+
                     <!-- Modal para agregar contenido -->
                     @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
                         <div id="contenidoModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
