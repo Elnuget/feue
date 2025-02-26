@@ -552,122 +552,206 @@
     <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const users = @json($users);
-            const matriculas = @json($matriculas);
-            const asistencias = @json($asistencias);
-
-            // Función para detectar si es un dispositivo tablet
-            function isTablet() {
-                return window.innerWidth >= 768 && window.innerWidth <= 1024;
-            }
-
-            // Inicializar Select2
+            // Inicializar Select2 con búsqueda AJAX
             $('#usuario').select2({
                 placeholder: 'Buscar usuario...',
                 allowClear: true,
                 width: '100%',
+                ajax: {
+                    url: '{{ route("usuarios.search") }}',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            q: params.term,
+                            page: params.page
+                        };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data.users.map(user => ({
+                                id: user.id,
+                                text: user.name,
+                                photo: user.profile?.photo || null
+                            }))
+                        };
+                    },
+                    cache: true
+                },
                 language: {
                     noResults: function() {
                         return "No se encontraron resultados";
                     },
                     searching: function() {
                         return "Buscando...";
+                    },
+                    errorLoading: function() {
+                        return "Error al cargar los resultados";
                     }
                 }
-            }).on('select2:select', function (e) {
-                actualizarInformacionUsuario(parseInt(e.target.value));
-            }).on('select2:clear', function () {
+            }).on('select2:select', function(e) {
+                cargarInformacionUsuario(e.params.data.id);
+            }).on('select2:clear', function() {
                 document.getElementById('datos-usuario').classList.add('hidden');
             });
 
-            function actualizarInformacionUsuario(userId) {
+            function cargarInformacionUsuario(userId) {
                 if (!userId) {
-                    document.getElementById('datos-usuario').classList.add('hidden');
+                    const datosUsuario = document.getElementById('datos-usuario');
+                    if (datosUsuario) {
+                        datosUsuario.classList.add('hidden');
+                    }
                     return;
                 }
 
-                const user = users.find(u => u.id === userId);
-                if (!user) return;
+                // Restaurar la estructura HTML original
+                const datosUsuario = document.getElementById('datos-usuario');
+                if (!datosUsuario) {
+                    console.error('Elemento datos-usuario no encontrado');
+                    return;
+                }
 
-                // Mostrar la sección de datos
-                document.getElementById('datos-usuario').classList.remove('hidden');
+                // Guardar la estructura HTML original si no está guardada
+                if (!window.estructuraOriginal) {
+                    window.estructuraOriginal = datosUsuario.innerHTML;
+                }
 
-                // Actualizar foto de perfil
-                const selectedOption = document.getElementById('usuario').options[document.getElementById('usuario').selectedIndex];
-                const photoUrl = selectedOption.dataset.photo;
-                const userPhotoDiv = document.getElementById('user-photo');
-                
-                if (photoUrl) {
-                    fetch(photoUrl)
-                        .then(response => {
-                            if (response.ok) {
-                                userPhotoDiv.innerHTML = `<img src="${photoUrl}" alt="Foto de perfil" class="w-full h-full object-cover">`;
-                            } else {
-                                userPhotoDiv.innerHTML = `<span class="text-2xl text-gray-600">👤</span>`;
+                // Mostrar loading
+                datosUsuario.classList.remove('hidden');
+                datosUsuario.innerHTML = `
+                    <div class="flex items-center justify-center p-4">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                        <span class="ml-2">Cargando información...</span>
+                    </div>
+                `;
+
+                // Cargar datos del usuario mediante AJAX
+                fetch(`{{ route('usuarios.info', ['id' => ':id']) }}`.replace(':id', userId))
+                    .then(response => {
+                        console.log('Status:', response.status); // Debug
+                        return response.json().then(data => {
+                            if (!response.ok) {
+                                throw new Error(data.error || 'Error del servidor');
                             }
-                        })
-                        .catch(() => {
-                            userPhotoDiv.innerHTML = `<span class="text-2xl text-gray-600">👤</span>`;
+                            return data;
                         });
-                } else {
-                    userPhotoDiv.innerHTML = `<span class="text-2xl text-gray-600">👤</span>`;
-                }
+                    })
+                    .then(data => {
+                        console.log('Datos recibidos:', data);
+                        if (!data.user) {
+                            throw new Error('No se recibieron datos del usuario');
+                        }
+                        // Restaurar estructura original antes de actualizar
+                        datosUsuario.innerHTML = window.estructuraOriginal;
+                        actualizarInterfazUsuario(data);
+                    })
+                    .catch(error => {
+                        console.error('Error detallado:', error);
+                        if (datosUsuario) {
+                            datosUsuario.innerHTML = `
+                                <div class="p-4 text-center">
+                                    <div class="text-red-600 mb-2">Error al cargar la información del usuario</div>
+                                    <div class="text-sm text-gray-600">${error.message}</div>
+                                    <div class="mt-2">
+                                        <button onclick="cargarInformacionUsuario('${userId}')" 
+                                                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+                                            Intentar nuevamente
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+            }
 
-                // Actualizar asistencias
-                const userAsistencias = asistencias.filter(a => a.user_id === userId);
-                document.getElementById('numero-asistencias').textContent = userAsistencias.length;
-
-                // Actualizar última asistencia
-                if (userAsistencias.length > 0) {
-                    const ultima = userAsistencias[userAsistencias.length - 1];
-                    const options = { 
-                        timeZone: 'America/Guayaquil',
-                        year: 'numeric',
-                        month: 'numeric',
-                        day: 'numeric'
-                    };
-                    const timeOptions = {
-                        timeZone: 'America/Guayaquil',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false
-                    };
+            function actualizarInterfazUsuario(data) {
+                try {
+                    console.log('Actualizando interfaz con datos:', data); // Debug
+                    const { user, asistencias = [], matriculas = [] } = data;
                     
-                    document.getElementById('ultima-fecha').textContent = new Date(ultima.fecha_hora).toLocaleDateString('es-EC', options);
-                    document.getElementById('ultima-entrada').textContent = ultima.hora_entrada ? 
-                        new Date(ultima.hora_entrada).toLocaleTimeString('es-EC', timeOptions) : '-';
-                    document.getElementById('ultima-salida').textContent = ultima.hora_salida ? 
-                        new Date(ultima.hora_salida).toLocaleTimeString('es-EC', timeOptions) : '-';
-                }
+                    // Actualizar foto de perfil
+                    const userPhotoDiv = document.getElementById('user-photo');
+                    if (userPhotoDiv) {
+                        userPhotoDiv.innerHTML = user.profile?.photo 
+                            ? `<img src="${user.profile.photo}" alt="Foto de perfil" class="w-full h-full object-cover">`
+                            : `<span class="text-2xl text-gray-600">👤</span>`;
+                    }
 
-                // Actualizar cursos matriculados
-                const userMatriculas = matriculas.filter(m => m.usuario_id === userId);
-                const cursosContainer = document.getElementById('cursos-matriculados');
-                
-                if (userMatriculas.length > 0) {
-                    cursosContainer.innerHTML = userMatriculas.map(matricula => `
-                        <div class="curso-item">
-                            <div class="curso-nombre">${matricula.curso.nombre}</div>
-                            <div class="curso-detalles">
-                                <div><i class="fas fa-clock mr-1"></i>${matricula.curso.horario}</div>
-                                <div><i class="fas fa-map-marker-alt mr-1"></i>${matricula.curso.sede || 'Sede Principal'}</div>
-                            </div>
-                        </div>
-                    `).join('');
-                }
+                    // Actualizar asistencias
+                    const numeroAsistencias = document.getElementById('numero-asistencias');
+                    if (numeroAsistencias) {
+                        numeroAsistencias.textContent = asistencias.length.toString();
+                    }
 
-                // Actualizar estado de pagos
-                const totalPendiente = userMatriculas.reduce((total, matricula) => {
-                    return total + (parseFloat(matricula.valor_pendiente) || 0);
-                }, 0);
+                    // Actualizar última asistencia
+                    if (asistencias.length > 0) {
+                        const ultima = asistencias[0];
+                        const options = { 
+                            timeZone: 'America/Guayaquil',
+                            year: 'numeric',
+                            month: 'numeric',
+                            day: 'numeric'
+                        };
+                        const timeOptions = {
+                            timeZone: 'America/Guayaquil',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                        };
+                        
+                        const ultimaFecha = document.getElementById('ultima-fecha');
+                        const ultimaEntrada = document.getElementById('ultima-entrada');
+                        const ultimaSalida = document.getElementById('ultima-salida');
+                        
+                        if (ultimaFecha) {
+                            ultimaFecha.textContent = new Date(ultima.fecha_hora).toLocaleDateString('es-EC', options);
+                        }
+                        if (ultimaEntrada) {
+                            ultimaEntrada.textContent = ultima.hora_entrada ? 
+                                new Date(ultima.hora_entrada).toLocaleTimeString('es-EC', timeOptions) : '-';
+                        }
+                        if (ultimaSalida) {
+                            ultimaSalida.textContent = ultima.hora_salida ? 
+                                new Date(ultima.hora_salida).toLocaleTimeString('es-EC', timeOptions) : '-';
+                        }
+                    }
 
-                const valoresPendientesElement = document.getElementById('valores-pendientes');
-                if (totalPendiente > 0) {
-                    valoresPendientesElement.textContent = 'Valores Pendientes';
-                    valoresPendientesElement.className = 'estado-pago pendiente';
-                } else {
-                    valoresPendientesElement.textContent = 'Al Día';
-                    valoresPendientesElement.className = 'estado-pago al-dia';
+                    // Actualizar cursos matriculados
+                    const cursosContainer = document.getElementById('cursos-matriculados');
+                    if (cursosContainer) {
+                        cursosContainer.innerHTML = matriculas.length > 0 
+                            ? matriculas.map(matricula => `
+                                <div class="curso-item">
+                                    <div class="curso-nombre">${matricula.curso?.nombre || 'Curso sin nombre'}</div>
+                                    <div class="curso-detalles">
+                                        <div><i class="fas fa-clock mr-1"></i>${matricula.curso?.horario || 'Horario no definido'}</div>
+                                        <div><i class="fas fa-map-marker-alt mr-1"></i>${matricula.curso?.sede || 'Sede Principal'}</div>
+                                    </div>
+                                </div>
+                            `).join('')
+                            : `<div class="p-4 text-sm italic text-gray-500">No hay cursos registrados</div>`;
+                    }
+
+                    // Actualizar estado de pagos
+                    const valoresPendientesElement = document.getElementById('valores-pendientes');
+                    if (valoresPendientesElement) {
+                        const totalPendiente = matriculas.reduce((total, matricula) => {
+                            return total + (parseFloat(matricula.valor_pendiente) || 0);
+                        }, 0);
+
+                        valoresPendientesElement.textContent = totalPendiente > 0 ? 'Valores Pendientes' : 'Al Día';
+                        valoresPendientesElement.className = `estado-pago ${totalPendiente > 0 ? 'pendiente' : 'al-dia'}`;
+                    }
+
+                    // Asegurarse de que el contenedor esté visible
+                    const datosUsuario = document.getElementById('datos-usuario');
+                    if (datosUsuario) {
+                        datosUsuario.classList.remove('hidden');
+                    }
+
+                } catch (error) {
+                    console.error('Error al actualizar la interfaz:', error);
+                    throw error; // Propagar el error para manejarlo en el catch superior
                 }
             }
 
@@ -682,6 +766,72 @@
                 processQRCode(content);
             });
 
+            function processQRCode(content) {
+                const resultDiv = document.getElementById('result');
+                const scanRegion = document.querySelector('.scan-region-highlight');
+
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = 'Procesando código QR...';
+                scanRegion.classList.add('success');
+
+                // Cargar información del usuario y registrar asistencia
+                Promise.all([
+                    cargarInformacionUsuario(content),
+                    registrarAsistencia(content)
+                ]).catch(error => {
+                    console.error('Error:', error);
+                    resultDiv.innerHTML = 'Error al procesar el código QR';
+                    resultDiv.className = 'text-red-600';
+                    setTimeout(() => {
+                        resultDiv.style.display = 'none';
+                        scanRegion.classList.remove('success');
+                    }, 3000);
+                });
+            }
+
+            function registrarAsistencia(userId) {
+                const horaActual = new Date();
+                horaActual.toLocaleString('es-EC', { timeZone: 'America/Guayaquil' });
+
+                return fetch('{{ route('asistencias.registerScan') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        data: userId,
+                        hora_actual: horaActual.toISOString()
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const resultDiv = document.getElementById('result');
+                    resultDiv.innerHTML = data.message;
+                    
+                    if (data.success) {
+                        resultDiv.className = 'text-green-600';
+                        if (data.tipo === 'salida') {
+                            setTimeout(() => {
+                                resultDiv.innerHTML = '¡Que tenga un buen día! 👋';
+                            }, 2000);
+                        }
+                        
+                        // Recargar los datos del usuario después de 5 segundos
+                        setTimeout(() => {
+                            cargarInformacionUsuario(userId);
+                        }, 5000);
+                    } else {
+                        resultDiv.className = 'text-red-600';
+                        setTimeout(() => {
+                            resultDiv.style.display = 'none';
+                            document.querySelector('.scan-region-highlight').classList.remove('success');
+                        }, 4000);
+                    }
+                });
+            }
+
+            // Inicialización de cámaras
             Instascan.Camera.getCameras().then(cameras => {
                 if (cameras.length > 0) {
                     const camerasSelect = document.getElementById('cameras');
@@ -698,7 +848,6 @@
                     let selectedCamera;
                     
                     if (isTablet()) {
-                        // En tablets, buscar primero la cámara frontal
                         selectedCamera = cameras.find(camera => 
                             camera.name && (
                                 camera.name.toLowerCase().includes('front') ||
@@ -707,99 +856,29 @@
                             )
                         );
                     } else {
-                        // En otros dispositivos, preferir la cámara trasera
                         selectedCamera = cameras.find(camera => 
                             camera.name && camera.name.toLowerCase().includes('back')
                         );
                     }
 
-                    // Si no se encontró la cámara preferida, usar la primera disponible
                     if (!selectedCamera) {
                         selectedCamera = cameras[0];
                     }
 
-                    // Actualizar el select con la cámara seleccionada
                     camerasSelect.value = cameras.indexOf(selectedCamera);
-                    
-                    // Iniciar el escáner con la cámara seleccionada
-                    scanner.start(selectedCamera).catch(function(e) {
-                        console.error(e);
-                    });
+                    scanner.start(selectedCamera).catch(console.error);
 
-                    // Evento para cambio manual de cámara
                     camerasSelect.addEventListener('change', function(e) {
                         if (scanner) {
                             scanner.stop();
                         }
-                        scanner.start(cameras[e.target.value]).catch(function(e) {
-                            console.error(e);
-                        });
+                        scanner.start(cameras[e.target.value]).catch(console.error);
                     });
                 }
-            }).catch(function(e) {
-                console.error(e);
-            });
+            }).catch(console.error);
 
-            function processQRCode(content) {
-                const resultDiv = document.getElementById('result');
-                const scanRegion = document.querySelector('.scan-region-highlight');
-
-                resultDiv.style.display = 'block';
-                resultDiv.innerHTML = 'Procesando código QR...';
-                scanRegion.classList.add('success');
-
-                // Actualizar información del usuario
-                $('#usuario').val(content).trigger('change');
-                actualizarInformacionUsuario(parseInt(content));
-
-                // Obtener la hora actual en la zona horaria de Guayaquil
-                const horaActual = new Date();
-                horaActual.toLocaleString('es-EC', { timeZone: 'America/Guayaquil' });
-
-                // Registrar asistencia
-                fetch('{{ route('asistencias.registerScan') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify({
-                        data: content,
-                        hora_actual: horaActual.toISOString()
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    resultDiv.innerHTML = data.message;
-                    if (data.success) {
-                        resultDiv.className = 'text-green-600';
-                        if (data.tipo === 'salida') {
-                            setTimeout(() => {
-                                resultDiv.innerHTML = '¡Que tenga un buen día! 👋';
-                            }, 2000);
-                        }
-                        
-                        // Recargar la página después de 5 segundos
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 5000);
-                    } else {
-                        resultDiv.className = 'text-red-600';
-                        setTimeout(() => {
-                            resultDiv.style.display = 'none';
-                            scanRegion.classList.remove('success');
-                        }, 4000);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    resultDiv.innerHTML = 'Error al procesar el código QR';
-                    resultDiv.className = 'text-red-600';
-                    setTimeout(() => {
-                        resultDiv.style.display = 'none';
-                        scanRegion.classList.remove('success');
-                    }, 3000);
-                });
+            function isTablet() {
+                return window.innerWidth >= 768 && window.innerWidth <= 1024;
             }
         });
     </script>

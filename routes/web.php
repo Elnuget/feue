@@ -47,6 +47,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('matriculas/print-credentials', [MatriculaController::class, 'printCredentials'])->name('matriculas.printCredentials');
     Route::get('matriculas/print-certificates', [MatriculaController::class, 'printCertificates'])->name('matriculas.printCertificates');
     
+    // Rutas para búsqueda de usuarios y obtención de información
+    Route::get('/usuarios/search', [\App\Http\Controllers\UserController::class, 'search'])->name('usuarios.search');
+    Route::get('/usuarios/{id}/info', [\App\Http\Controllers\UserController::class, 'getInfo'])->name('usuarios.info');
+    
     Route::resource('roles', RoleController::class);
     Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
     Route::resource('users', \App\Http\Controllers\UserController::class);
