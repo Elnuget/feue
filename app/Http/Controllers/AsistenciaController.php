@@ -8,9 +8,16 @@ use App\Models\Matricula;
 use App\Models\Curso;
 use App\Models\TipoCurso;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class AsistenciaController extends Controller
 {
+    public function __construct()
+    {
+        // Establecer la zona horaria por defecto para toda la aplicación
+        date_default_timezone_set('America/Guayaquil');
+    }
+
     public function index()
     {
         $cursos = Curso::all();
@@ -54,6 +61,9 @@ class AsistenciaController extends Controller
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'fecha_hora' => 'required|date',
+            'hora_entrada' => 'nullable|date_format:H:i',
+            'hora_salida' => 'nullable|date_format:H:i|after:hora_entrada',
+            'estado' => 'nullable|in:presente,ausente,tardanza,fuga',
         ]);
 
         Asistencia::create($validated);
@@ -71,6 +81,9 @@ class AsistenciaController extends Controller
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'fecha_hora' => 'required|date',
+            'hora_entrada' => 'nullable|date_format:H:i',
+            'hora_salida' => 'nullable|date_format:H:i|after:hora_entrada',
+            'estado' => 'nullable|in:presente,ausente,tardanza,fuga',
         ]);
 
         $asistencia->update($validated);
@@ -92,10 +105,74 @@ class AsistenciaController extends Controller
         return view('asistencias.scan', compact('users', 'matriculas', 'asistencias'));
     }
 
+    private function getHorarioCurso($horario)
+    {
+        // Patrones para diferentes formatos de horario
+        $patrones = [
+            // Formato: "12h25-13h00"
+            '/^(\d{2})h(\d{2})-(\d{2})h(\d{2})$/',
+            
+            // Otros formatos existentes...
+            '/^(\d{2})h(\d{2})\s+a\s+(\d{2})h(\d{2})$/',
+            '/^[A-Za-zá-úÁ-Ú\s-]+,\s*(\d{2})h(\d{2})\s+a\s+(\d{2})h(\d{2})$/',
+            '/^[A-Za-zá-úÁ-Ú\s-]+,\s*(\d{2})h(\d{2})-(\d{2})h(\d{2})$/'
+        ];
+
+        foreach ($patrones as $patron) {
+            if (preg_match($patron, $horario, $matches)) {
+                return [
+                    'inicio' => [
+                        'hora' => (int)$matches[1],
+                        'minuto' => (int)$matches[2]
+                    ],
+                    'fin' => [
+                        'hora' => (int)$matches[3],
+                        'minuto' => (int)$matches[4]
+                    ],
+                    'dias' => [0, 1, 2, 3, 4, 5, 6] // Por defecto todos los días
+                ];
+            }
+        }
+        return null;
+    }
+
+    private function obtenerDiasHorario($horario)
+    {
+        $diasSemana = [
+            'lunes' => 1, 'martes' => 2, 'miércoles' => 3, 'miercoles' => 3,
+            'jueves' => 4, 'viernes' => 5, 'sábado' => 6, 'sabado' => 6, 'domingo' => 0
+        ];
+
+        $dias = [];
+        
+        // Si el horario contiene días de la semana
+        if (strpos(strtolower($horario), 'lunes') !== false) {
+            if (strpos(strtolower($horario), 'viernes') !== false) {
+                // Lunes a Viernes
+                $dias = [1, 2, 3, 4, 5];
+            } else if (strpos(strtolower($horario), 'jueves') !== false) {
+                // Lunes a Jueves
+                $dias = [1, 2, 3, 4];
+            }
+        } else if (strpos(strtolower($horario), 'sábado') !== false || 
+                   strpos(strtolower($horario), 'sabado') !== false) {
+            // Solo sábados
+            $dias = [6];
+        } else {
+            // Si no se especifican días, asumimos que es para todos los días
+            $dias = [0, 1, 2, 3, 4, 5, 6];
+        }
+
+        return $dias;
+    }
+
     public function registerScan(Request $request)
     {
         try {
             $data = $request->input('data');
+            $horaActual = $request->input('hora_actual') ? 
+                         Carbon::parse($request->input('hora_actual'))->setTimezone('America/Guayaquil') : 
+                         now()->setTimezone('America/Guayaquil');
             
             if (!$data) {
                 return response()->json([
@@ -115,15 +192,44 @@ class AsistenciaController extends Controller
                 ], 404);
             }
 
-            // Registrar la asistencia
-            Asistencia::create([
-                'user_id' => $userId,
-                'fecha_hora' => now(),
-            ]);
+            // Buscar la última asistencia del usuario para hoy
+            $ultimaAsistencia = Asistencia::where('user_id', $userId)
+                ->whereDate('fecha_hora', today()->setTimezone('America/Guayaquil'))
+                ->latest()
+                ->first();
+            
+            // Si no tiene asistencias hoy o la última tiene hora de salida, crear nueva entrada
+            if (!$ultimaAsistencia || ($ultimaAsistencia && $ultimaAsistencia->hora_salida)) {
+                $asistencia = Asistencia::create([
+                    'user_id' => $userId,
+                    'fecha_hora' => $horaActual,
+                    'hora_entrada' => $horaActual,
+                    'estado' => 'presente'
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Entrada registrada: ' . $horaActual->format('H:i'),
+                    'tipo' => 'entrada'
+                ]);
+            }
+            
+            // Si tiene una asistencia sin hora de salida, registrar salida
+            if ($ultimaAsistencia && !$ultimaAsistencia->hora_salida) {
+                $ultimaAsistencia->update([
+                    'hora_salida' => $horaActual
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Salida registrada: ' . $horaActual->format('H:i'),
+                    'tipo' => 'salida'
+                ]);
+            }
 
             return response()->json([
-                'success' => true,
-                'message' => 'Asistencia registrada correctamente'
+                'success' => false,
+                'message' => 'No se pudo determinar el tipo de registro'
             ]);
 
         } catch (\Exception $e) {
@@ -139,15 +245,30 @@ class AsistenciaController extends Controller
         try {
             $request->validate([
                 'user_ids' => 'required|array',
-                'user_ids.*' => 'required|exists:users,id'
+                'user_ids.*' => 'required|exists:users,id',
+                'tipo_registro' => 'required|in:entrada,salida'
             ]);
 
-            $now = now();
+            $now = now()->setTimezone('America/Guayaquil');
             foreach ($request->user_ids as $userId) {
-                Asistencia::create([
-                    'user_id' => $userId,
-                    'fecha_hora' => $now
-                ]);
+                $asistencia = Asistencia::where('user_id', $userId)
+                    ->whereDate('fecha_hora', today()->setTimezone('America/Guayaquil'))
+                    ->first();
+
+                if ($request->tipo_registro === 'entrada') {
+                    if (!$asistencia) {
+                        $asistencia = Asistencia::create([
+                            'user_id' => $userId,
+                            'fecha_hora' => $now,
+                            'hora_entrada' => $now,
+                            'estado' => 'presente'
+                        ]);
+                    }
+                } else if ($asistencia && !$asistencia->hora_salida) {
+                    $asistencia->update([
+                        'hora_salida' => $now
+                    ]);
+                }
             }
 
             return response()->json([
