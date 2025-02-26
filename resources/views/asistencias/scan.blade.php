@@ -285,6 +285,7 @@
             overflow: hidden;
             width: 100%;
             transition: all 0.3s ease;
+            position: relative;
         }
 
         :root[class~="dark"] .contenedor-escanner {
@@ -309,6 +310,10 @@
             width: 100%;
             height: 250px;
             background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
         }
 
         @media (min-width: 768px) {
@@ -333,6 +338,8 @@
             border: 2px solid #ff0000;
             border-radius: 8px;
             transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 10;
         }
 
         @media (min-width: 768px) {
@@ -544,6 +551,11 @@
             const matriculas = @json($matriculas);
             const asistencias = @json($asistencias);
 
+            // Función para detectar si es un dispositivo tablet
+            function isTablet() {
+                return window.innerWidth >= 768 && window.innerWidth <= 1024;
+            }
+
             // Inicializar Select2
             $('#usuario').select2({
                 placeholder: 'Buscar usuario...',
@@ -657,7 +669,8 @@
             // Inicializar escáner
             let scanner = new Instascan.Scanner({
                 video: document.getElementById('preview'),
-                mirror: false
+                mirror: false,
+                scanPeriod: 5
             });
 
             scanner.addListener('scan', function(content) {
@@ -667,24 +680,59 @@
             Instascan.Camera.getCameras().then(cameras => {
                 if (cameras.length > 0) {
                     const camerasSelect = document.getElementById('cameras');
+                    camerasSelect.innerHTML = '<option value="">Seleccionar cámara...</option>';
+                    
                     cameras.forEach((camera, i) => {
                         const option = document.createElement('option');
                         option.value = i;
-                        option.text = camera.name;
+                        option.text = camera.name || `Cámara ${i + 1}`;
                         camerasSelect.add(option);
                     });
 
-                    let selectedCamera = cameras.find(camera => camera.name.toLowerCase().includes('back'));
+                    // Seleccionar cámara por defecto
+                    let selectedCamera;
+                    
+                    if (isTablet()) {
+                        // En tablets, buscar primero la cámara frontal
+                        selectedCamera = cameras.find(camera => 
+                            camera.name && (
+                                camera.name.toLowerCase().includes('front') ||
+                                camera.name.toLowerCase().includes('user') ||
+                                camera.name.toLowerCase().includes('selfie')
+                            )
+                        );
+                    } else {
+                        // En otros dispositivos, preferir la cámara trasera
+                        selectedCamera = cameras.find(camera => 
+                            camera.name && camera.name.toLowerCase().includes('back')
+                        );
+                    }
+
+                    // Si no se encontró la cámara preferida, usar la primera disponible
                     if (!selectedCamera) {
                         selectedCamera = cameras[0];
                     }
 
-                    scanner.start(selectedCamera);
+                    // Actualizar el select con la cámara seleccionada
+                    camerasSelect.value = cameras.indexOf(selectedCamera);
+                    
+                    // Iniciar el escáner con la cámara seleccionada
+                    scanner.start(selectedCamera).catch(function(e) {
+                        console.error(e);
+                    });
 
+                    // Evento para cambio manual de cámara
                     camerasSelect.addEventListener('change', function(e) {
-                        scanner.start(cameras[e.target.value]);
+                        if (scanner) {
+                            scanner.stop();
+                        }
+                        scanner.start(cameras[e.target.value]).catch(function(e) {
+                            console.error(e);
+                        });
                     });
                 }
+            }).catch(function(e) {
+                console.error(e);
             });
 
             function processQRCode(content) {
