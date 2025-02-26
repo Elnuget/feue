@@ -12,11 +12,35 @@
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             padding: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Modo oscuro */
+        :root[class~="dark"] .tarjeta-contenedor {
+            background: #1f2937;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
         @media (min-width: 768px) {
             .tarjeta-contenedor {
                 padding: 1.5rem;
+            }
+        }
+
+        /* Optimización específica para tablets */
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .tarjeta-header {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .contenedor-escanner {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+
+            .preview-container {
+                height: 400px;
             }
         }
 
@@ -52,6 +76,23 @@
             padding: 1rem;
             border-radius: 10px;
             border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        :root[class~="dark"] .info-principal {
+            background: #111827;
+            border-color: #374151;
+        }
+
+        .contenedor-imagen {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 3px solid #cbd5e1;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         @media (min-width: 640px) {
@@ -113,12 +154,12 @@
             border-radius: 8px;
             border: 1px solid #e2e8f0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
         }
 
-        @media (min-width: 768px) {
-            .tarjeta-info {
-                padding: 1.5rem;
-            }
+        :root[class~="dark"] .tarjeta-info {
+            background: #1f2937;
+            border-color: #374151;
         }
 
         .tarjeta-info.asistencias {
@@ -126,9 +167,19 @@
             border-color: #93c5fd;
         }
 
+        :root[class~="dark"] .tarjeta-info.asistencias {
+            background: #1e3a8a;
+            border-color: #2563eb;
+        }
+
         .tarjeta-info.pagos {
             background: #fef2f2;
             border-color: #fca5a5;
+        }
+
+        :root[class~="dark"] .tarjeta-info.pagos {
+            background: #991b1b;
+            border-color: #dc2626;
         }
 
         .numero-grande {
@@ -136,6 +187,10 @@
             font-weight: 700;
             color: #1e40af;
             margin-bottom: 0.5rem;
+        }
+
+        :root[class~="dark"] .numero-grande {
+            color: #60a5fa;
         }
 
         @media (min-width: 768px) {
@@ -147,6 +202,10 @@
         .estado-pago {
             font-size: 1.25rem;
             font-weight: 600;
+        }
+
+        :root[class~="dark"] .estado-pago {
+            color: #4ade80;
         }
 
         @media (min-width: 768px) {
@@ -194,12 +253,20 @@
             margin-bottom: 0.5rem;
         }
 
+        :root[class~="dark"] .curso-nombre {
+            color: #e5e7eb;
+        }
+
         .curso-detalles {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
             color: #64748b;
             font-size: 0.875rem;
+        }
+
+        :root[class~="dark"] .curso-detalles {
+            color: #9ca3af;
         }
 
         @media (min-width: 640px) {
@@ -217,18 +284,24 @@
             border-radius: 8px;
             overflow: hidden;
             width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        :root[class~="dark"] .contenedor-escanner {
+            background: #1f2937;
+            border-color: #374151;
         }
 
         .scanner-header {
             background: #f8fafc;
             padding: 0.75rem;
             border-bottom: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
         }
 
-        @media (min-width: 768px) {
-            .scanner-header {
-                padding: 1rem;
-            }
+        :root[class~="dark"] .scanner-header {
+            background: #111827;
+            border-color: #374151;
         }
 
         .preview-container {
@@ -311,6 +384,10 @@
             margin-bottom: 0.5rem;
         }
 
+        :root[class~="dark"] .ultima-asistencia-titulo {
+            color: #e5e7eb;
+        }
+
         .ultima-asistencia-detalles {
             display: grid;
             grid-template-columns: 1fr;
@@ -362,64 +439,8 @@
             display: none;
         }
 
-        /* Ajustes para modo oscuro */
-        @media (prefers-color-scheme: dark) {
-            .tarjeta-contenedor {
-                background: #1f2937;
-            }
-
-            .info-principal,
-            .ultima-asistencia,
-            .cursos-lista,
-            .contenedor-escanner,
-            .scanner-header {
-                background: #111827;
-                border-color: #374151;
-            }
-
-            .tarjeta-info {
-                background: #1f2937;
-                border-color: #374151;
-            }
-
-            .tarjeta-info.asistencias {
-                background: #1e3a8a;
-                border-color: #2563eb;
-            }
-
-            .tarjeta-info.pagos {
-                background: #991b1b;
-                border-color: #dc2626;
-            }
-
-            .numero-grande {
-                color: #60a5fa;
-            }
-
-            .estado-pago.al-dia {
-                color: #4ade80;
-            }
-
-            .curso-nombre,
-            .ultima-asistencia-titulo {
-                color: #e5e7eb;
-            }
-
-            .curso-detalles,
-            .ultima-asistencia-detalles {
-                color: #9ca3af;
-            }
-
-            select {
-                background-color: #374151;
-                color: #e5e7eb;
-                border-color: #4b5563;
-            }
-
-            select:focus {
-                border-color: #60a5fa;
-                ring-color: #3b82f6;
-            }
+        :root[class~="dark"] #datos-usuario.hidden {
+            display: none;
         }
     </style>
 
