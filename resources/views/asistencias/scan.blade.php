@@ -6,12 +6,12 @@
     <style>
         .tarjeta-contenedor {
             width: 100%;
-            max-width: 1200px;
+            max-width: 900px;
             margin: 0 auto;
             background: #ffffff;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            padding: 1rem;
+            padding: 0.75rem;
             transition: background-color 0.3s ease;
         }
 
@@ -23,7 +23,7 @@
 
         @media (min-width: 768px) {
             .tarjeta-contenedor {
-                padding: 1.5rem;
+                padding: 1rem;
             }
         }
 
@@ -31,16 +31,16 @@
         @media (min-width: 768px) and (max-width: 1023px) {
             .tarjeta-header {
                 grid-template-columns: 1fr;
-                gap: 1.5rem;
+                gap: 1rem;
             }
 
             .contenedor-escanner {
-                max-width: 600px;
+                max-width: 400px;
                 margin: 0 auto;
             }
 
             .preview-container {
-                height: 400px;
+                height: 300px;
             }
         }
 
@@ -53,9 +53,9 @@
 
         @media (min-width: 1024px) {
             .tarjeta-header {
-                grid-template-columns: 1fr 400px;
-                gap: 2rem;
-                margin-bottom: 2rem;
+                grid-template-columns: 1fr 300px;
+                gap: 1.5rem;
+                margin-bottom: 1.5rem;
             }
         }
 
@@ -71,9 +71,9 @@
         .info-principal {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 1rem;
+            gap: 0.75rem;
             background: #f8fafc;
-            padding: 1rem;
+            padding: 0.75rem;
             border-radius: 10px;
             border: 1px solid #e2e8f0;
             transition: all 0.3s ease;
@@ -85,11 +85,11 @@
         }
 
         .contenedor-imagen {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             margin: 0 auto;
             background: #ffffff;
-            border: 3px solid #cbd5e1;
+            border: 2px solid #cbd5e1;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -97,9 +97,8 @@
 
         @media (min-width: 640px) {
             .info-principal {
-                grid-template-columns: auto 1fr;
-                gap: 2rem;
-                padding: 1.5rem;
+                gap: 1rem;
+                padding: 1rem;
             }
         }
 
@@ -124,8 +123,8 @@
 
         @media (min-width: 1024px) {
             .contenedor-imagen {
-                width: 180px;
-                height: 180px;
+                width: 140px;
+                height: 140px;
             }
         }
 
@@ -138,8 +137,8 @@
         .info-destacada {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 1rem;
-            margin-top: 1rem;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
         }
 
         @media (min-width: 640px) {
@@ -150,7 +149,7 @@
 
         .tarjeta-info {
             background: #ffffff;
-            padding: 1rem;
+            padding: 0.75rem;
             border-radius: 8px;
             border: 1px solid #e2e8f0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
@@ -183,10 +182,10 @@
         }
 
         .numero-grande {
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: 700;
             color: #1e40af;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
         }
 
         :root[class~="dark"] .numero-grande {
@@ -195,12 +194,12 @@
 
         @media (min-width: 768px) {
             .numero-grande {
-                font-size: 2.5rem;
+                font-size: 2rem;
             }
         }
 
         .estado-pago {
-            font-size: 1.25rem;
+            font-size: 1rem;
             font-weight: 600;
         }
 
@@ -210,7 +209,7 @@
 
         @media (min-width: 768px) {
             .estado-pago {
-                font-size: 1.5rem;
+                font-size: 1.25rem;
             }
         }
 
@@ -308,7 +307,7 @@
         .preview-container {
             position: relative;
             width: 100%;
-            height: 250px;
+            height: 200px;
             background: #000;
             display: flex;
             justify-content: center;
@@ -318,7 +317,7 @@
 
         @media (min-width: 768px) {
             .preview-container {
-                height: 300px;
+                height: 250px;
             }
         }
 
@@ -333,8 +332,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 150px;
-            height: 150px;
+            width: 120px;
+            height: 120px;
             border: 2px solid #ff0000;
             border-radius: 8px;
             transition: all 0.3s ease;
@@ -344,8 +343,8 @@
 
         @media (min-width: 768px) {
             .scan-region-highlight {
-                width: 200px;
-                height: 200px;
+                width: 150px;
+                height: 150px;
             }
         }
 
