@@ -7,11 +7,11 @@
         .tarjeta-contenedor {
             width: 100%;
             max-width: 900px;
-            margin: 0 auto;
+            margin: 0.5rem auto;
             background: #ffffff;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            padding: 0.75rem;
+            padding: 0.5rem;
             transition: background-color 0.3s ease;
         }
 
@@ -23,7 +23,8 @@
 
         @media (min-width: 768px) {
             .tarjeta-contenedor {
-                padding: 1rem;
+                padding: 0.75rem;
+                margin: 0.75rem auto;
             }
         }
 
@@ -31,7 +32,7 @@
         @media (min-width: 768px) and (max-width: 1023px) {
             .tarjeta-header {
                 grid-template-columns: 1fr;
-                gap: 1rem;
+                gap: 0.75rem;
             }
 
             .contenedor-escanner {
@@ -40,22 +41,30 @@
             }
 
             .preview-container {
-                height: 300px;
+                height: 250px;
+            }
+
+            .info-principal {
+                margin-bottom: 0.5rem;
+            }
+
+            .cursos-lista {
+                margin-top: 0.5rem;
             }
         }
 
         .tarjeta-header {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
         }
 
         @media (min-width: 1024px) {
             .tarjeta-header {
                 grid-template-columns: 1fr 300px;
-                gap: 1.5rem;
-                margin-bottom: 1.5rem;
+                gap: 1rem;
+                margin-bottom: 1rem;
             }
         }
 
@@ -63,7 +72,7 @@
         .contenedor-usuario {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.75rem;
             width: 100%;
         }
 
@@ -71,9 +80,9 @@
         .info-principal {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 0.75rem;
+            gap: 0.5rem;
             background: #f8fafc;
-            padding: 0.75rem;
+            padding: 0.5rem;
             border-radius: 10px;
             border: 1px solid #e2e8f0;
             transition: all 0.3s ease;
@@ -135,10 +144,8 @@
         }
 
         .info-destacada {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.75rem;
-            margin-top: 0.75rem;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
         }
 
         @media (min-width: 640px) {
@@ -222,7 +229,7 @@
         }
 
         .cursos-lista {
-            margin-top: 1rem;
+            margin-top: 0.5rem;
             background: #ffffff;
             border-radius: 8px;
             border: 1px solid #e2e8f0;
@@ -231,18 +238,17 @@
 
         @media (min-width: 768px) {
             .cursos-lista {
-                margin-top: 1.5rem;
+                margin-top: 0.75rem;
             }
         }
 
         .curso-item {
-            padding: 0.75rem;
-            border-bottom: 1px solid #e2e8f0;
+            padding: 0.5rem;
         }
 
         @media (min-width: 768px) {
             .curso-item {
-                padding: 1rem;
+                padding: 0.75rem;
             }
         }
 
@@ -307,7 +313,7 @@
         .preview-container {
             position: relative;
             width: 100%;
-            height: 200px;
+            height: 180px;
             background: #000;
             display: flex;
             justify-content: center;
@@ -317,7 +323,7 @@
 
         @media (min-width: 768px) {
             .preview-container {
-                height: 250px;
+                height: 220px;
             }
         }
 
@@ -370,8 +376,8 @@
         }
 
         .ultima-asistencia {
-            margin-top: 0.75rem;
-            padding: 0.75rem;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
             background: #f8fafc;
             border-radius: 8px;
             border: 1px solid #e2e8f0;
@@ -379,8 +385,8 @@
 
         @media (min-width: 768px) {
             .ultima-asistencia {
-                margin-top: 1rem;
-                padding: 1rem;
+                margin-top: 0.75rem;
+                padding: 0.75rem;
             }
         }
 
@@ -450,7 +456,7 @@
         }
     </style>
 
-    <div class="py-4">
+    <div class="py-2">
         <div class="tarjeta-contenedor">
             <div class="tarjeta-header">
                 <!-- Columna Izquierda: Información del Usuario -->
