@@ -28,7 +28,7 @@ class AsistenciaDocenteController extends Controller
         $asistencias = AsistenciaDocente::with(['docente', 'sesion'])
             ->whereBetween('fecha', [$fechaInicio, $fechaFin])
             ->orderBy('fecha', 'desc')
-            ->paginate(10);
+            ->get();
             
         $docentes = User::whereHas('roles', function($query) {
             $query->where('name', 'Docente');

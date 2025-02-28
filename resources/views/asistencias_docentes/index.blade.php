@@ -84,11 +84,6 @@
                             </tbody>
                         </table>
                     </div>
-
-                    <!-- Paginación -->
-                    <div class="mt-4">
-                        {{ $asistencias->appends(['mes' => request('mes')])->links() }}
-                    </div>
                 </div>
             </div>
         </div>
