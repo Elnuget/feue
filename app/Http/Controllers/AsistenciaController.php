@@ -192,19 +192,18 @@ class AsistenciaController extends Controller
                 ], 404);
             }
 
-            // Buscar la última asistencia del usuario para hoy
+            // Buscar la última asistencia del usuario
             $ultimaAsistencia = Asistencia::where('user_id', $userId)
-                ->whereDate('fecha_hora', today()->setTimezone('America/Guayaquil'))
-                ->latest()
+                ->latest('fecha_hora')
                 ->first();
             
-            // Si no tiene asistencias hoy o la última tiene hora de salida, crear nueva entrada
+            // Si no tiene asistencias o la última tiene hora de salida, crear nueva entrada
             if (!$ultimaAsistencia || ($ultimaAsistencia && $ultimaAsistencia->hora_salida)) {
                 $asistencia = Asistencia::create([
                     'user_id' => $userId,
                     'fecha_hora' => $horaActual,
                     'hora_entrada' => $horaActual,
-                    'estado' => 'presente'
+                    'estado' => Asistencia::ESTADO_PRESENTE
                 ]);
 
                 return response()->json([
@@ -214,15 +213,39 @@ class AsistenciaController extends Controller
                 ]);
             }
             
-            // Si tiene una asistencia sin hora de salida, registrar salida
+            // Si tiene una asistencia sin hora de salida
             if ($ultimaAsistencia && !$ultimaAsistencia->hora_salida) {
-                $ultimaAsistencia->update([
-                    'hora_salida' => $horaActual
-                ]);
+                // Verificar si es un día diferente
+                if ($horaActual->copy()->startOfDay()->gt($ultimaAsistencia->hora_entrada->copy()->startOfDay())) {
+                    // Marcar la entrada anterior como fuga
+                    $ultimaAsistencia->marcarComoFuga();
+                    
+                    // Crear una nueva entrada
+                    $asistencia = Asistencia::create([
+                        'user_id' => $userId,
+                        'fecha_hora' => $horaActual,
+                        'hora_entrada' => $horaActual,
+                        'estado' => Asistencia::ESTADO_PRESENTE
+                    ]);
+
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Entrada anterior marcada como fuga. Nueva entrada registrada: ' . $horaActual->format('H:i'),
+                        'tipo' => 'entrada'
+                    ]);
+                }
+                
+                // Si es el mismo día, registrar salida normalmente
+                // Crear una nueva instancia de Carbon para la hora de salida
+                $horaSalida = Carbon::parse($horaActual)->setTimezone('America/Guayaquil');
+                
+                $ultimaAsistencia->hora_salida = $horaSalida;
+                $ultimaAsistencia->fecha_hora = $horaSalida;
+                $ultimaAsistencia->save();
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Salida registrada: ' . $horaActual->format('H:i'),
+                    'message' => 'Salida registrada: ' . $horaSalida->format('H:i'),
                     'tipo' => 'salida'
                 ]);
             }
