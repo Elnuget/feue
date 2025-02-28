@@ -191,7 +191,6 @@ class UserController extends Controller
             // Obtener asistencias
             $asistencias = Asistencia::where('user_id', $id)
                                    ->orderBy('fecha_hora', 'desc')
-                                   ->take(10)
                                    ->get();
 
             Log::info('Asistencias encontradas: ' . $asistencias->count());

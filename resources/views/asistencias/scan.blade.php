@@ -6,7 +6,7 @@
     <style>
         .tarjeta-contenedor {
             width: 100%;
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0.5rem auto;
             background: #ffffff;
             border-radius: 10px;
@@ -55,16 +55,15 @@
 
         .tarjeta-header {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.75rem;
+            grid-template-columns: 300px 1fr;
+            gap: 1rem;
             margin-bottom: 0.75rem;
         }
 
-        @media (min-width: 1024px) {
+        @media (max-width: 1023px) {
             .tarjeta-header {
-                grid-template-columns: 1fr 300px;
-                gap: 1rem;
-                margin-bottom: 1rem;
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
             }
         }
 
@@ -72,20 +71,24 @@
         .contenedor-usuario {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 1rem;
             width: 100%;
+            height: 100%;
+            overflow-y: auto;
         }
 
         /* Contenedor de la información principal */
         .info-principal {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.5rem;
+            grid-template-columns: auto 1fr;
+            gap: 1rem;
             background: #f8fafc;
-            padding: 0.5rem;
+            padding: 1rem;
             border-radius: 10px;
             border: 1px solid #e2e8f0;
             transition: all 0.3s ease;
+            align-items: start;
+            margin-bottom: 1rem;
         }
 
         :root[class~="dark"] .info-principal {
@@ -144,13 +147,15 @@
         }
 
         .info-destacada {
-            gap: 0.5rem;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
             margin-top: 0.5rem;
         }
 
-        @media (min-width: 640px) {
+        @media (max-width: 1279px) {
             .info-destacada {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: 1fr;
             }
         }
 
@@ -229,11 +234,11 @@
         }
 
         .cursos-lista {
-            margin-top: 0.5rem;
             background: #ffffff;
             border-radius: 8px;
             border: 1px solid #e2e8f0;
             overflow: hidden;
+            margin-top: 0;
         }
 
         @media (min-width: 768px) {
@@ -313,7 +318,7 @@
         .preview-container {
             position: relative;
             width: 100%;
-            height: 180px;
+            height: 300px;
             background: #000;
             display: flex;
             justify-content: center;
@@ -321,7 +326,7 @@
             overflow: hidden;
         }
 
-        @media (min-width: 768px) {
+        @media (max-width: 1023px) {
             .preview-container {
                 height: 220px;
             }
@@ -376,18 +381,11 @@
         }
 
         .ultima-asistencia {
-            margin-top: 0.5rem;
-            padding: 0.5rem;
+            margin-top: 1rem;
+            padding: 1rem;
             background: #f8fafc;
             border-radius: 8px;
             border: 1px solid #e2e8f0;
-        }
-
-        @media (min-width: 768px) {
-            .ultima-asistencia {
-                margin-top: 0.75rem;
-                padding: 0.75rem;
-            }
         }
 
         .ultima-asistencia-titulo {
@@ -396,23 +394,17 @@
             margin-bottom: 0.5rem;
         }
 
-        :root[class~="dark"] .ultima-asistencia-titulo {
-            color: #e5e7eb;
-        }
-
         .ultima-asistencia-detalles {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.75rem;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
             font-size: 0.875rem;
             color: #64748b;
         }
 
-        @media (min-width: 640px) {
+        @media (min-width: 1280px) {
             .ultima-asistencia-detalles {
                 grid-template-columns: repeat(3, 1fr);
-                gap: 1rem;
-                font-size: 0.9rem;
             }
         }
 
@@ -459,7 +451,21 @@
     <div class="py-2">
         <div class="tarjeta-contenedor">
             <div class="tarjeta-header">
-                <!-- Columna Izquierda: Información del Usuario -->
+                <!-- Columna Izquierda: Escáner -->
+                <div class="contenedor-escanner">
+                    <div class="scanner-header">
+                        <select class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" id="cameras">
+                            <option value="">Seleccionar cámara...</option>
+                        </select>
+                    </div>
+                    <div class="preview-container">
+                        <video id="preview"></video>
+                        <div class="scan-region-highlight"></div>
+                    </div>
+                    <div id="result"></div>
+                </div>
+
+                <!-- Columna Derecha: Información del Usuario -->
                 <div class="contenedor-usuario">
                     <!-- Selector de Usuario -->
                     <select id="usuario" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -524,20 +530,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Columna Derecha: Escáner -->
-                <div class="contenedor-escanner">
-                    <div class="scanner-header">
-                        <select class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" id="cameras">
-                            <option value="">Seleccionar cámara...</option>
-                        </select>
-                    </div>
-                    <div class="preview-container">
-                        <video id="preview"></video>
-                        <div class="scan-region-highlight"></div>
-                    </div>
-                    <div id="result"></div>
                 </div>
             </div>
         </div>
@@ -677,10 +669,14 @@
                             : `<span class="text-2xl text-gray-600">👤</span>`;
                     }
 
-                    // Actualizar asistencias
+                    // Actualizar asistencias - Contar todas las asistencias registradas
                     const numeroAsistencias = document.getElementById('numero-asistencias');
                     if (numeroAsistencias) {
-                        numeroAsistencias.textContent = asistencias.length.toString();
+                        // Contar todas las asistencias que tengan al menos hora_entrada o hora_salida
+                        const totalAsistencias = asistencias.filter(asistencia => 
+                            asistencia.fecha_hora || asistencia.hora_entrada || asistencia.hora_salida
+                        ).length;
+                        numeroAsistencias.textContent = totalAsistencias.toString();
                     }
 
                     // Actualizar última asistencia
