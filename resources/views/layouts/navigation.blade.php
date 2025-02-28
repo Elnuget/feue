@@ -62,6 +62,10 @@
             <x-nav-link :href="route('users.qr', auth()->id())" :active="request()->routeIs('users.qr')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
                 🔲 {{ __('Mi Código QR') }}
             </x-nav-link>
+
+            <x-nav-link :href="route('asistencias.usuario', auth()->id())" :active="request()->routeIs('asistencias.usuario')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+                📅 {{ __('Mis Asistencias') }}
+            </x-nav-link>
         @endif
 
         @if(auth()->user()->hasRole(1))

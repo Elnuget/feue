@@ -148,6 +148,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Dentro del grupo de middleware auth
     Route::get('/cuestionarios/{cuestionario}/preguntas', [CuestionarioController::class, 'obtenerPreguntas'])
          ->name('cuestionarios.preguntas.index');
+
+    Route::get('/asistencias/usuario/{userId}', [AsistenciaController::class, 'showUserAttendance'])->name('asistencias.usuario');
 });
 
 // Rutas para cuestionarios

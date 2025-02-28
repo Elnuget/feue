@@ -297,4 +297,136 @@ class AsistenciaController extends Controller
     {
         return view('asistencias.show', compact('asistencia'));
     }
+
+    private function horaAMinutos($hora) {
+        if (preg_match('/(\d{1,2}):?(\d{2})\s*(AM|PM)?/i', $hora, $matches)) {
+            $horas = intval($matches[1]);
+            $minutos = intval($matches[2]);
+            if (isset($matches[3])) {
+                if (strtoupper($matches[3]) === 'PM' && $horas < 12) {
+                    $horas += 12;
+                } elseif (strtoupper($matches[3]) === 'AM' && $horas == 12) {
+                    $horas = 0;
+                }
+            }
+            return $horas * 60 + $minutos;
+        }
+        return false;
+    }
+
+    private function extraerRangoHorario($horario) {
+        $inicio = null;
+        $fin = null;
+
+        $patrones = [
+            '/(\d{1,2}:\d{2}\s*(?:AM|PM)?\s*-\s*\d{1,2}:\d{2}\s*(?:AM|PM)?)/i',
+            '/(\d{1,2})h(\d{2})-(\d{1,2})h(\d{2})/',
+            '/(\d{1,2})h(\d{2})\s+a\s+(\d{1,2})h(\d{2})/',
+            '/Lunes a Viernes,?\s*(\d{1,2}:\d{2}\s*(?:AM|PM)?\s*-\s*\d{1,2}:\d{2}\s*(?:AM|PM)?)/i',
+        ];
+
+        foreach ($patrones as $patron) {
+            if (preg_match($patron, $horario, $matches)) {
+                if (strpos($patron, 'h') !== false) {
+                    $inicio = sprintf("%02d:%02d", $matches[1], $matches[2]);
+                    $fin = sprintf("%02d:%02d", $matches[3], $matches[4]);
+                } else {
+                    $horarioParte = isset($matches[1]) ? $matches[1] : $horario;
+                    $partes = explode('-', $horarioParte);
+                    $inicio = trim($partes[0]);
+                    $fin = trim($partes[1]);
+                }
+                break;
+            }
+        }
+
+        return [$inicio, $fin];
+    }
+
+    private function formatearHorario($horario) {
+        $horarioFormateado = $horario;
+        
+        $patrones = [
+            '/^(\d{1,2})h(\d{2})-(\d{1,2})h(\d{2})$/' => function($matches) {
+                return sprintf('%02d:%02d - %02d:%02d', $matches[1], $matches[2], $matches[3], $matches[4]);
+            },
+            '/^(\d{1,2})h(\d{2})\s+a\s+(\d{1,2})h(\d{2})$/' => function($matches) {
+                return sprintf('%02d:%02d - %02d:%02d', $matches[1], $matches[2], $matches[3], $matches[4]);
+            },
+            '/^([A-Za-zá-úÁ-Ú\s-]+),\s*(\d{1,2})h(\d{2})-(\d{1,2})h(\d{2})$/' => function($matches) {
+                return $matches[1] . ', ' . sprintf('%02d:%02d - %02d:%02d', $matches[2], $matches[3], $matches[4], $matches[5]);
+            },
+            '/^([A-Za-zá-úÁ-Ú\s-]+),\s*(\d{1,2})h(\d{2})\s+a\s+(\d{1,2})h(\d{2})$/' => function($matches) {
+                return $matches[1] . ', ' . sprintf('%02d:%02d - %02d:%02d', $matches[2], $matches[3], $matches[4], $matches[5]);
+            },
+            '/^Lunes a Viernes,?\s*(.+)$/' => function($matches) {
+                return 'Lunes a Viernes, ' . $matches[1];
+            },
+            '/^Sábados?,?\s*(.+)$/' => function($matches) {
+                return 'Sábado, ' . $matches[1];
+            }
+        ];
+
+        foreach ($patrones as $patron => $formatter) {
+            if (preg_match($patron, $horario, $matches)) {
+                $horarioFormateado = $formatter($matches);
+                break;
+            }
+        }
+
+        return $horarioFormateado;
+    }
+
+    private function contarAsistenciasCurso($horario, $asistencias) {
+        $asistenciasCurso = 0;
+        list($horaInicio, $horaFin) = $this->extraerRangoHorario($horario);
+        
+        if ($horaInicio && $horaFin) {
+            $minInicio = $this->horaAMinutos($horaInicio);
+            $minFin = $this->horaAMinutos($horaFin);
+            
+            foreach ($asistencias as $asistencia) {
+                if ($asistencia->hora_entrada) {
+                    $minAsistencia = $this->horaAMinutos($asistencia->hora_entrada->format('H:i'));
+                    if ($minAsistencia >= $minInicio && $minAsistencia <= $minFin) {
+                        $asistenciasCurso++;
+                    }
+                }
+            }
+        }
+        
+        return $asistenciasCurso;
+    }
+
+    public function showUserAttendance($userId)
+    {
+        $user = User::with('profile')->findOrFail($userId);
+        
+        // Obtener todas las asistencias del usuario
+        $asistencias = Asistencia::where('user_id', $userId)
+            ->orderBy('fecha_hora', 'desc')
+            ->get();
+            
+        // Procesar los horarios y asistencias de cada curso
+        $matriculasConHorarios = collect($user->matriculas)->map(function($matricula) use ($asistencias) {
+            $horario = $matricula->curso->horario;
+            return [
+                'matricula' => $matricula,
+                'horarioFormateado' => $this->formatearHorario($horario),
+                'asistenciasCurso' => $this->contarAsistenciasCurso($horario, $asistencias)
+            ];
+        });
+        
+        // Agrupar asistencias por mes para el calendario
+        $asistenciasPorMes = $asistencias->groupBy(function($asistencia) {
+            return $asistencia->fecha_hora->format('Y-m');
+        });
+
+        return view('asistencias.user-attendance', compact(
+            'user',
+            'asistencias',
+            'asistenciasPorMes',
+            'matriculasConHorarios'
+        ));
+    }
 }
