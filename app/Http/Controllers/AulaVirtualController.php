@@ -116,36 +116,8 @@ class AulaVirtualController extends Controller
 
     public function show(AulaVirtual $aulasVirtuale)
     {
-        if (!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente')) {
-            $userId = auth()->id();
-            // Verificar si el usuario está matriculado en algún curso del aula virtual
-            $tieneAcceso = $aulasVirtuale->cursos()
-                ->whereHas('matriculas', function($query) use ($userId) {
-                    $query->where('usuario_id', $userId);
-                })->exists();
-
-            if (!$tieneAcceso) {
-                return redirect()
-                    ->route('aulas_virtuales.index')
-                    ->with('error', 'No tienes acceso a esta aula virtual.');
-            }
-
-            // Cargar solo los cursos en los que el usuario está matriculado
-            $aula = $aulasVirtuale->load([
-                'cursos' => function($query) use ($userId) {
-                    $query->whereHas('matriculas', function($q) use ($userId) {
-                        $q->where('usuario_id', $userId);
-                    });
-                },
-                'contenidos' => function($query) {
-                    $query->orderBy('created_at', 'desc');
-                }
-            ]);
-        } else {
-            $aula = $aulasVirtuale->load(['cursos', 'contenidos']);
-        }
-
-        return view('aulas_virtuales.show', compact('aula'));
+        $aulasVirtuale->load(['contenidos', 'cuestionarios', 'tareas.entregas.user']);
+        return view('aulas_virtuales.show', compact('aulasVirtuale'));
     }
 
     public function storeContenido(Request $request, AulaVirtual $aulasVirtuale)

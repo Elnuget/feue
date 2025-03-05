@@ -1,5 +1,5 @@
 <x-app-layout>
-    @section('page_title', $aula->nombre)
+    @section('page_title', $aulasVirtuale->nombre)
     
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -7,7 +7,7 @@
                 <div class="p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl md:text-2xl font-bold text-gray-700 dark:text-gray-200">
-                            {{ $aula->nombre }}
+                            {{ $aulasVirtuale->nombre }}
                         </h2>
                         @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
                             <button onclick="toggleModal()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition">
@@ -30,7 +30,7 @@
 
                     <!-- Lista de contenidos -->
                     <div class="space-y-6">
-                        @foreach($aula->contenidos as $contenido)
+                        @foreach($aulasVirtuale->contenidos as $contenido)
                             <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
                                 <div class="flex justify-between items-start">
                                     <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">
@@ -84,6 +84,151 @@
                         @endforeach
                     </div>
 
+                    <!-- Lista de tareas -->
+                    <div class="mt-8">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
+                            Tareas
+                        </h3>
+                        
+                        @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
+                            <div class="mb-4">
+                                <button onclick="toggleTareaModal()" 
+                                        class="inline-flex items-center bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition">
+                                    <span class="mr-2">📚</span> Crear Tarea
+                                </button>
+                            </div>
+                        @endif
+
+                        <div class="space-y-4">
+                            @forelse($aulasVirtuale->tareas as $tarea)
+                                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-300">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                                {{ $tarea->titulo }}
+                                            </h4>
+                                            @if($tarea->descripcion)
+                                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                    {{ $tarea->descripcion }}
+                                                </p>
+                                            @endif
+
+                                            @if($tarea->imagenes && count($tarea->imagenes) > 0)
+                                                <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2">
+                                                    @foreach($tarea->imagenes as $imagen)
+                                                        <div class="relative group">
+                                                            <img src="{{ asset('storage/' . $imagen) }}" 
+                                                                 alt="Imagen de la tarea"
+                                                                 class="w-full h-32 object-cover rounded-lg shadow-sm">
+                                                            <a href="{{ asset('storage/' . $imagen) }}" 
+                                                               target="_blank"
+                                                               class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center">
+                                                                <span class="text-white opacity-0 group-hover:opacity-100">
+                                                                    Ver imagen
+                                                                </span>
+                                                            </a>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+
+                                            @if($tarea->archivos && count($tarea->archivos) > 0)
+                                                <div class="mt-2 flex flex-wrap gap-2">
+                                                    @foreach($tarea->archivos as $archivo)
+                                                        <a href="{{ asset('storage/' . $archivo) }}" 
+                                                           target="_blank"
+                                                           class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 transition-colors">
+                                                            <span class="mr-1">📎</span>
+                                                            {{ basename($archivo) }}
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+
+                                            <div class="mt-2 flex flex-wrap gap-2">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                    📅 Fecha límite: {{ $tarea->fecha_limite->format('d/m/Y') }}
+                                                </span>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                                    💯 Puntos máximos: {{ $tarea->puntos_maximos }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="flex space-x-2">
+                                            @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
+                                                <a href="{{ route('tareas.edit', $tarea) }}" 
+                                                   class="text-yellow-500 hover:text-yellow-700 transition-colors">
+                                                    ✏️
+                                                </a>
+                                                <form action="{{ route('tareas.destroy', $tarea) }}" 
+                                                      method="POST" 
+                                                      class="inline"
+                                                      onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta tarea? Esta acción no se puede deshacer.')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <input type="hidden" name="redirect_to" value="{{ route('aulas_virtuales.show', $aulasVirtuale) }}">
+                                                    <button type="submit" 
+                                                            class="text-red-500 hover:text-red-700 transition-colors">
+                                                        🗑️
+                                                    </button>
+                                                </form>
+                                            @endif
+                                            @if($tarea->fecha_limite->isFuture())
+                                                <button onclick="toggleEntregaModal({{ $tarea->id }})"
+                                                        class="inline-flex items-center bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-3 rounded transition">
+                                                    Entregar 📤
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    @if($tarea->entregas->count() > 0)
+                                        <div class="mt-4 border-t pt-4">
+                                            <h5 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Entregas:</h5>
+                                            <div class="space-y-2">
+                                                @foreach($tarea->entregas as $entrega)
+                                                    <div class="flex items-center justify-between bg-white dark:bg-gray-600 p-2 rounded">
+                                                        <div class="flex items-center">
+                                                            <span class="text-sm text-gray-600 dark:text-gray-300">
+                                                                {{ $entrega->user->name }} - 
+                                                                {{ $entrega->created_at->format('d/m/Y H:i') }}
+                                                            </span>
+                                                        </div>
+                                                        <div class="flex items-center space-x-2">
+                                                            @if($entrega->archivo)
+                                                                <a href="{{ Storage::url($entrega->archivo) }}" 
+                                                                   target="_blank"
+                                                                   class="text-blue-500 hover:text-blue-700">
+                                                                    📎 Ver archivo
+                                                                </a>
+                                                            @endif
+                                                            @if($entrega->enlace)
+                                                                <a href="{{ $entrega->enlace }}" 
+                                                                   target="_blank"
+                                                                   class="text-blue-500 hover:text-blue-700">
+                                                                    🔗 Ver enlace
+                                                                </a>
+                                                            @endif
+                                                            @if($entrega->calificacion)
+                                                                <span class="text-green-500 font-semibold">
+                                                                    {{ $entrega->calificacion }}/{{ $tarea->puntos_maximos }}
+                                                                </span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            @empty
+                                <p class="text-gray-500 dark:text-gray-400 text-center py-4">
+                                    No hay tareas disponibles en esta aula virtual.
+                                </p>
+                            @endforelse
+                        </div>
+                    </div>
+
                     <!-- Lista de cuestionarios -->
                     <div class="mt-8">
                         <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
@@ -92,7 +237,7 @@
                         
                         @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
                             <div class="mb-4">
-                                <a href="{{ route('cuestionarios.create', $aula) }}" 
+                                <a href="{{ route('cuestionarios.create', $aulasVirtuale) }}" 
                                    class="inline-flex items-center bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition">
                                     <span class="mr-2">📝</span> Crear Cuestionario
                                 </a>
@@ -100,7 +245,7 @@
                         @endif
 
                         <div class="space-y-4">
-                            @forelse($aula->cuestionarios as $cuestionario)
+                            @forelse($aulasVirtuale->cuestionarios as $cuestionario)
                                 <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-300">
                                     <div class="flex justify-between items-start">
                                         <div>
@@ -142,7 +287,7 @@
                                                       onsubmit="return confirm('¿Estás seguro de que deseas eliminar este cuestionario? Esta acción no se puede deshacer.')">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <input type="hidden" name="redirect_to" value="{{ route('aulas_virtuales.show', $aula) }}">
+                                                    <input type="hidden" name="redirect_to" value="{{ route('aulas_virtuales.show', $aulasVirtuale) }}">
                                                     <button type="submit" 
                                                             class="text-red-500 hover:text-red-700 transition-colors">
                                                         🗑️
@@ -163,6 +308,151 @@
                                     No hay cuestionarios disponibles en esta aula virtual.
                                 </p>
                             @endforelse
+                        </div>
+                    </div>
+
+                    <!-- Modal para crear tarea -->
+                    @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
+                        <div id="tareaModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 overflow-y-auto">
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-2xl my-8 mx-auto max-h-[90vh] overflow-y-auto">
+                                <div class="flex justify-between items-center mb-4 sticky top-0 bg-white dark:bg-gray-800 z-10 py-2">
+                                    <h3 class="text-lg font-bold">Crear Nueva Tarea</h3>
+                                    <button onclick="toggleTareaModal()" class="text-gray-500 hover:text-gray-700">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <form action="{{ route('tareas.store', $aulasVirtuale) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                                    @csrf
+                                    
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium mb-2">Título</label>
+                                        <input type="text" 
+                                               name="titulo" 
+                                               required
+                                               class="w-full rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium mb-2">Descripción</label>
+                                        <textarea name="descripcion" 
+                                                  rows="4"
+                                                  class="w-full rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500"></textarea>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium mb-2">Imágenes (máx. 10MB por imagen)</label>
+                                        <input type="file" 
+                                               name="imagenes[]" 
+                                               multiple
+                                               accept="image/*"
+                                               onchange="validarArchivos(this, 'imagenes')"
+                                               class="w-full rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
+                                        <div id="imagenes-error" class="hidden mt-2 text-sm text-red-600"></div>
+                                        <div id="imagenes-preview" class="mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2"></div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium mb-2">Archivos adjuntos (máx. 10MB por archivo)</label>
+                                        <input type="file" 
+                                               name="archivos[]" 
+                                               multiple
+                                               accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar"
+                                               onchange="validarArchivos(this, 'archivos')"
+                                               class="w-full rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
+                                        <div id="archivos-error" class="hidden mt-2 text-sm text-red-600"></div>
+                                        <div id="archivos-preview" class="mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2"></div>
+                                        <div class="mt-1 text-xs text-gray-500">
+                                            Formatos permitidos: PDF, Word, Excel, PowerPoint, ZIP, RAR
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium mb-2">Fecha Límite</label>
+                                            <input type="date" 
+                                                   name="fecha_limite" 
+                                                   required
+                                                   value="{{ date('Y-m-d') }}"
+                                                   min="{{ date('Y-m-d') }}"
+                                                   class="w-full rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-sm font-medium mb-2">Puntos Máximos</label>
+                                            <input type="number" 
+                                                   name="puntos_maximos" 
+                                                   required
+                                                   min="0"
+                                                   value="10"
+                                                   class="w-full rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
+                                        </div>
+                                    </div>
+
+                                    <div class="flex justify-end space-x-2 mt-6 sticky bottom-0 bg-white dark:bg-gray-800 py-2">
+                                        <button type="button" 
+                                                onclick="toggleTareaModal()"
+                                                class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
+                                            Cancelar
+                                        </button>
+                                        <button type="submit"
+                                                id="submit-tarea-btn"
+                                                class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors">
+                                            Crear Tarea
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Modal para entregar tarea -->
+                    <div id="entregaModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-2xl">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-bold">Entregar Tarea</h3>
+                                <button onclick="toggleEntregaModal()" class="text-gray-500 hover:text-gray-700">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <form id="entregaForm" method="POST" enctype="multipart/form-data" class="space-y-4">
+                                @csrf
+                                
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium mb-2">Archivo (máximo 10MB)</label>
+                                    <input type="file" 
+                                           name="archivo"
+                                           id="entrega-archivo"
+                                           onchange="validarTamanoArchivoEntrega(this)"
+                                           class="w-full rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
+                                    <div id="entrega-archivo-error" class="hidden mt-2 text-sm text-red-600"></div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium mb-2">O enlace de Google Drive</label>
+                                    <input type="url" 
+                                           name="enlace"
+                                           placeholder="https://drive.google.com/..."
+                                           class="w-full rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+
+                                <div class="flex justify-end space-x-2 mt-6">
+                                    <button type="button" 
+                                            onclick="toggleEntregaModal()"
+                                            class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
+                                        Cancelar
+                                    </button>
+                                    <button type="submit"
+                                            class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors">
+                                        Entregar
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
 
@@ -206,7 +496,7 @@
                                     </ul>
                                 </div>
                                 
-                                <form action="{{ route('aulas_virtuales.contenidos.store', $aula) }}" 
+                                <form action="{{ route('aulas_virtuales.contenidos.store', $aulasVirtuale) }}" 
                                       method="POST" 
                                       enctype="multipart/form-data"
                                       class="space-y-4">
@@ -239,7 +529,7 @@
                                         <input type="file" 
                                                name="archivo"
                                                id="archivo-input"
-                                               onchange="validarTamanoArchivo(this)"
+                                               onchange="validarArchivos(this, 'archivo')"
                                                class="w-full rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
                                         <div id="archivo-error" class="hidden mt-2 text-sm text-red-600"></div>
                                         <div id="archivo-warning" class="hidden mt-2 p-4 bg-yellow-100 text-yellow-700 rounded-lg">
@@ -319,6 +609,229 @@
                 warningDiv.classList.add('hidden');
                 submitButton.disabled = false;
             }
+        }
+
+        function toggleTareaModal() {
+            const modal = document.getElementById('tareaModal');
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('flex');
+        }
+
+        function toggleEntregaModal(tareaId = null) {
+            const modal = document.getElementById('entregaModal');
+            const form = document.getElementById('entregaForm');
+            
+            if (tareaId) {
+                form.action = `/tareas/${tareaId}/entregar`;
+            }
+            
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('flex');
+        }
+
+        function validarTamanoArchivoEntrega(input) {
+            const archivo = input.files[0];
+            const maxSize = 10 * 1024 * 1024; // 10MB en bytes
+            const errorDiv = document.getElementById('entrega-archivo-error');
+            const submitButton = input.closest('form').querySelector('button[type="submit"]');
+
+            if (archivo && archivo.size > maxSize) {
+                input.value = ''; // Limpiar el input
+                errorDiv.textContent = 'El archivo excede el límite de 10MB. Por favor, usa un enlace de Google Drive.';
+                errorDiv.classList.remove('hidden');
+                submitButton.disabled = true;
+            } else {
+                errorDiv.classList.add('hidden');
+                submitButton.disabled = false;
+            }
+        }
+
+        function validarArchivos(input, tipo) {
+            const preview = document.getElementById(`${tipo}-preview`);
+            const errorDiv = document.getElementById(`${tipo}-error`);
+            const submitButton = document.getElementById('submit-tarea-btn');
+            errorDiv.classList.add('hidden');
+            
+            const maxSize = 10 * 1024 * 1024; // 10MB por archivo
+            const maxFiles = 5; // Máximo 5 archivos
+            
+            const tiposPermitidos = tipo === 'imagenes' 
+                ? ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+                : ['application/pdf', 
+                   'application/msword', 
+                   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                   'application/vnd.ms-powerpoint',
+                   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                   'application/vnd.ms-excel',
+                   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                   'application/zip',
+                   'application/x-rar-compressed',
+                   'application/octet-stream'];
+
+            // Crear un nuevo DataTransfer para mantener todos los archivos
+            const dataTransfer = new DataTransfer();
+
+            // Obtener los archivos existentes del preview
+            const existingFiles = Array.from(preview.querySelectorAll('.relative')).map(div => {
+                const fileName = div.querySelector('.font-medium').textContent;
+                return Array.from(input.files).find(file => file.name === fileName);
+            }).filter(Boolean);
+
+            // Verificar el número total de archivos
+            const totalFiles = existingFiles.length + input.files.length;
+            if (totalFiles > maxFiles) {
+                errorDiv.textContent = `Solo puedes subir un máximo de ${maxFiles} archivos en total.`;
+                errorDiv.classList.remove('hidden');
+                input.value = '';
+                return;
+            }
+
+            // Agregar primero los archivos existentes al DataTransfer
+            existingFiles.forEach(file => {
+                dataTransfer.items.add(file);
+            });
+
+            // Limpiar el preview antes de agregar los nuevos archivos
+            preview.innerHTML = '';
+
+            // Recrear los previews de los archivos existentes
+            existingFiles.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.className = 'relative border rounded-lg p-3 bg-gray-50 dark:bg-gray-700';
+                    
+                    let iconHTML = '';
+                    if (tipo === 'imagenes') {
+                        iconHTML = `<img src="${e.target.result}" class="w-full h-32 object-contain rounded-lg mb-2">`;
+                    } else {
+                        const extension = file.name.split('.').pop().toLowerCase();
+                        const iconClass = getFileIconClass(extension);
+                        iconHTML = `<div class="w-12 h-12 mx-auto mb-2 ${iconClass}"></div>`;
+                    }
+                    
+                    div.innerHTML = `
+                        ${iconHTML}
+                        <div class="text-center text-sm truncate font-medium mb-1">${file.name}</div>
+                        <div class="text-center text-xs text-gray-500">${formatFileSize(file.size)}</div>
+                        <button type="button" onclick="removeFile(this, '${tipo}')" 
+                                class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs">
+                            ×
+                        </button>
+                    `;
+                    preview.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Procesar los nuevos archivos
+            for (let i = 0; i < input.files.length; i++) {
+                const file = input.files[i];
+                
+                // Verificar si el archivo ya existe
+                if (existingFiles.some(existingFile => existingFile.name === file.name)) {
+                    continue;
+                }
+                
+                // Verificar extensión
+                const extension = file.name.split('.').pop().toLowerCase();
+                const extensionesPermitidas = tipo === 'imagenes' 
+                    ? ['jpg', 'jpeg', 'png', 'gif', 'webp']
+                    : ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'zip', 'rar'];
+                
+                if (!extensionesPermitidas.includes(extension) && !tiposPermitidos.includes(file.type)) {
+                    errorDiv.textContent = `El archivo "${file.name}" no es de un formato permitido.`;
+                    errorDiv.classList.remove('hidden');
+                    continue;
+                }
+
+                if (file.size > maxSize) {
+                    errorDiv.textContent = `El archivo "${file.name}" excede el límite de 10MB.`;
+                    errorDiv.classList.remove('hidden');
+                    continue;
+                }
+
+                // Agregar el archivo al DataTransfer
+                dataTransfer.items.add(file);
+
+                // Crear preview para el nuevo archivo
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.className = 'relative border rounded-lg p-3 bg-gray-50 dark:bg-gray-700';
+                    
+                    let iconHTML = '';
+                    if (tipo === 'imagenes') {
+                        iconHTML = `<img src="${e.target.result}" class="w-full h-32 object-contain rounded-lg mb-2">`;
+                    } else {
+                        const iconClass = getFileIconClass(extension);
+                        iconHTML = `<div class="w-12 h-12 mx-auto mb-2 ${iconClass}"></div>`;
+                    }
+                    
+                    div.innerHTML = `
+                        ${iconHTML}
+                        <div class="text-center text-sm truncate font-medium mb-1">${file.name}</div>
+                        <div class="text-center text-xs text-gray-500">${formatFileSize(file.size)}</div>
+                        <button type="button" onclick="removeFile(this, '${tipo}')" 
+                                class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs">
+                            ×
+                        </button>
+                    `;
+                    preview.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // Actualizar los archivos del input
+            input.files = dataTransfer.files;
+            submitButton.disabled = false;
+        }
+
+        function getFileIconClass(extension) {
+            const iconMap = {
+                'pdf': 'text-red-500',
+                'doc': 'text-blue-500',
+                'docx': 'text-blue-500',
+                'xls': 'text-green-500',
+                'xlsx': 'text-green-500',
+                'ppt': 'text-orange-500',
+                'pptx': 'text-orange-500',
+                'zip': 'text-yellow-500',
+                'rar': 'text-yellow-500'
+            };
+            return `text-4xl ${iconMap[extension] || 'text-gray-500'}`;
+        }
+
+        function removeFile(button, tipo) {
+            const container = button.closest('.relative');
+            const fileName = container.querySelector('.font-medium').textContent;
+            const input = document.querySelector(`input[name="${tipo}[]"]`);
+            
+            // Crear un nuevo DataTransfer
+            const dataTransfer = new DataTransfer();
+            
+            // Agregar todos los archivos excepto el que se quiere eliminar
+            Array.from(input.files).forEach(file => {
+                if (file.name !== fileName) {
+                    dataTransfer.items.add(file);
+                }
+            });
+            
+            // Actualizar los archivos del input
+            input.files = dataTransfer.files;
+            
+            // Eliminar el contenedor de la vista previa
+            container.remove();
+            
+            // Habilitar el botón de envío si hay archivos válidos o está vacío
+            const submitButton = document.getElementById('submit-tarea-btn');
+            submitButton.disabled = false;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' bytes';
+            else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            else return (bytes / 1048576).toFixed(1) + ' MB';
         }
     </script>
     @endpush
