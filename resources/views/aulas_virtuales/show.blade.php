@@ -324,7 +324,7 @@
                                     </button>
                                 </div>
 
-                                <form action="{{ route('tareas.store', $aulasVirtuale) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                                <form action="{{ route('tareas.store', $aulasVirtuale) }}" method="POST" enctype="multipart/form-data" class="space-y-4" id="tareaForm">
                                     @csrf
                                     
                                     <div class="mb-4">
@@ -344,26 +344,46 @@
 
                                     <div class="mb-4">
                                         <label class="block text-sm font-medium mb-2">Imágenes (máx. 10MB por imagen)</label>
-                                        <input type="file" 
-                                               name="imagenes[]" 
-                                               multiple
-                                               accept="image/*"
-                                               onchange="validarArchivos(this, 'imagenes')"
-                                               class="w-full rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
+                                        <div class="flex items-center">
+                                            <input type="file" 
+                                                   id="imagenes-input"
+                                                   accept="image/*"
+                                                   class="hidden"
+                                                   onchange="handleFileSelection(this, 'imagenes')">
+                                            <button type="button" 
+                                                    onclick="document.getElementById('imagenes-input').click()"
+                                                    class="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">
+                                                Seleccionar imágenes
+                                            </button>
+                                            <span id="imagenes-count" class="ml-3 text-sm text-gray-500 dark:text-gray-400">
+                                                0 imágenes seleccionadas
+                                            </span>
+                                        </div>
                                         <div id="imagenes-error" class="hidden mt-2 text-sm text-red-600"></div>
                                         <div id="imagenes-preview" class="mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2"></div>
+                                        <div id="imagenes-container"></div>
                                     </div>
 
                                     <div class="mb-4">
                                         <label class="block text-sm font-medium mb-2">Archivos adjuntos (máx. 10MB por archivo)</label>
-                                        <input type="file" 
-                                               name="archivos[]" 
-                                               multiple
-                                               accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar"
-                                               onchange="validarArchivos(this, 'archivos')"
-                                               class="w-full rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
+                                        <div class="flex items-center">
+                                            <input type="file" 
+                                                   id="archivos-input"
+                                                   accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar"
+                                                   class="hidden"
+                                                   onchange="handleFileSelection(this, 'archivos')">
+                                            <button type="button" 
+                                                    onclick="document.getElementById('archivos-input').click()"
+                                                    class="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">
+                                                Seleccionar archivos
+                                            </button>
+                                            <span id="archivos-count" class="ml-3 text-sm text-gray-500 dark:text-gray-400">
+                                                0 archivos seleccionados
+                                            </span>
+                                        </div>
                                         <div id="archivos-error" class="hidden mt-2 text-sm text-red-600"></div>
                                         <div id="archivos-preview" class="mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2"></div>
+                                        <div id="archivos-container"></div>
                                         <div class="mt-1 text-xs text-gray-500">
                                             Formatos permitidos: PDF, Word, Excel, PowerPoint, ZIP, RAR
                                         </div>
@@ -615,6 +635,23 @@
             const modal = document.getElementById('tareaModal');
             modal.classList.toggle('hidden');
             modal.classList.toggle('flex');
+            
+            // Limpiar formulario al cerrar
+            if (modal.classList.contains('hidden')) {
+                resetTareaForm();
+            }
+        }
+
+        function resetTareaForm() {
+            document.getElementById('tareaForm').reset();
+            document.getElementById('imagenes-preview').innerHTML = '';
+            document.getElementById('archivos-preview').innerHTML = '';
+            document.getElementById('imagenes-container').innerHTML = '';
+            document.getElementById('archivos-container').innerHTML = '';
+            document.getElementById('imagenes-count').textContent = '0 imágenes seleccionadas';
+            document.getElementById('archivos-count').textContent = '0 archivos seleccionados';
+            document.getElementById('imagenes-error').classList.add('hidden');
+            document.getElementById('archivos-error').classList.add('hidden');
         }
 
         function toggleEntregaModal(tareaId = null) {
@@ -646,14 +683,21 @@
             }
         }
 
-        function validarArchivos(input, tipo) {
-            const preview = document.getElementById(`${tipo}-preview`);
-            const errorDiv = document.getElementById(`${tipo}-error`);
-            const submitButton = document.getElementById('submit-tarea-btn');
-            errorDiv.classList.add('hidden');
-            
+        // Sistema mejorado para manejar múltiples archivos
+        const filesData = {
+            imagenes: [],
+            archivos: []
+        };
+
+        function handleFileSelection(input, tipo) {
             const maxSize = 10 * 1024 * 1024; // 10MB por archivo
             const maxFiles = 5; // Máximo 5 archivos
+            const errorDiv = document.getElementById(`${tipo}-error`);
+            const previewDiv = document.getElementById(`${tipo}-preview`);
+            const countSpan = document.getElementById(`${tipo}-count`);
+            const containerDiv = document.getElementById(`${tipo}-container`);
+            
+            errorDiv.classList.add('hidden');
             
             const tiposPermitidos = tipo === 'imagenes' 
                 ? ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
@@ -667,73 +711,27 @@
                    'application/zip',
                    'application/x-rar-compressed',
                    'application/octet-stream'];
-
-            // Crear un nuevo DataTransfer para mantener todos los archivos
-            const dataTransfer = new DataTransfer();
-
-            // Obtener los archivos existentes del preview
-            const existingFiles = Array.from(preview.querySelectorAll('.relative')).map(div => {
-                const fileName = div.querySelector('.font-medium').textContent;
-                return Array.from(input.files).find(file => file.name === fileName);
-            }).filter(Boolean);
-
-            // Verificar el número total de archivos
-            const totalFiles = existingFiles.length + input.files.length;
-            if (totalFiles > maxFiles) {
-                errorDiv.textContent = `Solo puedes subir un máximo de ${maxFiles} archivos en total.`;
+            
+            // Verificar límite de archivos
+            if (filesData[tipo].length + input.files.length > maxFiles) {
+                errorDiv.textContent = `Solo puedes subir un máximo de ${maxFiles} archivos.`;
                 errorDiv.classList.remove('hidden');
-                input.value = '';
                 return;
             }
-
-            // Agregar primero los archivos existentes al DataTransfer
-            existingFiles.forEach(file => {
-                dataTransfer.items.add(file);
-            });
-
-            // Limpiar el preview antes de agregar los nuevos archivos
-            preview.innerHTML = '';
-
-            // Recrear los previews de los archivos existentes
-            existingFiles.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const div = document.createElement('div');
-                    div.className = 'relative border rounded-lg p-3 bg-gray-50 dark:bg-gray-700';
-                    
-                    let iconHTML = '';
-                    if (tipo === 'imagenes') {
-                        iconHTML = `<img src="${e.target.result}" class="w-full h-32 object-contain rounded-lg mb-2">`;
-                    } else {
-                        const extension = file.name.split('.').pop().toLowerCase();
-                        const iconClass = getFileIconClass(extension);
-                        iconHTML = `<div class="w-12 h-12 mx-auto mb-2 ${iconClass}"></div>`;
-                    }
-                    
-                    div.innerHTML = `
-                        ${iconHTML}
-                        <div class="text-center text-sm truncate font-medium mb-1">${file.name}</div>
-                        <div class="text-center text-xs text-gray-500">${formatFileSize(file.size)}</div>
-                        <button type="button" onclick="removeFile(this, '${tipo}')" 
-                                class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs">
-                            ×
-                        </button>
-                    `;
-                    preview.appendChild(div);
-                };
-                reader.readAsDataURL(file);
-            });
-
-            // Procesar los nuevos archivos
-            for (let i = 0; i < input.files.length; i++) {
-                const file = input.files[i];
+            
+            // Procesar cada archivo seleccionado
+            let validFilesCount = 0;
+            Array.from(input.files).forEach(file => {
+                // Verificar si el archivo ya existe en nuestra colección
+                const isDuplicate = filesData[tipo].some(existingFile => 
+                    existingFile.name === file.name && existingFile.size === file.size
+                );
                 
-                // Verificar si el archivo ya existe
-                if (existingFiles.some(existingFile => existingFile.name === file.name)) {
-                    continue;
+                if (isDuplicate) {
+                    return; // Saltar archivos duplicados
                 }
                 
-                // Verificar extensión
+                // Verificar tipo de archivo
                 const extension = file.name.split('.').pop().toLowerCase();
                 const extensionesPermitidas = tipo === 'imagenes' 
                     ? ['jpg', 'jpeg', 'png', 'gif', 'webp']
@@ -742,49 +740,117 @@
                 if (!extensionesPermitidas.includes(extension) && !tiposPermitidos.includes(file.type)) {
                     errorDiv.textContent = `El archivo "${file.name}" no es de un formato permitido.`;
                     errorDiv.classList.remove('hidden');
-                    continue;
+                    return;
                 }
-
+                
+                // Verificar tamaño de archivo
                 if (file.size > maxSize) {
                     errorDiv.textContent = `El archivo "${file.name}" excede el límite de 10MB.`;
                     errorDiv.classList.remove('hidden');
-                    continue;
+                    return;
                 }
-
-                // Agregar el archivo al DataTransfer
+                
+                // Agregar a nuestra colección
+                filesData[tipo].push(file);
+                validFilesCount++;
+                
+                // Crear vista previa
+                createFilePreview(file, tipo);
+            });
+            
+            // Actualizar contador
+            updateFileCount(tipo);
+            
+            // Limpiar input para permitir seleccionar el mismo archivo nuevamente
+            input.value = '';
+            
+            // Regenerar los input fields ocultos para el envío del formulario
+            regenerateFileInputs(tipo);
+        }
+        
+        function createFilePreview(file, tipo) {
+            const previewDiv = document.getElementById(`${tipo}-preview`);
+            const fileId = `${tipo}-${Date.now()}-${file.name}`;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const div = document.createElement('div');
+                div.className = 'relative border rounded-lg p-3 bg-gray-50 dark:bg-gray-700';
+                div.dataset.fileId = fileId;
+                
+                let iconHTML = '';
+                if (tipo === 'imagenes') {
+                    iconHTML = `<img src="${e.target.result}" class="w-full h-32 object-contain rounded-lg mb-2">`;
+                } else {
+                    const extension = file.name.split('.').pop().toLowerCase();
+                    const iconClass = getFileIconClass(extension);
+                    iconHTML = `<div class="w-12 h-12 mx-auto mb-2 ${iconClass}"></div>`;
+                }
+                
+                div.innerHTML = `
+                    ${iconHTML}
+                    <div class="text-center text-sm truncate font-medium mb-1">${file.name}</div>
+                    <div class="text-center text-xs text-gray-500">${formatFileSize(file.size)}</div>
+                    <button type="button" 
+                            onclick="removeFile('${fileId}', '${tipo}')" 
+                            class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs">
+                        ×
+                    </button>
+                `;
+                previewDiv.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+            
+            // Agregar un atributo de ID único al archivo para referencia
+            file.fileId = fileId;
+        }
+        
+        function regenerateFileInputs(tipo) {
+            const containerDiv = document.getElementById(`${tipo}-container`);
+            containerDiv.innerHTML = ''; // Limpiar contenedor
+            
+            // Crear un FormData para cada archivo
+            filesData[tipo].forEach((file, index) => {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.name = `${tipo}[]`;
+                fileInput.classList.add('hidden');
+                fileInput.dataset.fileId = file.fileId;
+                
+                // Crear un nuevo FileList con solo este archivo
+                const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
-
-                // Crear preview para el nuevo archivo
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const div = document.createElement('div');
-                    div.className = 'relative border rounded-lg p-3 bg-gray-50 dark:bg-gray-700';
-                    
-                    let iconHTML = '';
-                    if (tipo === 'imagenes') {
-                        iconHTML = `<img src="${e.target.result}" class="w-full h-32 object-contain rounded-lg mb-2">`;
-                    } else {
-                        const iconClass = getFileIconClass(extension);
-                        iconHTML = `<div class="w-12 h-12 mx-auto mb-2 ${iconClass}"></div>`;
-                    }
-                    
-                    div.innerHTML = `
-                        ${iconHTML}
-                        <div class="text-center text-sm truncate font-medium mb-1">${file.name}</div>
-                        <div class="text-center text-xs text-gray-500">${formatFileSize(file.size)}</div>
-                        <button type="button" onclick="removeFile(this, '${tipo}')" 
-                                class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs">
-                            ×
-                        </button>
-                    `;
-                    preview.appendChild(div);
-                };
-                reader.readAsDataURL(file);
+                fileInput.files = dataTransfer.files;
+                
+                containerDiv.appendChild(fileInput);
+            });
+        }
+        
+        function updateFileCount(tipo) {
+            const countSpan = document.getElementById(`${tipo}-count`);
+            const count = filesData[tipo].length;
+            countSpan.textContent = count === 1 
+                ? `1 ${tipo === 'imagenes' ? 'imagen' : 'archivo'} seleccionado` 
+                : `${count} ${tipo === 'imagenes' ? 'imágenes' : 'archivos'} seleccionados`;
+        }
+        
+        function removeFile(fileId, tipo) {
+            // Eliminar el archivo de nuestra colección
+            const fileIndex = filesData[tipo].findIndex(file => file.fileId === fileId);
+            if (fileIndex > -1) {
+                filesData[tipo].splice(fileIndex, 1);
             }
-
-            // Actualizar los archivos del input
-            input.files = dataTransfer.files;
-            submitButton.disabled = false;
+            
+            // Eliminar el elemento de vista previa
+            const previewDiv = document.getElementById(`${tipo}-preview`);
+            const filePreview = previewDiv.querySelector(`[data-file-id="${fileId}"]`);
+            if (filePreview) {
+                filePreview.remove();
+            }
+            
+            // Actualizar contador y regenerar inputs
+            updateFileCount(tipo);
+            regenerateFileInputs(tipo);
         }
 
         function getFileIconClass(extension) {
@@ -800,32 +866,6 @@
                 'rar': 'text-yellow-500'
             };
             return `text-4xl ${iconMap[extension] || 'text-gray-500'}`;
-        }
-
-        function removeFile(button, tipo) {
-            const container = button.closest('.relative');
-            const fileName = container.querySelector('.font-medium').textContent;
-            const input = document.querySelector(`input[name="${tipo}[]"]`);
-            
-            // Crear un nuevo DataTransfer
-            const dataTransfer = new DataTransfer();
-            
-            // Agregar todos los archivos excepto el que se quiere eliminar
-            Array.from(input.files).forEach(file => {
-                if (file.name !== fileName) {
-                    dataTransfer.items.add(file);
-                }
-            });
-            
-            // Actualizar los archivos del input
-            input.files = dataTransfer.files;
-            
-            // Eliminar el contenedor de la vista previa
-            container.remove();
-            
-            // Habilitar el botón de envío si hay archivos válidos o está vacío
-            const submitButton = document.getElementById('submit-tarea-btn');
-            submitButton.disabled = false;
         }
 
         function formatFileSize(bytes) {
