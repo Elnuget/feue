@@ -170,7 +170,26 @@
                                                 <div class="flex flex-col">
                                                     <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Fecha límite:</span>
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                                        📅 {{ $tarea->fecha_limite->format('d/m/Y') }}
+                                                        📅 {{ $tarea->fecha_limite->format('d/m/Y H:i') }}
+                                                    </span>
+                                                    @php
+                                                        $tiempoRestante = now()->diff($tarea->fecha_limite);
+                                                        $estado = now()->gt($tarea->fecha_limite) ? 'Vencida' : 'Tiempo restante';
+                                                        $claseEstado = now()->gt($tarea->fecha_limite) ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800';
+                                                    @endphp
+                                                    <span class="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $claseEstado }}">
+                                                        ⏱️ {{ $estado }}: 
+                                                        @if(!now()->gt($tarea->fecha_limite))
+                                                            @if($tiempoRestante->days > 0)
+                                                                {{ $tiempoRestante->days }} días
+                                                            @elseif($tiempoRestante->h > 0)
+                                                                {{ $tiempoRestante->h }} horas
+                                                            @elseif($tiempoRestante->i > 0)
+                                                                {{ $tiempoRestante->i }} minutos
+                                                            @else
+                                                                {{ $tiempoRestante->s }} segundos
+                                                            @endif
+                                                        @endif
                                                     </span>
                                                 </div>
                                                 
@@ -209,17 +228,30 @@
                                                         {{ $tarea->estado === 'activo' ? 'Desactivar' : 'Activar' }}
                                                     </button>
                                                 </form>
-                                            @endif
-                                            @if($tarea->fecha_limite->isFuture())
-                                                <button onclick="toggleEntregaModal({{ $tarea->id }})"
-                                                        class="inline-flex items-center bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-3 rounded transition">
-                                                    Entregar 📤
+                                                <button onclick="toggleCalificarModal({{ $tarea->id }}, '{{ $tarea->titulo }}')"
+                                                        class="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition">
+                                                    Calificar 📝 ({{ $tarea->entregas()->whereNotNull('calificacion')->count() }}/{{ $tarea->entregas()->count() }})
                                                 </button>
+                                            @endif
+                                            @if(!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente'))
+                                                @php
+                                                    $entregaExistente = $tarea->entregas->where('user_id', auth()->id())->first();
+                                                @endphp
+                                                @if(!$entregaExistente && $tarea->fecha_limite->isFuture() && $tarea->estado === 'activo')
+                                                    <button onclick="toggleEntregaModal({{ $tarea->id }}, '{{ $tarea->titulo }}')"
+                                                            class="inline-flex items-center bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-3 rounded transition">
+                                                        Entregar 📤
+                                                    </button>
+                                                @elseif($entregaExistente)
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-md text-sm bg-gray-100 text-gray-700">
+                                                        ✓ Entregada
+                                                    </span>
+                                                @endif
                                             @endif
                                         </div>
                                     </div>
 
-                                    @if($tarea->entregas->count() > 0)
+                                    @if($tarea->entregas->count() > 0 && (auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente')))
                                         <div class="mt-4 border-t pt-4">
                                             <h5 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Entregas:</h5>
                                             <div class="space-y-2">
@@ -429,11 +461,11 @@
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <label class="block text-sm font-medium mb-2">Fecha Límite</label>
-                                            <input type="date" 
+                                            <input type="datetime-local" 
                                                    name="fecha_limite" 
                                                    required
-                                                   value="{{ date('Y-m-d') }}"
-                                                   min="{{ date('Y-m-d') }}"
+                                                   value="{{ date('Y-m-d\TH:i') }}"
+                                                   min="{{ date('Y-m-d\TH:i') }}"
                                                    class="w-full rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
                                         </div>
 
@@ -495,7 +527,10 @@
                     <div id="entregaModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
                         <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-2xl">
                             <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-lg font-bold">Entregar Tarea</h3>
+                                <div>
+                                    <h3 class="text-lg font-bold">Entregar Tarea</h3>
+                                    <p class="text-sm text-gray-500" id="entrega-tarea-titulo"></p>
+                                </div>
                                 <button onclick="toggleEntregaModal()" class="text-gray-500 hover:text-gray-700">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -503,25 +538,60 @@
                                 </button>
                             </div>
 
-                            <form id="entregaForm" method="POST" enctype="multipart/form-data" class="space-y-4">
+                            <form id="entregaForm" action="" method="POST" enctype="multipart/form-data" class="space-y-4">
                                 @csrf
-                                
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium mb-2">Archivo (máximo 10MB)</label>
-                                    <input type="file" 
-                                           name="archivo"
-                                           id="entrega-archivo"
-                                           onchange="validarTamanoArchivoEntrega(this)"
-                                           class="w-full rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
-                                    <div id="entrega-archivo-error" class="hidden mt-2 text-sm text-red-600"></div>
+                                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0">
+                                            <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm text-yellow-700">
+                                                <span class="font-medium">Importante:</span> Puedes entregar un archivo, un enlace o ambos. 
+                                                Una vez entregada la tarea, no podrás modificarla a menos que el docente la elimine.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="mb-4">
-                                    <label class="block text-sm font-medium mb-2">O enlace de Google Drive</label>
+                                    <label for="entrega-archivo" class="block text-sm font-medium mb-2">Archivo (opcional)</label>
+                                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                        <div class="space-y-1 text-center">
+                                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                            <div class="flex text-sm text-gray-600">
+                                                <label for="entrega-archivo" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
+                                                    <span>Subir un archivo</span>
+                                                    <input id="entrega-archivo" name="archivo" type="file" class="sr-only" onchange="updateFilePreview()">
+                                                </label>
+                                                <p class="pl-1">o arrastra y suelta</p>
+                                            </div>
+                                            <p class="text-xs text-gray-500">
+                                                Documentos, imágenes o archivos ZIP (máx. 10MB)
+                                            </p>
+                                            <div id="archivo-preview" class="mt-2 text-sm"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="entrega-enlace" class="block text-sm font-medium mb-2">Enlace (opcional)</label>
                                     <input type="url" 
-                                           name="enlace"
-                                           placeholder="https://drive.google.com/..."
+                                           id="entrega-enlace"
+                                           name="enlace" 
+                                           placeholder="https://ejemplo.com"
                                            class="w-full rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        Puedes incluir un enlace a Google Drive, Dropbox u otro servicio.
+                                    </p>
+                                </div>
+                                
+                                <div id="entrega-error" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4">
+                                    Debes proporcionar al menos un archivo o un enlace.
                                 </div>
 
                                 <div class="flex justify-end space-x-2 mt-6">
@@ -530,7 +600,8 @@
                                             class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
                                         Cancelar
                                     </button>
-                                    <button type="submit"
+                                    <button type="button"
+                                            onclick="validarYEnviarEntrega()"
                                             class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors">
                                         Entregar
                                     </button>
@@ -640,6 +711,29 @@
                             </div>
                         </div>
                     @endif
+
+                    <!-- Modal para calificar tarea -->
+                    @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
+                        <div id="calificarModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-2xl">
+                                <div class="flex justify-between items-center mb-4">
+                                    <div>
+                                        <h3 class="text-lg font-bold">Calificar Tarea</h3>
+                                        <p class="text-sm text-gray-500" id="tarea-titulo"></p>
+                                    </div>
+                                    <button onclick="toggleCalificarModal()" class="text-gray-500 hover:text-gray-700">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div id="calificarContent" class="space-y-4">
+                                    <!-- Aquí se cargarán las entregas -->
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -730,259 +824,326 @@
             `;
         }
 
-        function toggleEntregaModal(tareaId = null) {
+        function toggleEntregaModal(tareaId = null, tareaTitulo = null) {
             const modal = document.getElementById('entregaModal');
             const form = document.getElementById('entregaForm');
+            const tituloElement = document.getElementById('entrega-tarea-titulo');
+            
+            // Resetear el formulario
+            form.reset();
+            document.getElementById('archivo-preview').innerHTML = '';
+            document.getElementById('entrega-error').classList.add('hidden');
             
             if (tareaId) {
                 form.action = `/tareas/${tareaId}/entregar`;
+                if (tareaTitulo) {
+                    tituloElement.textContent = tareaTitulo;
+                }
             }
             
             modal.classList.toggle('hidden');
             modal.classList.toggle('flex');
         }
-
-        function validarTamanoArchivoEntrega(input) {
-            const archivo = input.files[0];
-            const maxSize = 10 * 1024 * 1024; // 10MB en bytes
-            const errorDiv = document.getElementById('entrega-archivo-error');
-            const submitButton = input.closest('form').querySelector('button[type="submit"]');
-
-            if (archivo && archivo.size > maxSize) {
-                input.value = ''; // Limpiar el input
-                errorDiv.textContent = 'El archivo excede el límite de 10MB. Por favor, usa un enlace de Google Drive.';
-                errorDiv.classList.remove('hidden');
-                submitButton.disabled = true;
+        
+        function updateFilePreview() {
+            const input = document.getElementById('entrega-archivo');
+            const preview = document.getElementById('archivo-preview');
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const fileSizeInMB = file.size / (1024 * 1024);
+                
+                // Comprobar el tamaño del archivo
+                if (fileSizeInMB > 10) {
+                    preview.innerHTML = `<span class="text-red-500">El archivo excede el límite de 10MB (${fileSizeInMB.toFixed(2)}MB)</span>`;
+                    input.value = '';
+                    return;
+                }
+                
+                preview.innerHTML = `<span class="text-green-500">Archivo seleccionado: ${file.name} (${fileSizeInMB.toFixed(2)}MB)</span>`;
             } else {
-                errorDiv.classList.add('hidden');
-                submitButton.disabled = false;
+                preview.innerHTML = '';
             }
         }
-
-        // Sistema mejorado para manejar múltiples archivos
-        const filesData = {
-            imagenes: [],
-            archivos: []
-        };
-
-        function handleFileSelection(input, tipo) {
-            const maxSize = 10 * 1024 * 1024; // 10MB por archivo
-            const maxFiles = 5; // Máximo 5 archivos
-            const errorDiv = document.getElementById(`${tipo}-error`);
-            const previewDiv = document.getElementById(`${tipo}-preview`);
-            const countSpan = document.getElementById(`${tipo}-count`);
-            const containerDiv = document.getElementById(`${tipo}-container`);
+        
+        function validarYEnviarEntrega() {
+            const archivo = document.getElementById('entrega-archivo').files[0];
+            const enlace = document.getElementById('entrega-enlace').value;
+            const errorElement = document.getElementById('entrega-error');
             
-            errorDiv.classList.add('hidden');
-            
-            const tiposPermitidos = tipo === 'imagenes' 
-                ? ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-                : ['application/pdf', 
-                   'application/msword', 
-                   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                   'application/vnd.ms-powerpoint',
-                   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                   'application/vnd.ms-excel',
-                   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                   'application/zip',
-                   'application/x-rar-compressed',
-                   'application/octet-stream'];
-            
-            // Verificar límite de archivos
-            if (filesData[tipo].length + input.files.length > maxFiles) {
-                errorDiv.textContent = `Solo puedes subir un máximo de ${maxFiles} archivos.`;
-                errorDiv.classList.remove('hidden');
+            if (!archivo && !enlace) {
+                errorElement.classList.remove('hidden');
                 return;
             }
             
-            // Procesar cada archivo seleccionado
-            let validFilesCount = 0;
-            Array.from(input.files).forEach(file => {
-                // Verificar si el archivo ya existe en nuestra colección
-                const isDuplicate = filesData[tipo].some(existingFile => 
-                    existingFile.name === file.name && existingFile.size === file.size
-                );
-                
-                if (isDuplicate) {
-                    return; // Saltar archivos duplicados
-                }
-                
-                // Verificar tipo de archivo
-                const extension = file.name.split('.').pop().toLowerCase();
-                const extensionesPermitidas = tipo === 'imagenes' 
-                    ? ['jpg', 'jpeg', 'png', 'gif', 'webp']
-                    : ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'zip', 'rar'];
-                
-                if (!extensionesPermitidas.includes(extension) && !tiposPermitidos.includes(file.type)) {
-                    errorDiv.textContent = `El archivo "${file.name}" no es de un formato permitido.`;
-                    errorDiv.classList.remove('hidden');
-                    return;
-                }
-                
-                // Verificar tamaño de archivo
-                if (file.size > maxSize) {
-                    errorDiv.textContent = `El archivo "${file.name}" excede el límite de 10MB.`;
-                    errorDiv.classList.remove('hidden');
-                    return;
-                }
-                
-                // Agregar a nuestra colección
-                filesData[tipo].push(file);
-                validFilesCount++;
-                
-                // Crear vista previa
-                createFilePreview(file, tipo);
-            });
-            
-            // Actualizar contador
-            updateFileCount(tipo);
-            
-            // Limpiar input para permitir seleccionar el mismo archivo nuevamente
-            input.value = '';
-            
-            // Regenerar los input fields ocultos para el envío del formulario
-            regenerateFileInputs(tipo);
+            errorElement.classList.add('hidden');
+            document.getElementById('entregaForm').submit();
         }
-        
-        function createFilePreview(file, tipo) {
-            const previewDiv = document.getElementById(`${tipo}-preview`);
-            const fileId = `${tipo}-${Date.now()}-${file.name}`;
+
+        function toggleCalificarModal(tareaId = null, tareaTitulo = null) {
+            const modal = document.getElementById('calificarModal');
+            const content = document.getElementById('calificarContent');
+            const tituloElement = document.getElementById('tarea-titulo');
             
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const div = document.createElement('div');
-                div.className = 'relative border rounded-lg p-3 bg-gray-50 dark:bg-gray-700';
-                div.dataset.fileId = fileId;
+            if (!tareaId) {
+                modal.classList.toggle('hidden');
+                modal.classList.toggle('flex');
+                return;
+            }
+            
+            // Mostrar mensaje de carga
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            content.innerHTML = '<p class="text-center text-gray-500">Cargando entregas...</p>';
+            
+            if (tareaTitulo) {
+                tituloElement.textContent = tareaTitulo;
+            }
+            
+            // Obtener las entregas
+            fetch(`/tareas/${tareaId}/entregas`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    console.error('Error HTTP:', response.status, response.statusText);
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Datos recibidos:', data); // Para depuración
                 
-                let iconHTML = '';
-                if (tipo === 'imagenes') {
-                    iconHTML = `<img src="${e.target.result}" class="w-full h-32 object-contain rounded-lg mb-2">`;
-                } else {
-                    const extension = file.name.split('.').pop().toLowerCase();
-                    const iconClass = getFileIconClass(extension);
-                    iconHTML = `<div class="w-12 h-12 mx-auto mb-2 ${iconClass}"></div>`;
+                if (!data.success) {
+                    throw new Error(data.error || 'Error desconocido');
                 }
                 
-                div.innerHTML = `
-                    ${iconHTML}
-                    <div class="text-center text-sm truncate font-medium mb-1">${file.name}</div>
-                    <div class="text-center text-xs text-gray-500">${formatFileSize(file.size)}</div>
-                    <button type="button" 
-                            onclick="removeFile('${fileId}', '${tipo}')" 
-                            class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 text-xs">
-                        ×
-                    </button>
+                const entregas = data.entregas;
+                const tarea = data.tarea;
+                const estadisticas = data.estadisticas;
+                
+                // Si no hay entregas
+                if (entregas.length === 0) {
+                    content.innerHTML = `
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-yellow-700">
+                                        No hay entregas para calificar en esta tarea.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Resumen de entregas
+                let htmlContent = `
+                    <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-3 rounded-md mb-4">
+                        <div>
+                            <p class="text-sm font-semibold">Resumen de Entregas</p>
+                            <p class="text-xs text-gray-600 dark:text-gray-300">
+                                Entregas totales: ${estadisticas.total_entregas} | 
+                                Calificadas: ${estadisticas.entregas_calificadas} | 
+                                Pendientes: ${estadisticas.entregas_pendientes}
+                            </p>
+                        </div>
+                    </div>
                 `;
-                previewDiv.appendChild(div);
-            };
-            reader.readAsDataURL(file);
-            
-            // Agregar un atributo de ID único al archivo para referencia
-            file.fileId = fileId;
-        }
-        
-        function regenerateFileInputs(tipo) {
-            const containerDiv = document.getElementById(`${tipo}-container`);
-            containerDiv.innerHTML = ''; // Limpiar contenedor
-            
-            // Crear un FormData para cada archivo
-            filesData[tipo].forEach((file, index) => {
-                const fileInput = document.createElement('input');
-                fileInput.type = 'file';
-                fileInput.name = `${tipo}[]`;
-                fileInput.classList.add('hidden');
-                fileInput.dataset.fileId = file.fileId;
                 
-                // Crear un nuevo FileList con solo este archivo
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                fileInput.files = dataTransfer.files;
+                // Listar entregas
+                entregas.forEach(entrega => {
+                    const calificacionHTML = entrega.esta_calificada ? 
+                        `<span class="text-green-600">${entrega.calificacion}/${tarea.puntos_maximos}</span>` : 
+                        '<span class="text-yellow-600">Pendiente</span>';
+                    
+                    const entregadaATiempo = entrega.entregada_a_tiempo ? 
+                        '<span class="text-green-600">✓ A tiempo</span>' : 
+                        '<span class="text-red-600">✗ Tarde</span>';
+                    
+                    let archivoHTML = '';
+                    if (entrega.archivo) {
+                        archivoHTML = `
+                            <p class="text-sm mb-1">
+                                <strong>Archivo:</strong> 
+                                <a href="${entrega.archivo_url}" target="_blank" class="text-blue-500 hover:underline">
+                                    ${entrega.archivo_nombre || 'Ver archivo'}
+                                </a>
+                            </p>
+                        `;
+                    }
+                    
+                    let enlaceHTML = '';
+                    if (entrega.enlace) {
+                        enlaceHTML = `
+                            <p class="text-sm mb-1">
+                                <strong>Enlace:</strong> 
+                                <a href="${entrega.enlace}" target="_blank" class="text-blue-500 hover:underline">
+                                    ${entrega.enlace}
+                                </a>
+                            </p>
+                        `;
+                    }
+                    
+                    htmlContent += `
+                        <div class="border dark:border-gray-600 rounded-md p-4 mb-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-semibold">${entrega.user.name}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">${entrega.user.email}</p>
+                                    <p class="text-xs mt-1">
+                                        Entregada: ${new Date(entrega.fecha_entrega).toLocaleString()} 
+                                        ${entregadaATiempo}
+                                    </p>
+                                </div>
+                                <div>
+                                    <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full text-sm">
+                                        Calificación: ${calificacionHTML}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                ${archivoHTML}
+                                ${enlaceHTML}
+                            </div>
+                            
+                            <form id="form-calificar-${entrega.id}" class="mt-4 border-t pt-3 dark:border-gray-600">
+                                <div class="flex items-center">
+                                    <label class="block text-sm font-medium mr-2">Calificación:</label>
+                                    <input type="number" 
+                                           id="calificacion-${entrega.id}" 
+                                           value="${entrega.calificacion || ''}" 
+                                           min="0" 
+                                           max="${tarea.puntos_maximos}" 
+                                           step="0.1"
+                                           required
+                                           class="w-20 rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
+                                    <span class="ml-1">/ ${tarea.puntos_maximos}</span>
+                                </div>
+                                
+                                <div class="mt-2">
+                                    <label class="block text-sm font-medium mb-1">Comentarios:</label>
+                                    <textarea id="comentarios-${entrega.id}" 
+                                              class="w-full rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500"
+                                              rows="2">${entrega.comentarios || ''}</textarea>
+                                </div>
+                                
+                                <div class="flex justify-end mt-2">
+                                    <button type="button"
+                                            onclick="calificarEntrega(${tarea.id}, ${entrega.id})"
+                                            class="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition">
+                                        Guardar Calificación
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    `;
+                });
                 
-                containerDiv.appendChild(fileInput);
+                content.innerHTML = htmlContent;
+            })
+            .catch(error => {
+                console.error('Error al cargar entregas:', error);
+                content.innerHTML = `
+                    <div class="bg-red-50 border-l-4 border-red-500 p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-red-700">
+                                    Error al cargar las entregas: ${error.message}
+                                </p>
+                                <div class="mt-2">
+                                    <button type="button" 
+                                            onclick="toggleCalificarModal(${tareaId}, '${tareaTitulo}')" 
+                                            class="text-red-700 hover:text-red-600 underline text-sm">
+                                        Intentar nuevamente
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             });
         }
         
-        function updateFileCount(tipo) {
-            const countSpan = document.getElementById(`${tipo}-count`);
-            const count = filesData[tipo].length;
-            countSpan.textContent = count === 1 
-                ? `1 ${tipo === 'imagenes' ? 'imagen' : 'archivo'} seleccionado` 
-                : `${count} ${tipo === 'imagenes' ? 'imágenes' : 'archivos'} seleccionados`;
-        }
-        
-        function removeFile(fileId, tipo) {
-            // Eliminar el archivo de nuestra colección
-            const fileIndex = filesData[tipo].findIndex(file => file.fileId === fileId);
-            if (fileIndex > -1) {
-                filesData[tipo].splice(fileIndex, 1);
+        function calificarEntrega(tareaId, entregaId) {
+            const calificacion = document.getElementById(`calificacion-${entregaId}`).value;
+            const comentarios = document.getElementById(`comentarios-${entregaId}`).value;
+            
+            if (!calificacion) {
+                alert('La calificación es obligatoria');
+                return;
             }
             
-            // Eliminar el elemento de vista previa
-            const previewDiv = document.getElementById(`${tipo}-preview`);
-            const filePreview = previewDiv.querySelector(`[data-file-id="${fileId}"]`);
-            if (filePreview) {
-                filePreview.remove();
-            }
+            // Mostrar estado de carga
+            const botonCalificar = document.querySelector(`#form-calificar-${entregaId} button`);
+            const textoOriginal = botonCalificar.innerHTML;
+            botonCalificar.disabled = true;
+            botonCalificar.innerHTML = 'Guardando...';
             
-            // Actualizar contador y regenerar inputs
-            updateFileCount(tipo);
-            regenerateFileInputs(tipo);
-        }
-
-        function getFileIconClass(extension) {
-            const iconMap = {
-                'pdf': 'text-red-500',
-                'doc': 'text-blue-500',
-                'docx': 'text-blue-500',
-                'xls': 'text-green-500',
-                'xlsx': 'text-green-500',
-                'ppt': 'text-orange-500',
-                'pptx': 'text-orange-500',
-                'zip': 'text-yellow-500',
-                'rar': 'text-yellow-500'
-            };
-            return `text-4xl ${iconMap[extension] || 'text-gray-500'}`;
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes < 1024) return bytes + ' bytes';
-            else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-            else return (bytes / 1048576).toFixed(1) + ' MB';
-        }
-
-        // Funciones para manejo de enlaces
-        function addEnlaceField(button) {
-            const container = button.closest('div');
-            const newField = container.cloneNode(true);
-            newField.querySelector('input').value = '';
-            container.parentNode.insertBefore(newField, container.nextSibling);
-        }
-
-        function removeEnlaceField(button) {
-            const container = button.closest('div');
-            const parent = container.parentNode;
-            
-            // No eliminar si es el único campo
-            if (parent.children.length > 1) {
-                parent.removeChild(container);
-            } else {
-                container.querySelector('input').value = '';
-            }
-        }
-
-        function addNewEnlaceField() {
-            const container = document.getElementById('enlaces-container');
-            const newField = document.createElement('div');
-            newField.className = 'flex items-center space-x-2 mb-2';
-            newField.innerHTML = `
-                <input type="url" 
-                     name="enlaces[]" 
-                     placeholder="https://ejemplo.com"
-                     class="flex-1 rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
-                <button type="button" onclick="addEnlaceField(this)" class="px-2 py-1 bg-blue-500 text-white rounded">+</button>
-                <button type="button" onclick="removeEnlaceField(this)" class="px-2 py-1 bg-red-500 text-white rounded">-</button>
-            `;
-            container.appendChild(newField);
+            fetch(`/tareas/${tareaId}/entregas/${entregaId}/calificar`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ calificacion, comentarios })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    console.error('Error HTTP:', response.status, response.statusText);
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Respuesta calificación:', data); // Para depuración
+                
+                if (data.success) {
+                    // Actualizar el indicador de calificación en la UI
+                    const calificacionIndicador = document.querySelector(`#form-calificar-${entregaId}`).closest('.border').querySelector('.bg-gray-100 span');
+                    calificacionIndicador.innerHTML = `<span class="text-green-600">${data.data.calificacion}/${data.data.puntos_maximos}</span>`;
+                    
+                    // Mensaje de éxito
+                    const successElement = document.createElement('div');
+                    successElement.className = 'bg-green-100 text-green-700 p-2 rounded mt-2 text-sm text-center';
+                    successElement.textContent = 'Calificación guardada correctamente';
+                    document.querySelector(`#form-calificar-${entregaId}`).appendChild(successElement);
+                    
+                    // Eliminar mensaje después de 3 segundos
+                    setTimeout(() => {
+                        successElement.remove();
+                    }, 3000);
+                } else {
+                    alert(data.error || 'Error al guardar la calificación');
+                }
+            })
+            .catch(error => {
+                console.error('Error al calificar:', error);
+                alert(`Error: ${error.message}`);
+            })
+            .finally(() => {
+                // Restaurar el botón
+                botonCalificar.disabled = false;
+                botonCalificar.innerHTML = textoOriginal;
+            });
         }
     </script>
     @endpush

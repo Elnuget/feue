@@ -16,6 +16,7 @@ return new class extends Migration
             $table->text('comentarios')->nullable();
             $table->foreignId('tarea_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->timestamp('fecha_entrega')->nullable();
             $table->timestamps();
         });
     }

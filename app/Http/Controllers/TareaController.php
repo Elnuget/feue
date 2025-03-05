@@ -139,18 +139,47 @@ class TareaController extends Controller
 
     public function calificar(Request $request, Tarea $tarea, Entrega $entrega)
     {
+        // Verificación de autenticación y roles
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        // Verificación de roles
+        $user = auth()->user();
+        if (!$user->hasRole(1) && !$user->hasRole('Docente')) {
+            return response()->json(['error' => 'No tienes permiso para calificar entregas'], 403);
+        }
+
+        // Validar que la entrega pertenece a la tarea
+        if ($entrega->tarea_id !== $tarea->id) {
+            return response()->json(['error' => 'La entrega no corresponde a esta tarea'], 400);
+        }
+
+        // Validar la calificación
         $request->validate([
             'calificacion' => 'required|numeric|min:0|max:' . $tarea->puntos_maximos,
             'comentarios' => 'nullable|string'
         ]);
 
-        $entrega->update([
-            'calificacion' => $request->calificacion,
-            'comentarios' => $request->comentarios
-        ]);
+        try {
+            $entrega->update([
+                'calificacion' => $request->calificacion,
+                'comentarios' => $request->comentarios
+            ]);
 
-        return redirect()->route('aulas_virtuales.show', $tarea->aulaVirtual)
-            ->with('success', 'Tarea calificada exitosamente.');
+            return response()->json([
+                'success' => true,
+                'message' => 'Calificación asignada correctamente',
+                'data' => [
+                    'calificacion' => $entrega->calificacion,
+                    'puntos_maximos' => $tarea->puntos_maximos
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al asignar la calificación: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function toggleEstado(Tarea $tarea)
@@ -178,5 +207,26 @@ class TareaController extends Controller
         
         return redirect()->route('aulas_virtuales.show', $tarea->aulaVirtual)
             ->with('success', $mensaje);
+    }
+
+    public function obtenerEntregas(Tarea $tarea)
+    {
+        // Verificación de autenticación y roles
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        // Verificación de roles
+        $user = auth()->user();
+        if (!$user->hasRole(1) && !$user->hasRole('Docente')) {
+            return response()->json(['error' => 'No tienes permiso para ver las entregas'], 403);
+        }
+
+        $entregas = $tarea->entregas()->with('user')->get();
+        
+        return response()->json([
+            'entregas' => $entregas,
+            'puntos_maximos' => $tarea->puntos_maximos
+        ]);
     }
 } 

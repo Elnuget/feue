@@ -194,8 +194,9 @@ Route::middleware(['auth'])->group(function () {
 Route::delete('/preguntas/{pregunta}', [CuestionarioController::class, 'eliminarPregunta'])
      ->name('preguntas.destroy');
 
-// Rutas de tareas
+// Rutas de tareas y entregas
 Route::middleware(['auth'])->group(function () {
+    // Rutas de tareas
     Route::post('/aulas-virtuales/{aula}/tareas', [TareaController::class, 'store'])->name('tareas.store');
     Route::get('/tareas/{tarea}/edit', [TareaController::class, 'edit'])->name('tareas.edit');
     Route::put('/tareas/{tarea}', [TareaController::class, 'update'])->name('tareas.update');
@@ -205,12 +206,8 @@ Route::middleware(['auth'])->group(function () {
     // Rutas de entregas
     Route::post('/tareas/{tarea}/entregar', [EntregaController::class, 'store'])->name('tareas.entregar');
     Route::delete('/entregas/{entrega}', [EntregaController::class, 'destroy'])->name('entregas.destroy');
-    
-    // Calificación de tareas (solo para docentes y administradores)
-    Route::middleware(['role:1,Docente'])->group(function () {
-        Route::post('/tareas/{tarea}/entregas/{entrega}/calificar', [TareaController::class, 'calificar'])
-            ->name('tareas.calificar');
-    });
+    Route::post('/tareas/{tarea}/entregas/{entrega}/calificar', [EntregaController::class, 'calificar'])->name('tareas.calificar');
+    Route::get('/tareas/{tarea}/entregas', [EntregaController::class, 'obtenerEntregas'])->name('tareas.entregas');
 });
 
 require __DIR__.'/auth.php';
