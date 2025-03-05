@@ -101,16 +101,22 @@
 
                         <div class="space-y-4">
                             @forelse($aulasVirtuale->tareas as $tarea)
-                                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-300">
+                                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-300 border-l-4 {{ $tarea->estado === 'activo' ? 'border-green-500' : 'border-red-500' }}">
                                     <div class="flex justify-between items-start">
                                         <div>
-                                            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center">
                                                 {{ $tarea->titulo }}
+                                                <span class="ml-2 px-2 py-0.5 text-xs rounded-full {{ $tarea->estado === 'activo' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' }}">
+                                                    {{ $tarea->estado === 'activo' ? 'Activa' : 'Inactiva' }}
+                                                </span>
                                             </h4>
                                             @if($tarea->descripcion)
-                                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                                    {{ $tarea->descripcion }}
-                                                </p>
+                                                <div class="mt-2">
+                                                    <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300">Descripción:</h5>
+                                                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                                                        {{ $tarea->descripcion }}
+                                                    </p>
+                                                </div>
                                             @endif
 
                                             @if($tarea->imagenes && count($tarea->imagenes) > 0)
@@ -134,6 +140,7 @@
 
                                             @if($tarea->archivos && count($tarea->archivos) > 0)
                                                 <div class="mt-2 flex flex-wrap gap-2">
+                                                    <h6 class="w-full text-sm font-medium text-gray-700 dark:text-gray-300">Archivos:</h6>
                                                     @foreach($tarea->archivos as $archivo)
                                                         <a href="{{ asset('storage/' . $archivo) }}" 
                                                            target="_blank"
@@ -145,13 +152,34 @@
                                                 </div>
                                             @endif
 
+                                            @if($tarea->enlaces && count($tarea->enlaces) > 0)
+                                                <div class="mt-2 flex flex-wrap gap-2">
+                                                    <h6 class="w-full text-sm font-medium text-gray-700 dark:text-gray-300">Enlaces:</h6>
+                                                    @foreach($tarea->enlaces as $enlace)
+                                                        <a href="{{ $enlace }}" 
+                                                           target="_blank"
+                                                           class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:hover:bg-blue-800 transition-colors">
+                                                            <span class="mr-1">🔗</span>
+                                                            {{ parse_url($enlace, PHP_URL_HOST) }}
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+
                                             <div class="mt-2 flex flex-wrap gap-2">
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                                    📅 Fecha límite: {{ $tarea->fecha_limite->format('d/m/Y') }}
-                                                </span>
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                                                    💯 Puntos máximos: {{ $tarea->puntos_maximos }}
-                                                </span>
+                                                <div class="flex flex-col">
+                                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Fecha límite:</span>
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                        📅 {{ $tarea->fecha_limite->format('d/m/Y') }}
+                                                    </span>
+                                                </div>
+                                                
+                                                <div class="flex flex-col">
+                                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Puntuación:</span>
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                                        💯 {{ $tarea->puntos_maximos }} puntos
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="flex space-x-2">
@@ -170,6 +198,15 @@
                                                     <button type="submit" 
                                                             class="text-red-500 hover:text-red-700 transition-colors">
                                                         🗑️
+                                                    </button>
+                                                </form>
+                                                <form action="{{ route('tareas.toggle-estado', $tarea) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" 
+                                                            class="{{ $tarea->estado === 'activo' ? 'bg-red-100 text-red-800 hover:bg-red-200' : 'bg-green-100 text-green-800 hover:bg-green-200' }} px-2 py-1 rounded-md flex items-center transition-colors">
+                                                        <span class="mr-1">{{ $tarea->estado === 'activo' ? '🚫' : '✓' }}</span>
+                                                        {{ $tarea->estado === 'activo' ? 'Desactivar' : 'Activar' }}
                                                     </button>
                                                 </form>
                                             @endif
@@ -409,6 +446,32 @@
                                                    value="10"
                                                    class="w-full rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
                                         </div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium mb-2">Estado</label>
+                                        <select name="estado" 
+                                               class="w-full rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
+                                            <option value="activo" selected>Activo</option>
+                                            <option value="inactivo">Inactivo</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium mb-2">Enlaces</label>
+                                        <div id="enlaces-container">
+                                            <div class="flex items-center space-x-2 mb-2">
+                                                <input type="url" 
+                                                     name="enlaces[]" 
+                                                     placeholder="https://ejemplo.com"
+                                                     class="flex-1 rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
+                                                <button type="button" onclick="addEnlaceField(this)" class="px-2 py-1 bg-blue-500 text-white rounded">+</button>
+                                                <button type="button" onclick="removeEnlaceField(this)" class="px-2 py-1 bg-red-500 text-white rounded">-</button>
+                                            </div>
+                                        </div>
+                                        <button type="button" onclick="addNewEnlaceField()" class="mt-2 text-sm text-blue-500 hover:text-blue-700">
+                                            + Añadir otro enlace
+                                        </button>
                                     </div>
 
                                     <div class="flex justify-end space-x-2 mt-6 sticky bottom-0 bg-white dark:bg-gray-800 py-2">
@@ -652,6 +715,19 @@
             document.getElementById('archivos-count').textContent = '0 archivos seleccionados';
             document.getElementById('imagenes-error').classList.add('hidden');
             document.getElementById('archivos-error').classList.add('hidden');
+            
+            // Reiniciar enlaces
+            const enlacesContainer = document.getElementById('enlaces-container');
+            enlacesContainer.innerHTML = `
+                <div class="flex items-center space-x-2 mb-2">
+                    <input type="url" 
+                         name="enlaces[]" 
+                         placeholder="https://ejemplo.com"
+                         class="flex-1 rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
+                    <button type="button" onclick="addEnlaceField(this)" class="px-2 py-1 bg-blue-500 text-white rounded">+</button>
+                    <button type="button" onclick="removeEnlaceField(this)" class="px-2 py-1 bg-red-500 text-white rounded">-</button>
+                </div>
+            `;
         }
 
         function toggleEntregaModal(tareaId = null) {
@@ -872,6 +948,41 @@
             if (bytes < 1024) return bytes + ' bytes';
             else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
             else return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+
+        // Funciones para manejo de enlaces
+        function addEnlaceField(button) {
+            const container = button.closest('div');
+            const newField = container.cloneNode(true);
+            newField.querySelector('input').value = '';
+            container.parentNode.insertBefore(newField, container.nextSibling);
+        }
+
+        function removeEnlaceField(button) {
+            const container = button.closest('div');
+            const parent = container.parentNode;
+            
+            // No eliminar si es el único campo
+            if (parent.children.length > 1) {
+                parent.removeChild(container);
+            } else {
+                container.querySelector('input').value = '';
+            }
+        }
+
+        function addNewEnlaceField() {
+            const container = document.getElementById('enlaces-container');
+            const newField = document.createElement('div');
+            newField.className = 'flex items-center space-x-2 mb-2';
+            newField.innerHTML = `
+                <input type="url" 
+                     name="enlaces[]" 
+                     placeholder="https://ejemplo.com"
+                     class="flex-1 rounded-md border-gray-300 dark:bg-gray-700 focus:border-blue-500 focus:ring-blue-500">
+                <button type="button" onclick="addEnlaceField(this)" class="px-2 py-1 bg-blue-500 text-white rounded">+</button>
+                <button type="button" onclick="removeEnlaceField(this)" class="px-2 py-1 bg-red-500 text-white rounded">-</button>
+            `;
+            container.appendChild(newField);
         }
     </script>
     @endpush

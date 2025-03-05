@@ -16,13 +16,16 @@ class Tarea extends Model
         'puntos_maximos',
         'aula_virtual_id',
         'archivos',
-        'imagenes'
+        'imagenes',
+        'estado',
+        'enlaces'
     ];
 
     protected $casts = [
         'fecha_limite' => 'datetime',
         'archivos' => 'array',
-        'imagenes' => 'array'
+        'imagenes' => 'array',
+        'enlaces' => 'array'
     ];
 
     public function aulaVirtual()

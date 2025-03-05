@@ -17,12 +17,18 @@ class TareaController extends Controller
             'fecha_limite' => 'required|date',
             'puntos_maximos' => 'required|integer|min:0',
             'archivos.*' => 'nullable|file|max:10240', // 10MB máximo por archivo
-            'imagenes.*' => 'nullable|image|max:10240' // 10MB máximo por imagen
+            'imagenes.*' => 'nullable|image|max:10240', // 10MB máximo por imagen
+            'estado' => 'required|in:activo,inactivo',
+            'enlaces.*' => 'nullable|url' // Validar enlaces
         ]);
 
-        $data = $request->except(['archivos', 'imagenes']);
+        $data = $request->except(['archivos', 'imagenes', 'enlaces']);
         $archivos = [];
         $imagenes = [];
+        
+        // Procesamiento de enlaces
+        $enlaces = array_filter($request->input('enlaces', [])); // Eliminar enlaces vacíos
+        $data['enlaces'] = !empty($enlaces) ? $enlaces : null;
 
         if ($request->hasFile('archivos')) {
             foreach ($request->file('archivos') as $archivo) {
@@ -60,12 +66,18 @@ class TareaController extends Controller
             'fecha_limite' => 'required|date',
             'puntos_maximos' => 'required|integer|min:0',
             'archivos.*' => 'nullable|file|max:10240', // 10MB máximo por archivo
-            'imagenes.*' => 'nullable|image|max:10240' // 10MB máximo por imagen
+            'imagenes.*' => 'nullable|image|max:10240', // 10MB máximo por imagen
+            'estado' => 'required|in:activo,inactivo',
+            'enlaces.*' => 'nullable|url' // Validar enlaces
         ]);
 
-        $data = $request->except(['archivos', 'imagenes']);
+        $data = $request->except(['archivos', 'imagenes', 'enlaces']);
         $archivos = $tarea->archivos ?? [];
         $imagenes = $tarea->imagenes ?? [];
+        
+        // Procesamiento de enlaces
+        $enlaces = array_filter($request->input('enlaces', [])); // Eliminar enlaces vacíos
+        $data['enlaces'] = !empty($enlaces) ? $enlaces : null;
 
         if ($request->hasFile('archivos')) {
             // Eliminar archivos antiguos
@@ -139,5 +151,32 @@ class TareaController extends Controller
 
         return redirect()->route('aulas_virtuales.show', $tarea->aulaVirtual)
             ->with('success', 'Tarea calificada exitosamente.');
+    }
+
+    public function toggleEstado(Tarea $tarea)
+    {
+        // Verificamos que la tarea exista y tenga un estado
+        if (!$tarea || !isset($tarea->estado)) {
+            return redirect()->back()->with('error', 'No se pudo encontrar la tarea o su estado.');
+        }
+
+        // Cambiar estado: activo -> inactivo, inactivo -> activo
+        $estadoActual = $tarea->estado;
+        $nuevoEstado = $estadoActual === 'activo' ? 'inactivo' : 'activo';
+        
+        // Actualizar el estado
+        $tarea->estado = $nuevoEstado;
+        $result = $tarea->save();
+        
+        if (!$result) {
+            return redirect()->back()->with('error', 'No se pudo actualizar el estado de la tarea.');
+        }
+        
+        $mensaje = $nuevoEstado === 'activo' 
+            ? "Tarea activada exitosamente. Estado anterior: {$estadoActual}, Nuevo estado: {$nuevoEstado}" 
+            : "Tarea desactivada exitosamente. Estado anterior: {$estadoActual}, Nuevo estado: {$nuevoEstado}";
+        
+        return redirect()->route('aulas_virtuales.show', $tarea->aulaVirtual)
+            ->with('success', $mensaje);
     }
 } 

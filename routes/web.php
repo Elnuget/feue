@@ -200,6 +200,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tareas/{tarea}/edit', [TareaController::class, 'edit'])->name('tareas.edit');
     Route::put('/tareas/{tarea}', [TareaController::class, 'update'])->name('tareas.update');
     Route::delete('/tareas/{tarea}', [TareaController::class, 'destroy'])->name('tareas.destroy');
+    Route::patch('/tareas/{tarea}/toggle-estado', [TareaController::class, 'toggleEstado'])->name('tareas.toggle-estado');
     
     // Rutas de entregas
     Route::post('/tareas/{tarea}/entregar', [EntregaController::class, 'store'])->name('tareas.entregar');
