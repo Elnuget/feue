@@ -34,4 +34,9 @@ class AulaVirtual extends Model
     {
         return $this->hasMany(Cuestionario::class);
     }
+
+    public function tareas()
+    {
+        return $this->hasMany(Tarea::class)->orderBy('id', 'desc');
+    }
 }

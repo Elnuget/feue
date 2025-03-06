@@ -182,7 +182,12 @@
                                         <td 
                                             class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300"
                                         >
-                                            {{ $matricula->curso->nombre }}
+                                            <div class="flex flex-col">
+                                                <span class="font-medium">{{ $matricula->curso->nombre }}</span>
+                                                <span class="text-xs text-gray-400">
+                                                    {{ $matricula->curso->tipoCurso->nombre ?? 'Sin sede' }} | {{ $matricula->curso->horario ?? 'Sin horario' }}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td 
                                             class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300"

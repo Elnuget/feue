@@ -170,7 +170,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">#</th>
                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
                         ${Array.from({ length: diasEnMes }, (_, i) => `
-                            <th class="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-8">${i + 1}</th>
+                            <th class="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-8">
+                                <div>${i + 1}</div>
+                                <div class="text-[8px] font-normal">E/S</div>
+                            </th>
                         `).join('')}
                     </tr>
                 </thead>
@@ -180,17 +183,47 @@ document.addEventListener('DOMContentLoaded', function() {
         // Generar filas de la tabla
         matriculas.forEach((matricula, index) => {
             const asistenciasUsuario = asistencias.filter(a => a.user_id === matricula.usuario.id);
-            const diasConAsistencia = asistenciasUsuario.map(a => new Date(a.fecha_hora).getDate());
-
+            
             tablaHTML += `
                 <tr>
                     <td class="px-2 py-2 text-center text-sm text-gray-900">${index + 1}</td>
                     <td class="px-4 py-2 text-left text-sm text-gray-900">${matricula.usuario.name}</td>
-                    ${Array.from({ length: diasEnMes }, (_, dia) => `
-                        <td class="px-1 py-2 text-center text-sm ${diasConAsistencia.includes(dia + 1) ? 'text-green-500' : 'text-gray-900'}">
-                            ${diasConAsistencia.includes(dia + 1) ? '✔️' : ''}
-                        </td>
-                    `).join('')}
+                    ${Array.from({ length: diasEnMes }, (_, dia) => {
+                        const asistenciaDia = asistenciasUsuario.find(a => new Date(a.fecha_hora).getDate() === (dia + 1));
+                        let contenido = '';
+                        let colorClase = '';
+                        
+                        if (asistenciaDia) {
+                            let estado = asistenciaDia.estado || 'presente';
+                            let entrada = asistenciaDia.hora_entrada ? new Date(asistenciaDia.hora_entrada).toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'}) : '-';
+                            let salida = asistenciaDia.hora_salida ? new Date(asistenciaDia.hora_salida).toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'}) : '-';
+                            
+                            switch(estado) {
+                                case 'presente':
+                                    colorClase = 'text-green-500';
+                                    break;
+                                case 'tardanza':
+                                    colorClase = 'text-yellow-500';
+                                    break;
+                                case 'ausente':
+                                    colorClase = 'text-red-500';
+                                    break;
+                            }
+                            
+                            contenido = `
+                                <div class="text-[10px] ${colorClase}">
+                                    <div>${entrada}</div>
+                                    <div>${salida}</div>
+                                </div>
+                            `;
+                        }
+                        
+                        return `
+                            <td class="px-1 py-1 text-center text-sm">
+                                ${contenido}
+                            </td>
+                        `;
+                    }).join('')}
                 </tr>
             `;
         });

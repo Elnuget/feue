@@ -66,7 +66,14 @@
                                         </td>
                                         <td class="px-4 py-2 text-sm font-medium text-gray-900 dark:text-gray-200">{{ $pago->id }}</td>
                                         <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $pago->matricula->usuario->name }}</td>
-                                        <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $pago->matricula->curso->nombre }}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">
+                                            <div class="flex flex-col">
+                                                <span class="font-medium">{{ $pago->matricula->curso->nombre }}</span>
+                                                <span class="text-xs text-gray-400">
+                                                    {{ $pago->matricula->curso->tipoCurso->nombre ?? 'Sin sede' }} | {{ $pago->matricula->curso->horario ?? 'Sin horario' }}
+                                                </span>
+                                            </div>
+                                        </td>
                                         <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $pago->metodoPago->nombre }}</td>
                                         <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $pago->monto }}</td>
                                         <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">{{ $pago->fecha_pago }}</td>

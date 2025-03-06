@@ -102,7 +102,7 @@
                                             <div class="flex flex-wrap gap-2">
                                                 @foreach($aula->cursos as $curso)
                                                     <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full dark:bg-blue-900 dark:text-blue-200">
-                                                        {{ $curso->nombre }}
+                                                        {{ $curso->nombre }} | {{ $curso->tipoCurso->nombre ?? 'Sin sede' }} | {{ $curso->horario ?? 'Sin horario' }}
                                                     </span>
                                                 @endforeach
                                             </div>

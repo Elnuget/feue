@@ -7,6 +7,30 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <!-- Filtro de mes y botón de exportación -->
+            <div class="mb-4 bg-white overflow-hidden shadow-xl sm:rounded-lg p-4">
+                <form action="{{ route('asistencias-docentes.index') }}" method="GET" class="flex items-center space-x-4">
+                    <div class="flex-1">
+                        <x-input-label for="mes" value="{{ __('Filtrar por Mes') }}" />
+                        <input 
+                            type="month" 
+                            id="mes" 
+                            name="mes" 
+                            class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                            value="{{ request('mes', now()->format('Y-m')) }}"
+                        >
+                    </div>
+                    <div class="flex items-end space-x-2">
+                        <x-primary-button type="submit" class="mb-1">
+                            {{ __('Filtrar') }}
+                        </x-primary-button>
+                        <button type="button" onclick="exportarExcel()" class="mb-1 inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                            <i class="fas fa-file-excel mr-2"></i>{{ __('Exportar a Excel') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6">
                     <!-- Header con botón de crear -->
@@ -34,7 +58,7 @@
                                 <tr class="bg-white border-b hover:bg-gray-50">
                                     <td class="py-4 px-6">{{ $asistencia->docente->name }}</td>
                                     <td class="py-4 px-6">{{ $asistencia->fecha->format('d/m/Y') }}</td>
-                                    <td class="py-4 px-6">{{ $asistencia->hora_entrada->format('H:i') }}</td>
+                                    <td class="py-4 px-6">{{ $asistencia->hora_entrada ? $asistencia->hora_entrada->format('H:i') : 'No registrada' }}</td>
                                     <td class="py-4 px-6">
                                         <span class="px-2 py-1 text-xs rounded-full
                                             @if($asistencia->estado === 'Presente') bg-green-100 text-green-800
@@ -59,11 +83,6 @@
                                 @endforeach
                             </tbody>
                         </table>
-                    </div>
-
-                    <!-- Paginación -->
-                    <div class="mt-4">
-                        {{ $asistencias->links() }}
                     </div>
                 </div>
             </div>
@@ -260,6 +279,126 @@
                 document.body.appendChild(form);
                 form.submit();
             }
+        }
+    </script>
+
+    <!-- Script para exportación a Excel -->
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <script>
+        function exportarExcel() {
+            // Obtener los datos de la tabla
+            const table = document.querySelector('table');
+            const rows = Array.from(table.querySelectorAll('tr'));
+            
+            // Crear array para los datos
+            let data = [];
+            
+            // Agregar encabezado del reporte
+            data.push(['REPORTE DE ASISTENCIAS DOCENTES']);
+            data.push(['Mes:', document.getElementById('mes').value]);
+            data.push([]); // Línea en blanco
+            
+            // Obtener encabezados
+            const headers = Array.from(rows[0].querySelectorAll('th')).map(th => th.textContent.trim());
+            data.push(headers);
+            
+            // Objeto para almacenar estadísticas por docente
+            let estadisticasDocentes = {};
+            
+            // Obtener datos de las filas y contar estadísticas por docente
+            rows.slice(1).forEach(row => {
+                const cells = Array.from(row.querySelectorAll('td')).map(td => td.textContent.trim());
+                const docente = cells[0]; // Primera columna es el nombre del docente
+                const estado = cells[3];  // Cuarta columna es el estado
+                
+                // Inicializar estadísticas para el docente si no existen
+                if (!estadisticasDocentes[docente]) {
+                    estadisticasDocentes[docente] = {
+                        asistencias: 0,
+                        atrasos: 0,
+                        ausencias: 0
+                    };
+                }
+                
+                // Contar estadísticas
+                if (estado === 'Presente') estadisticasDocentes[docente].asistencias++;
+                if (estado === 'Tarde') estadisticasDocentes[docente].atrasos++;
+                if (estado === 'Ausente') estadisticasDocentes[docente].ausencias++;
+                
+                data.push(cells);
+            });
+            
+            // Agregar líneas en blanco
+            data.push([]);
+            data.push([]);
+            
+            // Agregar resumen estadístico por docente
+            data.push(['RESUMEN ESTADÍSTICO POR DOCENTE']);
+            data.push(['Docente', 'Asistencias', 'Atrasos', 'Ausencias', 'Total', '% Asistencia', '% Atrasos', '% Ausencias']);
+            
+            // Agregar estadísticas para cada docente
+            Object.entries(estadisticasDocentes).forEach(([docente, stats]) => {
+                const total = stats.asistencias + stats.atrasos + stats.ausencias;
+                const porcentajeAsistencias = ((stats.asistencias/total) * 100).toFixed(2);
+                const porcentajeAtrasos = ((stats.atrasos/total) * 100).toFixed(2);
+                const porcentajeAusencias = ((stats.ausencias/total) * 100).toFixed(2);
+                
+                data.push([
+                    docente,
+                    stats.asistencias,
+                    stats.atrasos,
+                    stats.ausencias,
+                    total,
+                    porcentajeAsistencias + '%',
+                    porcentajeAtrasos + '%',
+                    porcentajeAusencias + '%'
+                ]);
+            });
+            
+            // Agregar totales generales
+            data.push([]);
+            data.push(['TOTALES GENERALES']);
+            const totalesGenerales = Object.values(estadisticasDocentes).reduce((acc, stats) => {
+                acc.asistencias += stats.asistencias;
+                acc.atrasos += stats.atrasos;
+                acc.ausencias += stats.ausencias;
+                return acc;
+            }, { asistencias: 0, atrasos: 0, ausencias: 0 });
+            
+            const totalGeneral = totalesGenerales.asistencias + totalesGenerales.atrasos + totalesGenerales.ausencias;
+            data.push([
+                'Total General',
+                totalesGenerales.asistencias,
+                totalesGenerales.atrasos,
+                totalesGenerales.ausencias,
+                totalGeneral,
+                ((totalesGenerales.asistencias/totalGeneral) * 100).toFixed(2) + '%',
+                ((totalesGenerales.atrasos/totalGeneral) * 100).toFixed(2) + '%',
+                ((totalesGenerales.ausencias/totalGeneral) * 100).toFixed(2) + '%'
+            ]);
+            
+            // Crear libro de trabajo
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            
+            // Aplicar estilos
+            ws['!cols'] = [
+                {wch: 30}, // Nombre del docente
+                {wch: 15}, // Asistencias
+                {wch: 15}, // Atrasos
+                {wch: 15}, // Ausencias
+                {wch: 15}, // Total
+                {wch: 15}, // % Asistencias
+                {wch: 15}, // % Atrasos
+                {wch: 15}  // % Ausencias
+            ];
+            
+            // Agregar la hoja al libro
+            XLSX.utils.book_append_sheet(wb, ws, 'Asistencias');
+            
+            // Generar el archivo y descargarlo
+            const fileName = `Asistencias_Docentes_${document.getElementById('mes').value}.xlsx`;
+            XLSX.writeFile(wb, fileName);
         }
     </script>
 </x-app-layout>

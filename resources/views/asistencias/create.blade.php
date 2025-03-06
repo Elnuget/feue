@@ -33,6 +33,33 @@
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:text-gray-300">
                     </div>
 
+                    <div>
+                        <label for="hora_entrada" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Hora de Entrada</label>
+                        <input type="time" 
+                               name="hora_entrada" 
+                               id="hora_entrada"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:text-gray-300">
+                    </div>
+
+                    <div>
+                        <label for="hora_salida" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Hora de Salida</label>
+                        <input type="time" 
+                               name="hora_salida" 
+                               id="hora_salida"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:text-gray-300">
+                    </div>
+
+                    <div>
+                        <label for="estado" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Estado</label>
+                        <select name="estado" 
+                                id="estado" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:text-gray-300">
+                            <option value="presente">Presente</option>
+                            <option value="ausente">Ausente</option>
+                            <option value="tardanza">Tardanza</option>
+                        </select>
+                    </div>
+
                     <div class="flex justify-end">
                         <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 dark:hover:bg-blue-600">
                             Guardar

@@ -5,20 +5,28 @@ namespace App\Http\Controllers;
 use App\Models\SesionDocente;
 use App\Models\Curso;
 use App\Models\User;
+use App\Exports\SesionesDocentesExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class SesionDocenteController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $mes = $request->get('mes', now()->format('Y-m'));
+        
+        $fechaInicio = \Carbon\Carbon::createFromFormat('Y-m', $mes)->startOfMonth();
+        $fechaFin = \Carbon\Carbon::createFromFormat('Y-m', $mes)->endOfMonth();
+        
         $sesiones = SesionDocente::with(['docente', 'curso.tipoCurso'])
             ->when(Auth::user()->hasRole('Docente'), function ($query) {
                 return $query->where('user_id', Auth::id());
             })
+            ->whereBetween('fecha', [$fechaInicio, $fechaFin])
             ->orderBy('fecha', 'desc')
             ->orderBy('hora_inicio', 'asc')
-            ->paginate(10);
+            ->get();
 
         $docentes = User::role('Docente')->get();
         $cursos = Curso::with('tipoCurso')
@@ -92,5 +100,13 @@ class SesionDocenteController extends Controller
 
         return redirect()->route('sesiones-docentes.index')
             ->with('deleted', 'Sesión eliminada exitosamente.');
+    }
+
+    public function export(Request $request)
+    {
+        $mes = $request->get('mes', now()->format('Y-m'));
+        $nombreArchivo = 'sesiones_docentes_' . $mes . '.xlsx';
+        
+        return Excel::download(new SesionesDocentesExport($mes), $nombreArchivo);
     }
 }

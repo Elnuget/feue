@@ -18,11 +18,17 @@ class AsistenciaDocenteController extends Controller
         date_default_timezone_set('America/Guayaquil');
     }
 
-    public function index()
+    public function index(Request $request)
     {
+        $mes = $request->get('mes', now()->format('Y-m'));
+        
+        $fechaInicio = \Carbon\Carbon::createFromFormat('Y-m', $mes)->startOfMonth();
+        $fechaFin = \Carbon\Carbon::createFromFormat('Y-m', $mes)->endOfMonth();
+        
         $asistencias = AsistenciaDocente::with(['docente', 'sesion'])
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+            ->whereBetween('fecha', [$fechaInicio, $fechaFin])
+            ->orderBy('fecha', 'desc')
+            ->get();
             
         $docentes = User::whereHas('roles', function($query) {
             $query->where('name', 'Docente');

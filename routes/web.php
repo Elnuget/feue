@@ -18,6 +18,8 @@ use App\Http\Controllers\AulaVirtualController;
 use App\Http\Controllers\SesionDocenteController;
 use App\Http\Controllers\AsistenciaDocenteController;
 use App\Http\Controllers\CuestionarioController;
+use App\Http\Controllers\TareaController;
+use App\Http\Controllers\EntregaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +48,10 @@ Route::post('/user_profiles/check-cedula', [UserProfileController::class, 'check
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('matriculas/print-credentials', [MatriculaController::class, 'printCredentials'])->name('matriculas.printCredentials');
     Route::get('matriculas/print-certificates', [MatriculaController::class, 'printCertificates'])->name('matriculas.printCertificates');
+    
+    // Rutas para búsqueda de usuarios y obtención de información
+    Route::get('/usuarios/search', [\App\Http\Controllers\UserController::class, 'search'])->name('usuarios.search');
+    Route::get('/usuarios/{id}/info', [\App\Http\Controllers\UserController::class, 'getInfo'])->name('usuarios.info');
     
     Route::resource('roles', RoleController::class);
     Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
@@ -113,6 +119,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Rutas de Sesiones Docentes
     Route::resource('sesiones-docentes', SesionDocenteController::class);
+    Route::get('sesiones-docentes-export', [SesionDocenteController::class, 'export'])->name('sesiones-docentes.export');
 
     // Rutas para asistencias docentes
     Route::resource('asistencias-docentes', AsistenciaDocenteController::class)->parameters([
@@ -143,6 +150,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Dentro del grupo de middleware auth
     Route::get('/cuestionarios/{cuestionario}/preguntas', [CuestionarioController::class, 'obtenerPreguntas'])
          ->name('cuestionarios.preguntas.index');
+
+    Route::get('/asistencias/usuario/{userId}', [AsistenciaController::class, 'showUserAttendance'])->name('asistencias.usuario');
 });
 
 // Rutas para cuestionarios
@@ -184,5 +193,21 @@ Route::middleware(['auth'])->group(function () {
 
 Route::delete('/preguntas/{pregunta}', [CuestionarioController::class, 'eliminarPregunta'])
      ->name('preguntas.destroy');
+
+// Rutas de tareas y entregas
+Route::middleware(['auth'])->group(function () {
+    // Rutas de tareas
+    Route::post('/aulas-virtuales/{aula}/tareas', [TareaController::class, 'store'])->name('tareas.store');
+    Route::get('/tareas/{tarea}/edit', [TareaController::class, 'edit'])->name('tareas.edit');
+    Route::put('/tareas/{tarea}', [TareaController::class, 'update'])->name('tareas.update');
+    Route::delete('/tareas/{tarea}', [TareaController::class, 'destroy'])->name('tareas.destroy');
+    Route::patch('/tareas/{tarea}/toggle-estado', [TareaController::class, 'toggleEstado'])->name('tareas.toggle-estado');
+    
+    // Rutas de entregas
+    Route::post('/tareas/{tarea}/entregar', [EntregaController::class, 'store'])->name('tareas.entregar');
+    Route::delete('/entregas/{entrega}', [EntregaController::class, 'destroy'])->name('entregas.destroy');
+    Route::post('/tareas/{tarea}/entregas/{entrega}/calificar', [EntregaController::class, 'calificar'])->name('tareas.calificar');
+    Route::get('/tareas/{tarea}/entregas', [EntregaController::class, 'obtenerEntregas'])->name('tareas.entregas');
+});
 
 require __DIR__.'/auth.php';
