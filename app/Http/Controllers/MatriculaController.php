@@ -315,7 +315,7 @@ class MatriculaController extends Controller
                                ->orderBy('users.name', 'asc')
                                ->with(['usuario' => function($query) {
                                    $query->select('id', 'name');
-                               }])
+                               }, 'usuario.profile'])
                                ->get();
 
         $spreadsheet = new Spreadsheet();
@@ -324,9 +324,10 @@ class MatriculaController extends Controller
         // Establecer encabezados
         $sheet->setCellValue('A1', '#');
         $sheet->setCellValue('B1', 'Nombre del Matriculado');
-        $sheet->setCellValue('C1', 'Estado');
-        $sheet->setCellValue('D1', 'Valor Total');
-        $sheet->setCellValue('E1', 'Valor Pendiente');
+        $sheet->setCellValue('C1', 'Cédula');
+        $sheet->setCellValue('D1', 'Estado');
+        $sheet->setCellValue('E1', 'Valor Total');
+        $sheet->setCellValue('F1', 'Valor Pendiente');
 
         // Estilo para encabezados
         $headerStyle = [
@@ -336,26 +337,27 @@ class MatriculaController extends Controller
                 'startColor' => ['rgb' => 'E9ECEF']
             ]
         ];
-        $sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:F1')->applyFromArray($headerStyle);
 
         // Llenar datos
         foreach ($matriculas as $index => $matricula) {
             $rowIndex = $index + 2;
             $sheet->setCellValue('A' . $rowIndex, $index + 1);
             $sheet->setCellValue('B' . $rowIndex, $matricula->usuario->name);
-            $sheet->setCellValue('C' . $rowIndex, $matricula->estado_matricula);
-            $sheet->setCellValue('D' . $rowIndex, '$' . number_format($matricula->monto_total, 2));
-            $sheet->setCellValue('E' . $rowIndex, '$' . number_format($matricula->valor_pendiente, 2));
+            $sheet->setCellValue('C' . $rowIndex, $matricula->usuario->profile->cedula ?? 'N/A');
+            $sheet->setCellValue('D' . $rowIndex, $matricula->estado_matricula);
+            $sheet->setCellValue('E' . $rowIndex, '$' . number_format($matricula->monto_total, 2));
+            $sheet->setCellValue('F' . $rowIndex, '$' . number_format($matricula->valor_pendiente, 2));
         }
 
         // Ajustar el ancho de las columnas
-        foreach(range('A','E') as $column) {
+        foreach(range('A','F') as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
 
         // Aplicar bordes a toda la tabla
         $lastRow = $matriculas->count() + 1;
-        $sheet->getStyle('A1:E'.$lastRow)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $sheet->getStyle('A1:F'.$lastRow)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
         $writer = new Xlsx($spreadsheet);
         
