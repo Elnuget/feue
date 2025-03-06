@@ -264,7 +264,7 @@ class MatriculaController extends Controller
                 $query->select('id', 'name', 'email');
             },
             'usuario.profile' => function($query) {
-                $query->select('id', 'user_id', 'photo', 'phone', 'carnet');
+                $query->select('id', 'user_id', 'photo', 'phone', 'carnet', 'cedula');
             }
         ])
         ->when($cursoId, function($query) use ($cursoId) {

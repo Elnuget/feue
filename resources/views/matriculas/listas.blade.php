@@ -105,6 +105,7 @@
                                         <th class="p-2 text-left">{{ __('Valor') }}</th>
                                         <th class="p-2 text-left">{{ __('Carnet') }}</th>
                                         <th class="p-2 text-left">{{ __('Celular') }}</th>
+                                        <th class="p-2 text-left">{{ __('Cédula') }}</th>
                                         <th class="p-2 text-left">Estado</th>
                                         <th class="p-2 text-left">{{ __('Asistencias') }}</th>
                                     </tr>
@@ -152,6 +153,13 @@
                                                             <i class="fab fa-whatsapp"></i>
                                                         </a>
                                                     </div>
+                                                @else
+                                                    N/A
+                                                @endif
+                                            </td>
+                                            <td class="p-2">
+                                                @if($matricula->usuario->profile && $matricula->usuario->profile->cedula)
+                                                    {{ $matricula->usuario->profile->cedula }}
                                                 @else
                                                     N/A
                                                 @endif
