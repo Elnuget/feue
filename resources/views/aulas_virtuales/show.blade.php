@@ -386,9 +386,20 @@
                                                         ->where('intentos_cuestionario.usuario_id', auth()->id())
                                                         ->latest('intentos_cuestionario.created_at')
                                                         ->first();
+
+                                                    $intentoSinFinalizar = DB::table('intentos_cuestionario')
+                                                        ->where('cuestionario_id', $cuestionario->id)
+                                                        ->where('usuario_id', auth()->id())
+                                                        ->whereNull('fin')
+                                                        ->first();
                                                 @endphp
                                                 
-                                                @if(!$intentoExistente && $cuestionario->activo)
+                                                @if($intentoSinFinalizar)
+                                                    <a href="{{ route('cuestionarios.show', $cuestionario) }}" 
+                                                       class="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition">
+                                                        Continuar intento 📝
+                                                    </a>
+                                                @elseif(!$intentoExistente && $cuestionario->activo)
                                                     <a href="{{ route('cuestionarios.show', $cuestionario) }}" 
                                                        class="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition">
                                                         Realizar 📝
