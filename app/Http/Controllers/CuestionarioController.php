@@ -7,9 +7,12 @@ use App\Models\AulaVirtual;
 use App\Models\IntentoCuestionario;
 use App\Models\RespuestaUsuario;
 use App\Models\Pregunta;
+use App\Models\Opcion;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CuestionarioController extends Controller
 {
@@ -48,99 +51,148 @@ class CuestionarioController extends Controller
         }
 
         try {
-            \DB::beginTransaction();
+            DB::beginTransaction();
 
-            // Si es el primer envío, actualizar el cuestionario existente
-            if ($request->input('modo') === 'inicial') {
-                // Buscar el cuestionario inactivo más reciente
-                $cuestionario = $aulaVirtual->cuestionarios()
-                    ->where('activo', false)
-                    ->latest()
-                    ->firstOrFail();
+            // Log para depuración
+            Log::info('Datos recibidos:', [
+                'request_all' => $request->all(),
+                'preguntas_raw' => $request->preguntas
+            ]);
 
-                // Actualizar el cuestionario existente en lugar de crear uno nuevo
-                $cuestionario->update([
-                    'titulo' => $request->titulo,
-                    'descripcion' => $request->descripcion,
-                    'tiempo_limite' => $request->tiempo_limite,
-                    'intentos_permitidos' => $request->intentos_permitidos,
-                    'permite_revision' => $request->has('permite_revision'),
-                    'retroalimentacion' => $request->retroalimentacion,
-                    'activo' => true
+            // Validar datos básicos del cuestionario
+            $request->validate([
+                'titulo' => 'required|string|max:255',
+                'descripcion' => 'nullable|string',
+                'tiempo_limite' => 'required|integer|min:1',
+                'intentos_permitidos' => 'required|integer|min:1',
+                'permite_revision' => 'boolean',
+                'activo' => 'boolean',
+                'preguntas' => 'required|string'
+            ]);
+
+            // Decodificar y validar el JSON de preguntas
+            $preguntas = json_decode($request->preguntas, true);
+            
+            // Log para depuración del JSON decodificado
+            Log::info('Preguntas decodificadas:', ['preguntas' => $preguntas]);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \Exception('El formato de las preguntas es inválido: ' . json_last_error_msg());
+            }
+
+            if (!is_array($preguntas) || empty($preguntas)) {
+                throw new \Exception('Debe agregar al menos una pregunta');
+            }
+
+            // Crear el cuestionario
+            $cuestionario = Cuestionario::create([
+                'titulo' => $request->titulo,
+                'descripcion' => $request->descripcion,
+                'tiempo_limite' => $request->tiempo_limite,
+                'intentos_permitidos' => $request->intentos_permitidos,
+                'permite_revision' => $request->boolean('permite_revision'),
+                'activo' => $request->boolean('activo'),
+                'aula_virtual_id' => $aulaVirtual->id
+            ]);
+
+            // Procesar las preguntas
+            foreach ($preguntas as $index => $preguntaData) {
+                // Log para depuración de cada pregunta
+                Log::info("Procesando pregunta #{$index}:", ['pregunta_data' => $preguntaData]);
+
+                // Validar que los campos requeridos existan
+                if (!isset($preguntaData['pregunta']) || !isset($preguntaData['tipo'])) {
+                    throw new \Exception("Datos de pregunta incompletos en la pregunta #{$index}");
+                }
+
+                // Validar el tipo de pregunta
+                if (!in_array($preguntaData['tipo'], ['opcion_multiple', 'verdadero_falso'])) {
+                    throw new \Exception("Tipo de pregunta inválido en la pregunta #{$index}");
+                }
+
+                // Crear la pregunta
+                $pregunta = Pregunta::create([
+                    'cuestionario_id' => $cuestionario->id,
+                    'pregunta' => $preguntaData['pregunta'],
+                    'tipo' => $preguntaData['tipo']
                 ]);
 
-                \DB::commit();
-                return response()->json(['cuestionario_id' => $cuestionario->id]);
-            }
+                // Crear opciones según el tipo de pregunta
+                if ($preguntaData['tipo'] === 'verdadero_falso') {
+                    if (!isset($preguntaData['respuesta_correcta'])) {
+                        throw new \Exception("Debe seleccionar una respuesta correcta para la pregunta #{$index}");
+                    }
 
-            // Si es envío de preguntas
-            if ($request->input('modo') === 'preguntas') {
-                $cuestionario = Cuestionario::findOrFail($request->cuestionario_id);
-                
-                if ($cuestionario->aula_virtual_id != $aulaVirtual->id) {
-                    throw new \Exception('El cuestionario no pertenece a esta aula virtual');
-                }
-
-                foreach ($request->preguntas as $preguntaData) {
-                    $pregunta = $cuestionario->preguntas()->create([
-                        'pregunta' => $preguntaData['pregunta'],
-                        'tipo' => $preguntaData['tipo'],
+                    // Crear opciones para verdadero/falso
+                    Opcion::create([
+                        'pregunta_id' => $pregunta->id,
+                        'texto' => 'Verdadero',
+                        'es_correcta' => $preguntaData['respuesta_correcta'] === 'verdadero'
+                    ]);
+                    Opcion::create([
+                        'pregunta_id' => $pregunta->id,
+                        'texto' => 'Falso',
+                        'es_correcta' => $preguntaData['respuesta_correcta'] === 'falso'
+                    ]);
+                } else {
+                    // Log para depuración de opciones múltiples
+                    Log::info("Opciones para pregunta #{$index}:", [
+                        'opciones' => $preguntaData['opciones'] ?? 'no_opciones',
+                        'opcion_correcta' => $preguntaData['opciones_correcta'] ?? 'no_correcta'
                     ]);
 
-                    // Procesar imagen si existe
-                    if (!empty($preguntaData['imagen'])) {
-                        // Decodificar la imagen base64
-                        $imagen = $preguntaData['imagen'];
-                        $imagen = str_replace('data:image/png;base64,', '', $imagen);
-                        $imagen = str_replace('data:image/jpeg;base64,', '', $imagen);
-                        $imagen = str_replace(' ', '+', $imagen);
-                        
-                        // Guardar la imagen
-                        $nombreImagen = 'pregunta_' . $pregunta->id . '_' . time() . '.jpg';
-                        Storage::disk('public')->put('preguntas/' . $nombreImagen, base64_decode($imagen));
-                        
-                        // Actualizar la pregunta con la ruta de la imagen
-                        $pregunta->update(['imagen' => 'preguntas/' . $nombreImagen]);
+                    // Validar opciones múltiples
+                    if (!isset($preguntaData['opciones']) || !is_array($preguntaData['opciones'])) {
+                        throw new \Exception("Formato de opciones inválido en la pregunta #{$index}");
                     }
 
-                    if ($preguntaData['tipo'] === 'verdadero_falso') {
-                        $pregunta->opciones()->createMany([
-                            [
-                                'texto' => 'Verdadero',
-                                'es_correcta' => $preguntaData['respuesta_correcta'] === 'verdadero'
-                            ],
-                            [
-                                'texto' => 'Falso',
-                                'es_correcta' => $preguntaData['respuesta_correcta'] === 'falso'
-                            ]
-                        ]);
-                    } else {
-                        foreach ($preguntaData['opciones'] as $index => $opcion) {
-                            if (empty($opcion['texto'])) continue;
+                    if (count($preguntaData['opciones']) < 2) {
+                        throw new \Exception("La pregunta #{$index} debe tener al menos 2 opciones");
+                    }
 
-                            $pregunta->opciones()->create([
-                                'texto' => $opcion['texto'],
-                                'es_correcta' => (string)$index === (string)$preguntaData['opciones_correcta']
-                            ]);
+                    if (!isset($preguntaData['opciones_correcta'])) {
+                        throw new \Exception("No se ha seleccionado una respuesta correcta para la pregunta #{$index}");
+                    }
+
+                    // Crear opciones para opción múltiple
+                    foreach ($preguntaData['opciones'] as $opcionIndex => $opcion) {
+                        // Log para depuración de cada opción
+                        Log::info("Procesando opción #{$opcionIndex} de pregunta #{$index}:", ['opcion' => $opcion]);
+
+                        if (!is_array($opcion) || !isset($opcion['texto'])) {
+                            throw new \Exception("Formato inválido en la opción #{$opcionIndex} de la pregunta #{$index}");
                         }
+
+                        if (trim($opcion['texto']) === '') {
+                            throw new \Exception("La opción #{$opcionIndex} de la pregunta #{$index} no puede estar vacía");
+                        }
+
+                        Opcion::create([
+                            'pregunta_id' => $pregunta->id,
+                            'texto' => $opcion['texto'],
+                            'es_correcta' => (int)$preguntaData['opciones_correcta'] === $opcionIndex
+                        ]);
                     }
                 }
-
-                \DB::commit();
-                return response()->json(['success' => true]);
             }
 
-            throw new \Exception('Modo de operación no válido');
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cuestionario guardado exitosamente',
+                'cuestionario_id' => $cuestionario->id
+            ]);
 
         } catch (\Exception $e) {
-            \DB::rollBack();
-            \Log::error('Error al crear cuestionario:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->all()
-            ]);
+            DB::rollBack();
+            Log::error('Error al crear cuestionario: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al guardar el cuestionario: ' . $e->getMessage()
+            ], 422);
         }
     }
 
@@ -456,5 +508,91 @@ class CuestionarioController extends Controller
             });
 
         return response()->json($preguntas);
+    }
+
+    public function updatePregunta(Request $request, Pregunta $pregunta)
+    {
+        try {
+            DB::beginTransaction();
+
+            $request->validate([
+                'pregunta' => 'required|string',
+                'tipo' => 'required|in:opcion_multiple,verdadero_falso',
+                'opciones' => 'required_if:tipo,opcion_multiple|array',
+                'opciones_correcta' => 'required_if:tipo,opcion_multiple',
+                'respuesta_correcta' => 'required_if:tipo,verdadero_falso|in:verdadero,falso'
+            ]);
+
+            $pregunta->update([
+                'pregunta' => $request->pregunta,
+                'tipo' => $request->tipo
+            ]);
+
+            // Eliminar opciones anteriores
+            $pregunta->opciones()->delete();
+
+            if ($request->tipo === 'verdadero_falso') {
+                Opcion::create([
+                    'pregunta_id' => $pregunta->id,
+                    'texto' => 'Verdadero',
+                    'es_correcta' => $request->respuesta_correcta === 'verdadero'
+                ]);
+                Opcion::create([
+                    'pregunta_id' => $pregunta->id,
+                    'texto' => 'Falso',
+                    'es_correcta' => $request->respuesta_correcta === 'falso'
+                ]);
+            } else {
+                foreach ($request->opciones as $index => $opcion) {
+                    Opcion::create([
+                        'pregunta_id' => $pregunta->id,
+                        'texto' => $opcion['texto'],
+                        'es_correcta' => (int)$request->opciones_correcta === $index
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pregunta actualizada correctamente'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error al actualizar pregunta: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar la pregunta: ' . $e->getMessage()
+            ], 422);
+        }
+    }
+
+    public function destroyPregunta(Pregunta $pregunta)
+    {
+        try {
+            DB::beginTransaction();
+
+            $pregunta->opciones()->delete();
+            $pregunta->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pregunta eliminada correctamente'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error al eliminar pregunta: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la pregunta: ' . $e->getMessage()
+            ], 422);
+        }
     }
 } 

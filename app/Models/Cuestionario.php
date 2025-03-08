@@ -2,29 +2,28 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Cuestionario extends Model
 {
+    use HasFactory;
+
+    protected $table = 'cuestionarios';
+
     protected $fillable = [
         'titulo',
         'descripcion',
         'tiempo_limite',
         'intentos_permitidos',
         'permite_revision',
-        'retroalimentacion',
         'activo',
-        'aula_virtual_id',
-        'fecha_inicio',
-        'fecha_fin'
+        'aula_virtual_id'
     ];
 
     protected $casts = [
-        'config_revision' => 'array',
         'permite_revision' => 'boolean',
         'activo' => 'boolean',
-        'fecha_inicio' => 'datetime',
-        'fecha_fin' => 'datetime'
     ];
 
     public function aulaVirtual()
