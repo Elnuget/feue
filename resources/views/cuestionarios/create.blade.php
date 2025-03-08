@@ -72,6 +72,26 @@
                             <h3 class="font-semibold mb-2">Preguntas Agregadas: <span id="contadorPreguntas">0</span></h3>
                         </div>
 
+                        <!-- Botones para importar y descargar formato -->
+                        <div class="flex flex-wrap gap-3 mb-4">
+                            <button type="button" 
+                                    onclick="mostrarModalImportar()"
+                                    class="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                                Importar Preguntas
+                            </button>
+                            <button type="button" 
+                                    onclick="descargarFormato()"
+                                    class="px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Descargar Formato
+                            </button>
+                        </div>
+
                         <form id="formPregunta" class="space-y-4">
                             <div class="grid grid-cols-1 gap-4">
                                 <div>
@@ -458,6 +478,203 @@
                 toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 500);
             }, 3000);
+        }
+        
+        // Funciones para importar y descargar formato de preguntas
+        function mostrarModalImportar() {
+            // Crear y mostrar el modal
+            const modalHTML = `
+                <div id="modalImportar" class="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md p-6 relative">
+                        <button type="button" onclick="cerrarModalImportar()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                        <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Importar Preguntas</h3>
+                        <p class="mb-4 text-gray-700 dark:text-gray-300">Selecciona un archivo .txt con las preguntas en el formato correcto.</p>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Archivo de preguntas (.txt)
+                            </label>
+                            <input type="file" 
+                                id="archivoPreguntas" 
+                                accept=".txt" 
+                                class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md">
+                        </div>
+                        
+                        <div class="flex justify-end space-x-2">
+                            <button type="button" 
+                                onclick="cerrarModalImportar()"
+                                class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">
+                                Cancelar
+                            </button>
+                            <button type="button" 
+                                onclick="importarPreguntas()"
+                                class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                                Importar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+        
+        function cerrarModalImportar() {
+            const modal = document.getElementById('modalImportar');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        
+        function importarPreguntas() {
+            const fileInput = document.getElementById('archivoPreguntas');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                mostrarError('Por favor selecciona un archivo.');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const contenido = e.target.result;
+                    const preguntasImportadas = procesarArchivoPreguntas(contenido);
+                    
+                    // Añadir las preguntas importadas a nuestro array
+                    preguntasImportadas.forEach(pregunta => {
+                        preguntas.push(pregunta);
+                    });
+                    
+                    // Actualizar contador
+                    document.getElementById('contadorPreguntas').textContent = preguntas.length;
+                    
+                    // Cerrar modal y mostrar mensaje
+                    cerrarModalImportar();
+                    mostrarMensaje(`Se importaron ${preguntasImportadas.length} preguntas correctamente`);
+                } catch (error) {
+                    mostrarError('Error al procesar el archivo: ' + error.message);
+                }
+            };
+            
+            reader.onerror = function() {
+                mostrarError('Error al leer el archivo');
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        function procesarArchivoPreguntas(contenido) {
+            const lineas = contenido.split('\n');
+            const preguntasImportadas = [];
+            let preguntaActual = null;
+            
+            for (let i = 0; i < lineas.length; i++) {
+                const linea = lineas[i].trim();
+                
+                // Saltamos líneas vacías y comentarios
+                if (!linea || linea.startsWith('#')) continue;
+                
+                // Si la línea comienza con "P:", es una nueva pregunta
+                if (linea.startsWith('P:')) {
+                    // Si ya teníamos una pregunta en proceso, la guardamos
+                    if (preguntaActual) {
+                        preguntasImportadas.push(preguntaActual);
+                    }
+                    
+                    // Iniciar nueva pregunta
+                    preguntaActual = {
+                        pregunta: linea.substring(2).trim(),
+                        tipo: 'opcion_multiple',
+                        opciones: [],
+                        opciones_correcta: null // Propiedad que espera el servidor
+                    };
+                } 
+                // Si la línea comienza con "O:", es una opción
+                else if (linea.startsWith('O:') && preguntaActual) {
+                    const textoOpcion = linea.substring(2).trim();
+                    const esCorrecta = textoOpcion.endsWith('*');
+                    const textoLimpio = esCorrecta ? textoOpcion.slice(0, -1).trim() : textoOpcion;
+                    
+                    // Añadir opción al array de opciones
+                    const indiceOpcion = preguntaActual.opciones.length;
+                    preguntaActual.opciones.push({
+                        texto: textoLimpio
+                    });
+                    
+                    // Si es correcta, guardar su índice
+                    if (esCorrecta) {
+                        preguntaActual.opciones_correcta = indiceOpcion.toString();
+                    }
+                }
+            }
+            
+            // Añadir la última pregunta si existe
+            if (preguntaActual) {
+                preguntasImportadas.push(preguntaActual);
+            }
+            
+            // Validar preguntas
+            preguntasImportadas.forEach((pregunta, index) => {
+                if (pregunta.opciones.length < 2) {
+                    throw new Error(`La pregunta #${index + 1} debe tener al menos 2 opciones`);
+                }
+                
+                if (pregunta.opciones_correcta === null) {
+                    throw new Error(`La pregunta #${index + 1} debe tener al menos 1 opción correcta (marcada con *)`);
+                }
+            });
+            
+            return preguntasImportadas;
+        }
+        
+        function descargarFormato() {
+            // Contenido del archivo de formato
+            const formatoContenido = `FORMATO PARA IMPORTAR PREGUNTAS DE OPCIÓN MÚLTIPLE
+
+# INSTRUCCIONES:
+# Cada pregunta debe comenzar con "P:" seguido del texto de la pregunta
+# Cada opción debe comenzar con "O:" seguido del texto de la opción
+# Para marcar una opción como correcta, añade un asterisco (*) al final del texto
+# Debe haber al menos 2 opciones por pregunta y al menos 1 debe ser correcta
+# Ejemplo:
+
+P: ¿Cuál es la capital de Francia?
+O: Madrid
+O: París*
+O: Londres
+O: Berlín
+
+P: ¿Cuál de los siguientes NO es un lenguaje de programación?
+O: Python
+O: Java
+O: HTML*
+O: C++
+
+# Puede añadir tantas preguntas como desee siguiendo este formato
+`;
+
+            // Crear un blob con el contenido
+            const blob = new Blob([formatoContenido], { type: 'text/plain' });
+            
+            // Crear un enlace para descargar
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'formato_preguntas.txt';
+            
+            // Simular clic en el enlace
+            document.body.appendChild(a);
+            a.click();
+            
+            // Limpiar
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+            
+            mostrarMensaje('Formato descargado correctamente');
         }
     </script>
     @endpush
