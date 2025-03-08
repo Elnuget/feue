@@ -595,4 +595,35 @@ class CuestionarioController extends Controller
             ], 422);
         }
     }
+
+    public function obtenerPregunta(Pregunta $pregunta)
+    {
+        try {
+            if (!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente')) {
+                abort(403, 'No tienes permiso para realizar esta acción.');
+            }
+
+            $pregunta->load('opciones');
+            
+            return response()->json([
+                'id' => $pregunta->id,
+                'pregunta' => $pregunta->pregunta,
+                'tipo' => $pregunta->tipo,
+                'opciones' => $pregunta->opciones->map(function($opcion) {
+                    return [
+                        'texto' => $opcion->texto,
+                        'es_correcta' => $opcion->es_correcta
+                    ];
+                }),
+                'respuesta_correcta' => $pregunta->tipo === 'verdadero_falso' 
+                    ? ($pregunta->opciones->where('es_correcta', true)->first()->texto === 'Verdadero' ? 'verdadero' : 'falso')
+                    : null
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error al obtener pregunta: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error al cargar la pregunta: ' . $e->getMessage()
+            ], 422);
+        }
+    }
 } 

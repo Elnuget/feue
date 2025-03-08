@@ -462,23 +462,53 @@
 
         async function editarPregunta(preguntaId) {
             try {
-                const response = await fetch(`/preguntas/${preguntaId}`);
-                if (!response.ok) throw new Error('Error al cargar la pregunta');
+                // Mostrar el modal primero con título de edición
+                document.getElementById('modalTitulo').textContent = 'Editar Pregunta';
+                const modal = document.getElementById('modalPregunta');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+
+                const response = await fetch(`/preguntas/${preguntaId}/obtener`, {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar la pregunta');
+                }
 
                 const pregunta = await response.json();
-                
-                document.getElementById('modalTitulo').textContent = 'Editar Pregunta';
-                document.getElementById('pregunta_id').value = pregunta.id;
-                document.getElementById('formPregunta').pregunta.value = pregunta.pregunta;
-                document.getElementById('formPregunta').tipo.value = pregunta.tipo;
-                
-                cambiarTipoPregunta(pregunta.tipo);
-                
+                console.log('Datos de pregunta recibidos:', pregunta);
+
+                // Llenar el formulario con los datos
+                const form = document.getElementById('formPregunta');
+                form.pregunta_id.value = preguntaId;
+                form.pregunta.value = pregunta.pregunta;
+                form.tipo.value = pregunta.tipo;
+
+                // Limpiar y configurar las opciones según el tipo
+                const container = document.getElementById('opcionesContainer');
+                container.innerHTML = '';
+                opcionCount = 0;
+
                 if (pregunta.tipo === 'verdadero_falso') {
-                    const radio = document.querySelector(`input[name="respuesta_correcta"][value="${pregunta.respuesta_correcta}"]`);
-                    if (radio) radio.checked = true;
+                    container.innerHTML = `
+                        <div class="space-x-4">
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="respuesta_correcta" value="verdadero" ${pregunta.respuesta_correcta === 'verdadero' ? 'checked' : ''}>
+                                <span class="ml-2">Verdadero</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="respuesta_correcta" value="falso" ${pregunta.respuesta_correcta === 'falso' ? 'checked' : ''}>
+                                <span class="ml-2">Falso</span>
+                            </label>
+                        </div>
+                    `;
                 } else {
-                    document.getElementById('opcionesContainer').innerHTML = '';
+                    // Crear las opciones para preguntas de opción múltiple
                     pregunta.opciones.forEach((opcion, index) => {
                         const opcionDiv = document.createElement('div');
                         opcionDiv.className = 'flex items-center space-x-2';
@@ -503,15 +533,15 @@
                                 </button>
                             ` : ''}
                         `;
-                        document.getElementById('opcionesContainer').appendChild(opcionDiv);
+                        container.appendChild(opcionDiv);
+                        opcionCount++;
                     });
-                    opcionCount = pregunta.opciones.length;
                 }
 
-                mostrarModalPregunta();
-
             } catch (error) {
-                mostrarError(error.message);
+                console.error('Error completo:', error);
+                mostrarError('Error al cargar la pregunta: ' + error.message);
+                cerrarModalPregunta();
             }
         }
 

@@ -171,6 +171,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/intentos/{intento}/finalizar', [CuestionarioController::class, 'finalizar'])
          ->name('cuestionarios.finalizar');
 
+    // Ruta para obtener una pregunta específica
+    Route::get('/preguntas/{pregunta}/obtener', [CuestionarioController::class, 'obtenerPregunta'])
+         ->name('preguntas.obtener');
+
+    // Rutas para actualizar y eliminar preguntas
+    Route::put('/preguntas/{pregunta}', [CuestionarioController::class, 'updatePregunta'])
+         ->name('preguntas.update');
+    Route::delete('/preguntas/{pregunta}', [CuestionarioController::class, 'destroyPregunta'])
+         ->name('preguntas.destroy');
+
     // Nuevas rutas para funciones administrativas de cuestionarios
     Route::post('/cuestionarios/{cuestionario}/toggle-estado', [CuestionarioController::class, 'toggleEstado'])
          ->name('cuestionarios.toggle-estado');
