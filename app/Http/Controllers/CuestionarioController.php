@@ -338,15 +338,19 @@ class CuestionarioController extends Controller
         }
 
         $validated = $request->validate([
-            'campo' => 'required|in:tiempo_limite,intentos_permitidos',
-            'valor' => 'required|numeric|min:1'
+            'tiempo_limite' => 'required|integer|min:1',
+            'intentos_permitidos' => 'required|integer|min:1',
+            'permite_revision' => 'required|boolean',
+            'aleatorio' => 'required|boolean',
+            'activo' => 'required|boolean'
         ]);
 
-        $cuestionario->update([
-            $validated['campo'] => $validated['valor']
-        ]);
+        $cuestionario->update($validated);
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Configuración actualizada correctamente'
+        ]);
     }
 
     public function programar(Request $request, Cuestionario $cuestionario)

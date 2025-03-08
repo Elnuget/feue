@@ -283,53 +283,78 @@
 
         async function actualizarInformacionBasica() {
             const form = document.getElementById('formBasico');
-            const formData = new FormData(form);
+            const formData = new FormData();
+
+            // Agregar los campos básicos
+            formData.append('titulo', form.titulo.value);
+            formData.append('descripcion', form.descripcion.value);
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+            formData.append('_method', 'PUT');
 
             try {
                 const response = await fetch(`/cuestionarios/{{ $cuestionario->id }}`, {
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: formData
-                });
-
-                if (!response.ok) throw new Error('Error al actualizar la información básica');
-
-                mostrarMensaje('Información básica actualizada correctamente');
-
-            } catch (error) {
-                mostrarError(error.message);
-            }
-        }
-
-        async function actualizarConfiguracion() {
-            const form = document.getElementById('formConfiguracion');
-            const formData = new FormData(form);
-
-            try {
-                const response = await fetch(`/cuestionarios/{{ $cuestionario->id }}/configuracion`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
                     },
                     body: formData
                 });
 
                 if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.message || 'Error al actualizar la configuración');
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || 'Error al actualizar la información básica');
                 }
 
-                const data = await response.json();
-                if (data.success) {
-                    mostrarMensaje('Configuración actualizada correctamente');
-                } else {
-                    throw new Error(data.message || 'Error al actualizar la configuración');
-                }
+                mostrarMensaje('Información básica actualizada correctamente');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
 
             } catch (error) {
-                mostrarError(error.message);
+                console.error('Error:', error);
+                mostrarError(error.message || 'Error al actualizar la información básica');
+            }
+        }
+
+        async function actualizarConfiguracion() {
+            const formConfig = document.getElementById('formConfiguracion');
+            const formData = new FormData();
+
+            // Agregar los campos de configuración
+            formData.append('tiempo_limite', formConfig.tiempo_limite.value);
+            formData.append('intentos_permitidos', formConfig.intentos_permitidos.value);
+            formData.append('permite_revision', formConfig.permite_revision.checked ? '1' : '0');
+            formData.append('aleatorio', formConfig.aleatorio.checked ? '1' : '0');
+            formData.append('activo', formConfig.activo.checked ? '1' : '0');
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+
+            try {
+                console.log('Datos a enviar:', Object.fromEntries(formData));
+
+                const response = await fetch(`/cuestionarios/{{ $cuestionario->id }}/actualizar-config`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Error al actualizar la configuración');
+                }
+
+                mostrarMensaje('Configuración actualizada correctamente');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError(error.message || 'Error al actualizar la configuración');
             }
         }
 
