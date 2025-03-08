@@ -362,13 +362,29 @@
                                                         🗑️
                                                     </button>
                                                 </form>
+                                                <form action="{{ route('cuestionarios.toggle', $cuestionario) }}" 
+                                                      method="POST" 
+                                                      class="inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" 
+                                                            class="{{ $cuestionario->activo ? 'bg-red-100 text-red-800 hover:bg-red-200' : 'bg-green-100 text-green-800 hover:bg-green-200' }} px-2 py-1 rounded-md flex items-center transition-colors">
+                                                        <span class="mr-1">{{ $cuestionario->activo ? '🚫' : '✓' }}</span>
+                                                        {{ $cuestionario->activo ? 'Desactivar' : 'Activar' }}
+                                                    </button>
+                                                </form>
+                                                <button onclick="mostrarResultadosCuestionario({{ $cuestionario->id }}, '{{ $cuestionario->titulo }}')"
+                                                        class="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition">
+                                                    Ver Resultados 📊
+                                                </button>
                                             @endif
                                             @if(!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente'))
                                                 @php
-                                                    $intentoExistente = DB::table('intentos_cuestionario')
-                                                        ->where('cuestionario_id', $cuestionario->id)
-                                                        ->where('usuario_id', auth()->id())
-                                                        ->latest('created_at')
+                                                    $intentoExistente = DB::table('respuestas_usuario')
+                                                        ->join('intentos_cuestionario', 'respuestas_usuario.intento_id', '=', 'intentos_cuestionario.id')
+                                                        ->where('intentos_cuestionario.cuestionario_id', $cuestionario->id)
+                                                        ->where('intentos_cuestionario.usuario_id', auth()->id())
+                                                        ->latest('intentos_cuestionario.created_at')
                                                         ->first();
                                                 @endphp
                                                 
@@ -425,7 +441,7 @@
 
                     <!-- Modal para crear tarea -->
                     @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
-                        <div id="tareaModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 overflow-y-auto">
+                        <div id="tareaModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
                             <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-2xl my-8 mx-auto max-h-[90vh] overflow-y-auto">
                                 <div class="flex justify-between items-center mb-4 sticky top-0 bg-white dark:bg-gray-800 z-10 py-2">
                                     <h3 class="text-lg font-bold">Crear Nueva Tarea</h3>
@@ -776,6 +792,150 @@
                                 </div>
                             </div>
                         </div>
+                    @endif
+
+                    <!-- Modal para resultados del cuestionario -->
+                    @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
+                        <div id="resultadosModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-4xl">
+                                <div class="flex justify-between items-center mb-4">
+                                    <div>
+                                        <h3 class="text-lg font-bold">Resultados del Cuestionario</h3>
+                                        <p class="text-sm text-gray-500" id="resultados-cuestionario-titulo"></p>
+                                    </div>
+                                    <button onclick="toggleResultadosModal()" class="text-gray-500 hover:text-gray-700">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div id="resultadosContent" class="mt-4">
+                                    <!-- Aquí se cargarán los resultados -->
+                                </div>
+                            </div>
+                        </div>
+
+                        @push('scripts')
+                        <script>
+                            function toggleResultadosModal() {
+                                const modal = document.getElementById('resultadosModal');
+                                modal.classList.toggle('hidden');
+                                modal.classList.toggle('flex');
+                            }
+
+                            function mostrarResultadosCuestionario(cuestionarioId, titulo) {
+                                const modal = document.getElementById('resultadosModal');
+                                const content = document.getElementById('resultadosContent');
+                                const tituloElement = document.getElementById('resultados-cuestionario-titulo');
+                                
+                                // Mostrar modal y mensaje de carga
+                                modal.classList.remove('hidden');
+                                modal.classList.add('flex');
+                                content.innerHTML = '<p class="text-center text-gray-500">Cargando resultados...</p>';
+                                tituloElement.textContent = titulo;
+                                
+                                // Obtener resultados
+                                fetch(`/cuestionarios/${cuestionarioId}/resultados`, {
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'Accept': 'application/json'
+                                    }
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (!data.success) {
+                                        throw new Error(data.message || 'Error al cargar los resultados');
+                                    }
+
+                                    if (!data.resultados || data.resultados.length === 0) {
+                                        content.innerHTML = `
+                                            <div class="text-center text-gray-500 py-4">
+                                                No hay intentos registrados para este cuestionario.
+                                            </div>
+                                        `;
+                                        return;
+                                    }
+
+                                    let html = `
+                                        <div class="overflow-x-auto">
+                                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                                    <tr>
+                                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                            Estudiante
+                                                        </th>
+                                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                            Mejor Calificación
+                                                        </th>
+                                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                            Intentos Realizados
+                                                        </th>
+                                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                            Último Intento
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    `;
+
+                                    data.resultados.forEach(resultado => {
+                                        html += `
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                        ${resultado.nombre}
+                                                    </div>
+                                                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                                                        ${resultado.email}
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                        ${parseFloat(resultado.mejor_calificacion) >= 70 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                                        ${resultado.mejor_calificacion}%
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                    ${resultado.intentos_realizados}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                    ${new Date(resultado.ultimo_intento).toLocaleString()}
+                                                </td>
+                                            </tr>
+                                        `;
+                                    });
+
+                                    html += `
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    `;
+
+                                    content.innerHTML = html;
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    content.innerHTML = `
+                                        <div class="bg-red-50 border-l-4 border-red-500 p-4">
+                                            <div class="flex">
+                                                <div class="flex-shrink-0">
+                                                    <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                                    </svg>
+                                                </div>
+                                                <div class="ml-3">
+                                                    <p class="text-sm text-red-700">
+                                                        ${error.message}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                });
+                            }
+                        </script>
+                        @endpush
                     @endif
                 </div>
             </div>

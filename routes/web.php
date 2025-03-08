@@ -199,6 +199,15 @@ Route::middleware(['auth'])->group(function () {
          
     Route::put('/cuestionarios/{cuestionario}', [CuestionarioController::class, 'update'])
          ->name('cuestionarios.update');
+
+    // Rutas para cuestionarios
+    Route::patch('/cuestionarios/{cuestionario}/toggle', [CuestionarioController::class, 'toggle'])
+        ->name('cuestionarios.toggle')
+        ->middleware(['can:update,cuestionario']);
+    
+    Route::get('/cuestionarios/{cuestionario}/resultados', [CuestionarioController::class, 'resultados'])
+        ->name('cuestionarios.resultados')
+        ->middleware(['can:view,cuestionario']);
 });
 
 Route::delete('/preguntas/{pregunta}', [CuestionarioController::class, 'eliminarPregunta'])

@@ -630,4 +630,63 @@ class CuestionarioController extends Controller
             ], 422);
         }
     }
+
+    /**
+     * Toggle el estado activo/inactivo del cuestionario
+     */
+    public function toggle(Cuestionario $cuestionario)
+    {
+        $this->authorize('update', $cuestionario);
+        
+        $cuestionario->update([
+            'activo' => !$cuestionario->activo
+        ]);
+
+        return back()->with('success', 'Estado del cuestionario actualizado correctamente.');
+    }
+
+    /**
+     * Obtener los resultados del cuestionario
+     */
+    public function resultados(Cuestionario $cuestionario)
+    {
+        try {
+            $resultados = DB::table('intentos_cuestionario')
+                ->join('users', 'intentos_cuestionario.usuario_id', '=', 'users.id')
+                ->where('cuestionario_id', $cuestionario->id)
+                ->whereNotNull('calificacion') // Solo intentos completados
+                ->select(
+                    'users.id',
+                    'users.name as nombre',
+                    'users.email',
+                    DB::raw('MAX(calificacion) as mejor_calificacion'),
+                    DB::raw('COUNT(*) as intentos_realizados'),
+                    DB::raw('MAX(intentos_cuestionario.created_at) as ultimo_intento')
+                )
+                ->groupBy('users.id', 'users.name', 'users.email')
+                ->orderBy('mejor_calificacion', 'desc')
+                ->get()
+                ->map(function($resultado) {
+                    return [
+                        'nombre' => $resultado->nombre,
+                        'email' => $resultado->email,
+                        'mejor_calificacion' => number_format($resultado->mejor_calificacion, 2),
+                        'intentos_realizados' => $resultado->intentos_realizados,
+                        'ultimo_intento' => $resultado->ultimo_intento
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'resultados' => $resultados
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error en resultados del cuestionario: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los resultados: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 } 

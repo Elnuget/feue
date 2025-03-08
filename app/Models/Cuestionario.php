@@ -18,7 +18,11 @@ class Cuestionario extends Model
         'intentos_permitidos',
         'permite_revision',
         'activo',
-        'aula_virtual_id'
+        'aula_virtual_id',
+        'fecha_inicio',
+        'fecha_fin',
+        'retroalimentacion',
+        'config_revision'
     ];
 
     protected $casts = [
