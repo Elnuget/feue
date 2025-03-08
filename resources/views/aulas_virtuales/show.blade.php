@@ -395,15 +395,15 @@
                                                 @endphp
                                                 
                                                 @if($intentoSinFinalizar)
-                                                    <a href="{{ route('cuestionarios.show', $cuestionario) }}" 
-                                                       class="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition">
+                                                    <button onclick="iniciarVerificacion({{ $cuestionario->id }})" 
+                                                            class="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition">
                                                         Continuar intento 📝
-                                                    </a>
+                                                    </button>
                                                 @elseif(!$intentoExistente && $cuestionario->activo)
-                                                    <a href="{{ route('cuestionarios.show', $cuestionario) }}" 
-                                                       class="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition">
+                                                    <button onclick="iniciarVerificacion({{ $cuestionario->id }})"
+                                                            class="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition">
                                                         Realizar 📝
-                                                    </a>
+                                                    </button>
                                                 @elseif($intentoExistente && $cuestionario->permite_revision)
                                                     <div class="flex flex-col items-end gap-2">
                                                         @php
@@ -948,6 +948,88 @@
                         </script>
                         @endpush
                     @endif
+
+                    <!-- Modal de Verificación -->
+                    <div id="modalVerificacion" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-2xl">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-bold">Verificación de Requisitos</h3>
+                                <button onclick="cerrarModalVerificacion()" class="text-gray-500 hover:text-gray-700">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="space-y-6">
+                                <!-- Paso 1: Verificación de pantallas (antes paso 3) -->
+                                <div id="paso1" class="border rounded-lg p-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <h4 class="font-semibold">Paso 1: Verificar Pantallas Conectadas</h4>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                                Solo debe tener una pantalla activa.
+                                            </p>
+                                        </div>
+                                        <div id="paso1Status" class="text-yellow-500">
+                                            Pendiente
+                                        </div>
+                                    </div>
+                                    <button onclick="verificarPantallas()" class="mt-2 bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition">
+                                        Verificar Pantallas
+                                    </button>
+                                </div>
+
+                                <!-- Paso 2: Verificación de cámara y micrófono (sin cambios) -->
+                                <div id="paso2" class="border rounded-lg p-4 opacity-50">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <h4 class="font-semibold">Paso 2: Verificar Cámara y Micrófono</h4>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                                Necesitamos acceso a su cámara y micrófono.
+                                            </p>
+                                        </div>
+                                        <div id="paso2Status" class="text-yellow-500">
+                                            Pendiente
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 space-y-2">
+                                        <video id="videoPreview" class="w-full h-32 bg-black hidden" autoplay muted></video>
+                                        <button onclick="verificarDispositivos()" class="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition" disabled>
+                                            Verificar Dispositivos
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Paso 3: Verificación de pestañas (antes paso 1) -->
+                                <div id="paso3" class="border rounded-lg p-4 opacity-50">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <h4 class="font-semibold">Paso 3: Verificar Pestañas del Navegador</h4>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                                Por favor, cierre todas las pestañas excepto esta.
+                                            </p>
+                                        </div>
+                                        <div id="paso3Status" class="text-yellow-500">
+                                            Pendiente
+                                        </div>
+                                    </div>
+                                    <button onclick="verificarPestanas()" class="mt-2 bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition" disabled>
+                                        Verificar Pestañas
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 flex justify-end space-x-2">
+                                <button onclick="cerrarModalVerificacion()" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
+                                    Cancelar
+                                </button>
+                                <button id="btnComenzar" onclick="comenzarCuestionario()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors" disabled>
+                                    Comenzar Cuestionario
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1166,7 +1248,7 @@
                     <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-3 rounded-md mb-4">
                         <div>
                             <p class="text-sm font-semibold">Resumen de Entregas</p>
-                            <p class="text-xs text-gray-600 dark:text-gray-300">
+                            <p class="text-xs text-gray-600 dark:text-gray-400">
                                 Entregas totales: ${estadisticas.total_entregas} | 
                                 Calificadas: ${estadisticas.entregas_calificadas} | 
                                 Pendientes: ${estadisticas.entregas_pendientes}
@@ -1281,13 +1363,6 @@
                                 <p class="text-sm text-red-700">
                                     Error al cargar las entregas: ${error.message}
                                 </p>
-                                <div class="mt-2">
-                                    <button type="button" 
-                                            onclick="toggleCalificarModal(${tareaId}, '${tareaTitulo}')" 
-                                            class="text-red-700 hover:text-red-600 underline text-sm">
-                                        Intentar nuevamente
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -1359,6 +1434,191 @@
                 botonCalificar.innerHTML = textoOriginal;
             });
         }
+
+        let cuestionarioId = null;
+        let stream = null;
+        let pasosCompletados = {
+            paso1: false,
+            paso2: false,
+            paso3: false
+        };
+
+        function iniciarVerificacion(id) {
+            cuestionarioId = id;
+            document.getElementById('modalVerificacion').classList.remove('hidden');
+            document.getElementById('modalVerificacion').classList.add('flex');
+            resetearVerificacion();
+        }
+
+        function cerrarModalVerificacion() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            document.getElementById('modalVerificacion').classList.add('hidden');
+            document.getElementById('modalVerificacion').classList.remove('flex');
+            resetearVerificacion();
+        }
+
+        function resetearVerificacion() {
+            pasosCompletados = { paso1: false, paso2: false, paso3: false };
+            document.getElementById('paso1Status').textContent = 'Pendiente';
+            document.getElementById('paso1Status').className = 'text-yellow-500';
+            document.getElementById('paso2Status').textContent = 'Pendiente';
+            document.getElementById('paso2Status').className = 'text-yellow-500';
+            document.getElementById('paso3Status').textContent = 'Pendiente';
+            document.getElementById('paso3Status').className = 'text-yellow-500';
+            document.getElementById('paso2').classList.add('opacity-50');
+            document.getElementById('paso3').classList.add('opacity-50');
+            document.getElementById('videoPreview').classList.add('hidden');
+            document.querySelector('#paso2 button').disabled = true;
+            document.querySelector('#paso3 button').disabled = true;
+            document.getElementById('btnComenzar').disabled = true;
+        }
+
+        function actualizarEstadoPasos() {
+            const todosCompletados = Object.values(pasosCompletados).every(paso => paso);
+            document.getElementById('btnComenzar').disabled = !todosCompletados;
+            
+            // Habilitar paso siguiente si el anterior está completado
+            if (pasosCompletados.paso1) {
+                document.getElementById('paso2').classList.remove('opacity-50');
+                document.querySelector('#paso2 button').disabled = false;
+            }
+            if (pasosCompletados.paso2) {
+                document.getElementById('paso3').classList.remove('opacity-50');
+                document.querySelector('#paso3 button').disabled = false;
+            }
+        }
+
+        async function verificarPantallas() {
+            try {
+                if (!('getScreenDetails' in window)) {
+                    // Fallback para navegadores que no soportan getScreenDetails
+                    const displays = await window.screen.isExtended;
+                    if (displays) {
+                        throw new Error('Se detectaron múltiples pantallas');
+                    }
+                } else {
+                    const screenDetails = await window.getScreenDetails();
+                    if (screenDetails.screens.length > 1) {
+                        throw new Error('Se detectaron múltiples pantallas');
+                    }
+                }
+                
+                pasosCompletados.paso1 = true;
+                document.getElementById('paso1Status').textContent = 'Completado';
+                document.getElementById('paso1Status').className = 'text-green-500';
+                actualizarEstadoPasos();
+            } catch (error) {
+                document.getElementById('paso1Status').textContent = 'Error: ' + (error.message || 'No se pudo verificar las pantallas');
+                document.getElementById('paso1Status').className = 'text-red-500';
+            }
+        }
+
+        async function verificarDispositivos() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                const videoPreview = document.getElementById('videoPreview');
+                videoPreview.srcObject = stream;
+                videoPreview.classList.remove('hidden');
+                
+                pasosCompletados.paso2 = true;
+                document.getElementById('paso2Status').textContent = 'Completado';
+                document.getElementById('paso2Status').className = 'text-green-500';
+                actualizarEstadoPasos();
+            } catch (error) {
+                document.getElementById('paso2Status').textContent = 'Error: No se pudo acceder a la cámara o micrófono';
+                document.getElementById('paso2Status').className = 'text-red-500';
+            }
+        }
+
+        async function verificarPestanas() {
+            try {
+                const KEY_TABS = 'tabs_activas';
+                const TAB_ID = Date.now().toString();
+                let contadorPestanas = 0;
+
+                // Función para limpiar datos antiguos
+                function limpiarDatosAntiguos() {
+                    localStorage.removeItem(KEY_TABS);
+                    window.removeEventListener('storage', escucharCambios);
+                }
+
+                // Función para escuchar cambios en otras pestañas
+                function escucharCambios(e) {
+                    if (e.key === KEY_TABS) {
+                        const tabs = JSON.parse(e.newValue || '[]');
+                        contadorPestanas = tabs.length;
+                    }
+                }
+
+                // Registrar esta pestaña
+                function registrarPestana() {
+                    const tabs = JSON.parse(localStorage.getItem(KEY_TABS) || '[]');
+                    if (!tabs.includes(TAB_ID)) {
+                        tabs.push(TAB_ID);
+                        localStorage.setItem(KEY_TABS, JSON.stringify(tabs));
+                        contadorPestanas = tabs.length;
+                    }
+                }
+
+                // Limpiar datos antiguos antes de comenzar
+                limpiarDatosAntiguos();
+
+                // Escuchar cambios en otras pestañas
+                window.addEventListener('storage', escucharCambios);
+
+                // Registrar esta pestaña
+                registrarPestana();
+
+                // Esperar un momento para que otras pestañas respondan
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Verificar el número final de pestañas
+                const pestanasActuales = JSON.parse(localStorage.getItem(KEY_TABS) || '[]');
+                contadorPestanas = pestanasActuales.length;
+
+                // Limpiar eventos y datos
+                limpiarDatosAntiguos();
+
+                if (contadorPestanas > 1) {
+                    throw new Error(`Se detectaron ${contadorPestanas} pestañas abiertas. Por favor, cierre todas excepto esta.`);
+                }
+
+                // Actualizar estado
+                pasosCompletados.paso3 = true;
+                document.getElementById('paso3Status').textContent = 'Completado';
+                document.getElementById('paso3Status').className = 'text-green-500';
+                actualizarEstadoPasos();
+
+            } catch (error) {
+                console.error('Error en verificación de pestañas:', error);
+                pasosCompletados.paso3 = false;
+                document.getElementById('paso3Status').textContent = 'Error: ' + error.message;
+                document.getElementById('paso3Status').className = 'text-red-500';
+                actualizarEstadoPasos();
+            }
+        }
+
+        function comenzarCuestionario() {
+            if (Object.values(pasosCompletados).every(paso => paso)) {
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
+                }
+                window.location.href = `/cuestionarios/${cuestionarioId}`;
+            }
+        }
+
+        // Limpiar localStorage cuando se cierra la pestaña
+        window.addEventListener('beforeunload', () => {
+            const KEY_TABS = 'tabs_activas';
+            const tabs = JSON.parse(localStorage.getItem(KEY_TABS) || '[]');
+            const TAB_ID = Date.now().toString();
+            const nuevasTabs = tabs.filter(id => id !== TAB_ID);
+            localStorage.setItem(KEY_TABS, JSON.stringify(nuevasTabs));
+        });
     </script>
     @endpush
 </x-app-layout>
