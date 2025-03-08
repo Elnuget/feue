@@ -363,11 +363,56 @@
                                                     </button>
                                                 </form>
                                             @endif
-                                            @if($cuestionario->activo)
-                                                <a href="{{ route('cuestionarios.show', $cuestionario) }}" 
-                                                   class="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition">
-                                                    Realizar 📝
-                                                </a>
+                                            @if(!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente'))
+                                                @php
+                                                    $intentoExistente = DB::table('respuestas_usuario')
+                                                        ->join('preguntas', 'respuestas_usuario.pregunta_id', '=', 'preguntas.id')
+                                                        ->where('preguntas.cuestionario_id', $cuestionario->id)
+                                                        ->select('respuestas_usuario.*')
+                                                        ->distinct()
+                                                        ->latest('respuestas_usuario.created_at')
+                                                        ->first();
+                                                @endphp
+                                                
+                                                @if(!$intentoExistente && $cuestionario->activo)
+                                                    <a href="{{ route('cuestionarios.show', $cuestionario) }}" 
+                                                       class="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition">
+                                                        Realizar 📝
+                                                    </a>
+                                                @elseif($intentoExistente && $cuestionario->permite_revision)
+                                                    <div class="flex flex-col items-end gap-2">
+                                                        @php
+                                                            $totalPreguntas = $cuestionario->preguntas()->count();
+                                                            $respuestasCorrectas = DB::table('respuestas_usuario')
+                                                                ->join('opciones', 'respuestas_usuario.opcion_id', '=', 'opciones.id')
+                                                                ->where('respuestas_usuario.intento_id', $intentoExistente->intento_id)
+                                                                ->where('opciones.es_correcta', true)
+                                                                ->count();
+                                                            $calificacion = ($totalPreguntas > 0) ? ($respuestasCorrectas / $totalPreguntas) * 100 : 0;
+                                                        @endphp
+                                                        <span class="text-sm {{ $calificacion >= 70 ? 'text-green-600' : 'text-red-600' }}">
+                                                            Calificación: {{ number_format($calificacion, 2) }}%
+                                                        </span>
+                                                        <a href="{{ route('cuestionarios.revision', ['cuestionario' => $cuestionario, 'intento' => $intentoExistente->id]) }}" 
+                                                           class="inline-flex items-center bg-purple-500 hover:bg-purple-700 text-white text-sm font-bold py-1 px-3 rounded transition">
+                                                            Ver Revisión 📋
+                                                        </a>
+                                                        @php
+                                                            $intentosRealizados = DB::table('respuestas_usuario')
+                                                                ->join('preguntas', 'respuestas_usuario.pregunta_id', '=', 'preguntas.id')
+                                                                ->where('preguntas.cuestionario_id', $cuestionario->id)
+                                                                ->select('respuestas_usuario.intento_id')
+                                                                ->distinct()
+                                                                ->count();
+                                                        @endphp
+                                                        @if($cuestionario->activo && $intentosRealizados < $cuestionario->intentos_permitidos)
+                                                            <a href="{{ route('cuestionarios.show', $cuestionario) }}" 
+                                                               class="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition">
+                                                                Intentar Nuevamente 🔄
+                                                            </a>
+                                                        @endif
+                                                    </div>
+                                                @endif
                                             @endif
                                         </div>
                                     </div>
