@@ -365,12 +365,10 @@
                                             @endif
                                             @if(!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente'))
                                                 @php
-                                                    $intentoExistente = DB::table('respuestas_usuario')
-                                                        ->join('preguntas', 'respuestas_usuario.pregunta_id', '=', 'preguntas.id')
-                                                        ->where('preguntas.cuestionario_id', $cuestionario->id)
-                                                        ->select('respuestas_usuario.*')
-                                                        ->distinct()
-                                                        ->latest('respuestas_usuario.created_at')
+                                                    $intentoExistente = DB::table('intentos_cuestionario')
+                                                        ->where('cuestionario_id', $cuestionario->id)
+                                                        ->where('usuario_id', auth()->id())
+                                                        ->latest('created_at')
                                                         ->first();
                                                 @endphp
                                                 
@@ -385,10 +383,12 @@
                                                             $totalPreguntas = $cuestionario->preguntas()->count();
                                                             $respuestasCorrectas = DB::table('respuestas_usuario')
                                                                 ->join('opciones', 'respuestas_usuario.opcion_id', '=', 'opciones.id')
-                                                                ->where('respuestas_usuario.intento_id', $intentoExistente->intento_id)
+                                                                ->join('preguntas', 'respuestas_usuario.pregunta_id', '=', 'preguntas.id')
+                                                                ->where('respuestas_usuario.intento_id', $intentoExistente->id)
+                                                                ->where('preguntas.cuestionario_id', $cuestionario->id)
                                                                 ->where('opciones.es_correcta', true)
                                                                 ->count();
-                                                            $calificacion = ($totalPreguntas > 0) ? ($respuestasCorrectas / $totalPreguntas) * 100 : 0;
+                                                            $calificacion = $intentoExistente->calificacion ?? (($totalPreguntas > 0) ? ($respuestasCorrectas / $totalPreguntas) * 100 : 0);
                                                         @endphp
                                                         <span class="text-sm {{ $calificacion >= 70 ? 'text-green-600' : 'text-red-600' }}">
                                                             Calificación: {{ number_format($calificacion, 2) }}%
@@ -398,11 +398,9 @@
                                                             Ver Revisión 📋
                                                         </a>
                                                         @php
-                                                            $intentosRealizados = DB::table('respuestas_usuario')
-                                                                ->join('preguntas', 'respuestas_usuario.pregunta_id', '=', 'preguntas.id')
-                                                                ->where('preguntas.cuestionario_id', $cuestionario->id)
-                                                                ->select('respuestas_usuario.intento_id')
-                                                                ->distinct()
+                                                            $intentosRealizados = DB::table('intentos_cuestionario')
+                                                                ->where('cuestionario_id', $cuestionario->id)
+                                                                ->where('usuario_id', auth()->id())
                                                                 ->count();
                                                         @endphp
                                                         @if($cuestionario->activo && $intentosRealizados < $cuestionario->intentos_permitidos)
