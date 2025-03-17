@@ -674,7 +674,11 @@
             function actualizarInterfazUsuario(data) {
                 try {
                     console.log('Actualizando interfaz con datos:', data); // Debug
-                    const { user, asistencias = [], matriculas = [] } = data;
+                    const { user, asistencias = [], matriculas = [], sesiones = [] } = data;
+                    
+                    // Verificar si el usuario es docente
+                    const esDocente = user.roles && user.roles.some(role => role.name === 'Docente');
+                    console.log('Es docente:', esDocente);
                     
                     // Actualizar nombre de usuario
                     const userNameElement = document.getElementById('user-name');
@@ -733,31 +737,144 @@
                         }
                     }
 
-                    // Actualizar cursos matriculados
+                    // Sección de información variable según el tipo de usuario
                     const cursosContainer = document.getElementById('cursos-matriculados');
-                    if (cursosContainer) {
-                        cursosContainer.innerHTML = matriculas.length > 0 
-                            ? matriculas.map(matricula => `
-                                <div class="curso-item">
-                                    <div class="curso-nombre">${matricula.curso?.nombre || 'Curso sin nombre'}</div>
-                                    <div class="curso-detalles">
-                                        <div><i class="fas fa-clock mr-1"></i>${matricula.curso?.horario || 'Horario no definido'}</div>
-                                        <div><i class="fas fa-map-marker-alt mr-1"></i>${matricula.curso?.sede || 'Sede Principal'}</div>
+                    const valoresPendientesElement = document.getElementById('valores-pendientes');
+
+                    // Obtener el mes actual en formato YYYY-MM
+                    const currentDate = new Date();
+                    const currentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+                    
+                    if (esDocente) {
+                        // Para docentes, actualizar la sección de cursos para mostrar información de sesiones
+                        const cursosLista = document.querySelector('.cursos-lista h3');
+                        if (cursosLista) {
+                            cursosLista.textContent = 'Sesiones y Asistencias del Mes';
+                        }
+                        
+                        // Actualizar la sección de pagos a información de asistencias
+                        if (valoresPendientesElement) {
+                            const totalSesiones = sesiones.length || 0;
+                            const asistenciasDelMes = asistencias.filter(a => {
+                                if (!a.fecha_hora) return false;
+                                const fechaAsistencia = new Date(a.fecha_hora);
+                                const mesAsistencia = `${fechaAsistencia.getFullYear()}-${String(fechaAsistencia.getMonth() + 1).padStart(2, '0')}`;
+                                return mesAsistencia === currentMonth;
+                            }).length;
+                            
+                            const porcentajeAsistencia = totalSesiones > 0 ? Math.round((asistenciasDelMes / totalSesiones) * 100) : 0;
+                            
+                            // Cambiar el título de la tarjeta
+                            const estadoPagosTitulo = document.querySelector('.tarjeta-info.pagos h3');
+                            if (estadoPagosTitulo) {
+                                estadoPagosTitulo.textContent = 'Estadísticas del Mes';
+                                estadoPagosTitulo.className = 'text-lg font-semibold text-blue-900';
+                            }
+                            
+                            // Cambiar el fondo de la tarjeta
+                            const tarjetaPagos = document.querySelector('.tarjeta-info.pagos');
+                            if (tarjetaPagos) {
+                                tarjetaPagos.className = 'tarjeta-info asistencias';
+                            }
+                            
+                            // Actualizar contenido
+                            valoresPendientesElement.innerHTML = `
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-500">Sesiones</div>
+                                        <div class="text-lg font-bold text-blue-700">${totalSesiones}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-500">Asistencias</div>
+                                        <div class="text-lg font-bold text-green-700">${asistenciasDelMes}</div>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <div class="text-sm font-medium text-gray-500">Porcentaje</div>
+                                        <div class="flex items-center mt-1">
+                                            <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                                                <div class="h-2.5 rounded-full ${porcentajeAsistencia >= 90 ? 'bg-green-500' : porcentajeAsistencia >= 70 ? 'bg-yellow-500' : porcentajeAsistencia >= 50 ? 'bg-orange-500' : 'bg-red-500'}" 
+                                                     style="width: ${porcentajeAsistencia}%"></div>
+                                            </div>
+                                            <span class="text-sm font-medium">${porcentajeAsistencia}%</span>
+                                        </div>
                                     </div>
                                 </div>
-                            `).join('')
-                            : `<div class="p-4 text-sm italic text-gray-500">No hay cursos registrados</div>`;
-                    }
+                            `;
+                            valoresPendientesElement.className = 'p-3';
+                        }
+                        
+                        // Mostrar lista de sesiones
+                        if (cursosContainer) {
+                            if (sesiones.length > 0) {
+                                cursosContainer.innerHTML = sesiones
+                                    .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+                                    .map(sesion => {
+                                        const fechaSesion = new Date(sesion.fecha);
+                                        const fechaFormateada = fechaSesion.toLocaleDateString('es-EC', {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric'
+                                        });
+                                        
+                                        const asistio = asistencias.some(a => {
+                                            if (!a.fecha_hora) return false;
+                                            // Comparar fechas para verificar si asistió
+                                            const fechaAsistencia = new Date(a.fecha_hora).toLocaleDateString('es-EC');
+                                            const fechaSesion = new Date(sesion.fecha).toLocaleDateString('es-EC');
+                                            
+                                            // También verificar que la hora de la asistencia coincida aproximadamente con la hora de la sesión
+                                            const horaAsistencia = new Date(a.fecha_hora).getHours();
+                                            const horaInicioSesion = parseInt(sesion.hora_inicio?.split(':')[0] || 0, 10);
+                                            const horaFinSesion = parseInt(sesion.hora_fin?.split(':')[0] || 0, 10);
+                                            
+                                            // Si la fecha coincide y la hora está dentro del rango de la sesión
+                                            return fechaAsistencia === fechaSesion && 
+                                                   horaAsistencia >= horaInicioSesion - 1 && 
+                                                   horaAsistencia <= horaFinSesion + 1;
+                                        });
+                                        
+                                        return `
+                                            <div class="curso-item">
+                                                <div class="curso-nombre">${sesion.curso?.nombre || 'Sesión sin curso'}</div>
+                                                <div class="curso-detalles">
+                                                    <div><i class="fas fa-calendar mr-1"></i>${fechaFormateada}</div>
+                                                    <div><i class="fas fa-clock mr-1"></i>${sesion.hora_inicio || ''} - ${sesion.hora_fin || ''}</div>
+                                                    <div class="estado-asistencia ${asistio ? 'estado-presente' : 'estado-ausente'}">
+                                                        ${asistio ? 'Asistió' : 'No asistió'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('');
+                            } else {
+                                cursosContainer.innerHTML = `<div class="p-4 text-sm italic text-gray-500">No hay sesiones registradas este mes</div>`;
+                            }
+                        }
+                    } else {
+                        // Para estudiantes, mostrar matrículas y estado de pagos (código original)
+                        if (cursosContainer) {
+                            cursosContainer.innerHTML = matriculas.length > 0 
+                                ? matriculas.map(matricula => `
+                                    <div class="curso-item">
+                                        <div class="curso-nombre">${matricula.curso?.nombre || 'Curso sin nombre'}</div>
+                                        <div class="curso-detalles">
+                                            <div><i class="fas fa-clock mr-1"></i>${matricula.curso?.horario || 'Horario no definido'}</div>
+                                            <div><i class="fas fa-map-marker-alt mr-1"></i>${matricula.curso?.sede || 'Sede Principal'}</div>
+                                        </div>
+                                    </div>
+                                `).join('')
+                                : `<div class="p-4 text-sm italic text-gray-500">No hay cursos registrados</div>`;
+                        }
+                        
+                        // Actualizar estado de pagos
+                        if (valoresPendientesElement) {
+                            const totalPendiente = matriculas.reduce((total, matricula) => {
+                                return total + (parseFloat(matricula.valor_pendiente) || 0);
+                            }, 0);
 
-                    // Actualizar estado de pagos
-                    const valoresPendientesElement = document.getElementById('valores-pendientes');
-                    if (valoresPendientesElement) {
-                        const totalPendiente = matriculas.reduce((total, matricula) => {
-                            return total + (parseFloat(matricula.valor_pendiente) || 0);
-                        }, 0);
-
-                        valoresPendientesElement.textContent = totalPendiente > 0 ? 'Valores Pendientes' : 'Al Día';
-                        valoresPendientesElement.className = `estado-pago ${totalPendiente > 0 ? 'pendiente' : 'al-dia'}`;
+                            valoresPendientesElement.textContent = totalPendiente > 0 ? 'Valores Pendientes' : 'Al Día';
+                            valoresPendientesElement.className = `estado-pago ${totalPendiente > 0 ? 'pendiente' : 'al-dia'}`;
+                        }
                     }
 
                     // Asegurarse de que el contenedor esté visible
