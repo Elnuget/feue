@@ -47,11 +47,10 @@
             object-fit: cover;
             display: block;
             margin: 5mm auto 0;
-            border: 2px solid #ffffff;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3); /* Sombra sutil */
+            border: 2px solid #ffffff; /* Add border to the photo */
+            border-radius: 4px; /* Optional: add rounded corners */
         }
-
+        
         .text-center {
             text-align: center;
             margin: 0;
