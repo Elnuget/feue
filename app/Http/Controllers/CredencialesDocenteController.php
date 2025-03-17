@@ -16,8 +16,22 @@ class CredencialesDocenteController extends Controller
     /**
      * Mostrar lista de credenciales de docentes
      */
-    public function index()
+    public function index(Request $request)
     {
+        // Obtener parámetro de filtro de mes en formato YYYY-MM
+        // Si no hay parámetro, usar el mes actual por defecto
+        $mes = $request->input('mes', now()->format('Y-m'));
+        
+        // Extraer mes y año del parámetro
+        $month = null;
+        $year = null;
+        
+        $dateParts = explode('-', $mes);
+        if (count($dateParts) == 2) {
+            $year = $dateParts[0];
+            $month = $dateParts[1];
+        }
+
         // Obtener todos los usuarios con rol de docente
         $docentes = User::whereHas('roles', function($query) {
             $query->where('name', 'Docente');
@@ -25,11 +39,26 @@ class CredencialesDocenteController extends Controller
 
         // Para cada docente, obtener información adicional
         foreach ($docentes as $docente) {
-            // Número total de sesiones impartidas
-            $docente->total_sesiones = SesionDocente::where('user_id', $docente->id)->count();
+            // Consulta base para sesiones
+            $sesionesQuery = SesionDocente::where('user_id', $docente->id);
             
-            // Número total de asistencias registradas
-            $docente->total_asistencias = AsistenciaDocente::where('user_id', $docente->id)->count();
+            // Consulta base para asistencias
+            $asistenciasQuery = AsistenciaDocente::where('user_id', $docente->id);
+            
+            // Aplicar filtros de mes y año
+            if ($month && $year) {
+                $sesionesQuery->whereMonth('fecha', $month)
+                             ->whereYear('fecha', $year);
+                             
+                $asistenciasQuery->whereMonth('fecha', $month)
+                                ->whereYear('fecha', $year);
+            }
+            
+            // Número total de sesiones impartidas con filtros
+            $docente->total_sesiones = $sesionesQuery->count();
+            
+            // Número total de asistencias registradas con filtros
+            $docente->total_asistencias = $asistenciasQuery->count();
             
             // Porcentaje de asistencia
             if ($docente->total_sesiones > 0) {
@@ -38,13 +67,13 @@ class CredencialesDocenteController extends Controller
                 $docente->porcentaje_asistencia = 0;
             }
             
-            // Última sesión impartida
+            // Consulta para la última sesión (siempre se muestra la más reciente independientemente del filtro)
             $docente->ultima_sesion = SesionDocente::where('user_id', $docente->id)
                 ->orderBy('fecha', 'desc')
                 ->first();
         }
 
-        return view('credenciales-docentes.index', compact('docentes'));
+        return view('credenciales-docentes.index', compact('docentes', 'mes'));
     }
 
     /**

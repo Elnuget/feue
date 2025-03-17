@@ -1,5 +1,20 @@
 <x-app-layout>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>
+        // Redirigir a la URL con el filtro por defecto si no hay ningún filtro aplicado
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar si estamos en la URL base sin parámetros
+            const urlParams = new URLSearchParams(window.location.search);
+            if (!urlParams.has('mes')) {
+                const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+                const newUrl = `{{ route('credenciales-docentes.index') }}?mes=${currentMonth}`;
+                // Solo redirigir si realmente estamos en la URL base
+                if (window.location.href.split('?')[0] === '{{ route('credenciales-docentes.index') }}') {
+                    window.location.href = newUrl;
+                }
+            }
+        });
+    </script>
     <x-slot name="header">
         <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
             {{ __('Credenciales Docentes') }}
@@ -41,6 +56,35 @@
                                 </a>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filtro de mes -->
+            <div class="mb-6 overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
+                <div class="p-4">
+                    <form action="{{ route('credenciales-docentes.index') }}" method="GET" class="flex items-center space-x-4">
+                        <div class="flex-1">
+                            <x-input-label for="mes" value="{{ __('Filtrar por Mes') }}" />
+                            <input 
+                                type="month" 
+                                id="mes" 
+                                name="mes" 
+                                class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                value="{{ request('mes', now()->format('Y-m')) }}"
+                            >
+                        </div>
+                        <div class="flex items-end space-x-2">
+                            <x-primary-button type="submit" class="mb-1">
+                                {{ __('Filtrar') }}
+                            </x-primary-button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-3 text-sm text-gray-600 dark:text-gray-400">
+                        @if($mes)
+                            {{ __('Mostrando datos de:') }} {{ \Carbon\Carbon::createFromFormat('Y-m', $mes)->translatedFormat('F Y') }}
+                        @endif
                     </div>
                 </div>
             </div>
@@ -202,6 +246,14 @@
                 const isChecked = this.checked;
                 rowCheckboxes.forEach(checkbox => checkbox.checked = isChecked);
             });
+
+            // Filtro de mes - submit automático al cambiar
+            const mesInput = document.getElementById('mes');
+            if (mesInput) {
+                mesInput.addEventListener('change', function() {
+                    this.closest('form').submit();
+                });
+            }
 
             // Impresión de credenciales
             const printCredentialsButton = document.getElementById('print-credentials');
