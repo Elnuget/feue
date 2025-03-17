@@ -20,6 +20,7 @@ use App\Http\Controllers\AsistenciaDocenteController;
 use App\Http\Controllers\CuestionarioController;
 use App\Http\Controllers\TareaController;
 use App\Http\Controllers\EntregaController;
+use App\Http\Controllers\CredencialesDocenteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -151,7 +152,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/cuestionarios/{cuestionario}/preguntas', [CuestionarioController::class, 'obtenerPreguntas'])
          ->name('cuestionarios.preguntas.index');
 
-    Route::get('/asistencias/usuario/{userId}', [AsistenciaController::class, 'showUserAttendance'])->name('asistencias.usuario');
+    Route::get('/asistencias/usuario/{user}', [AsistenciaController::class, 'usuarioAsistencias'])->name('asistencias.usuario');
 });
 
 // Rutas para cuestionarios
@@ -228,5 +229,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/tareas/{tarea}/entregas/{entrega}/calificar', [EntregaController::class, 'calificar'])->name('tareas.calificar');
     Route::get('/tareas/{tarea}/entregas', [EntregaController::class, 'obtenerEntregas'])->name('tareas.entregas');
 });
+
+// Rutas para credenciales docentes
+Route::get('/credenciales-docentes', [CredencialesDocenteController::class, 'index'])->name('credenciales-docentes.index');
+Route::get('/credenciales-docentes/{id}', [CredencialesDocenteController::class, 'show'])->name('credenciales-docentes.show');
 
 require __DIR__.'/auth.php';

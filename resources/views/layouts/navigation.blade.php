@@ -42,6 +42,9 @@
             <x-nav-link :href="route('asistencias-docentes.index')" :active="request()->routeIs('asistencias-docente.*')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
                 ✅ {{ __('Asistencias Docentes') }}
             </x-nav-link>
+            <x-nav-link :href="route('credenciales-docentes.index')" :active="request()->routeIs('credenciales-docentes.*')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+                🆔 {{ __('Credenciales Docentes') }}
+            </x-nav-link>
         @endif
         <!-- Asistencias Estudiante - Solo visible para Admin -->
         @if(auth()->user()->hasRole(1))
