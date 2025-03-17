@@ -21,6 +21,21 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
+        /* Ocultar la tarjeta de asistencias para docentes */
+        .tarjeta-info.asistencias.ocultar-para-docente {
+            display: none;
+        }
+
+        /* Cuando es docente, modificar el layout */
+        .info-destacada.modo-docente {
+            grid-template-columns: 1fr;
+        }
+
+        /* La tarjeta de estadísticas ocupa todo el ancho en modo docente */
+        .info-destacada.modo-docente .tarjeta-info {
+            width: 100%;
+        }
+
         @media (min-width: 768px) {
             .tarjeta-contenedor {
                 padding: 0.75rem;
@@ -683,7 +698,38 @@
                     // Actualizar nombre de usuario
                     const userNameElement = document.getElementById('user-name');
                     if (userNameElement && user.name) {
-                        userNameElement.textContent = user.name;
+                        // Mostrar el nombre y un badge de rol si es docente
+                        if (esDocente) {
+                            userNameElement.innerHTML = `
+                                ${user.name} 
+                                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                    Docente
+                                </span>
+                            `;
+                        } else {
+                            userNameElement.textContent = user.name;
+                        }
+                        userNameElement.dataset.esDocente = esDocente.toString();
+                    }
+                    
+                    // Ocultar/mostrar la tarjeta de asistencias según el tipo de usuario
+                    const tarjetaAsistencias = document.querySelector('.tarjeta-info.asistencias');
+                    if (tarjetaAsistencias) {
+                        if (esDocente) {
+                            tarjetaAsistencias.classList.add('ocultar-para-docente');
+                        } else {
+                            tarjetaAsistencias.classList.remove('ocultar-para-docente');
+                        }
+                    }
+                    
+                    // Aplicar clase modo-docente al contenedor de información destacada
+                    const infoDestacada = document.querySelector('.info-destacada');
+                    if (infoDestacada) {
+                        if (esDocente) {
+                            infoDestacada.classList.add('modo-docente');
+                        } else {
+                            infoDestacada.classList.remove('modo-docente');
+                        }
                     }
                     
                     // Actualizar foto de perfil
@@ -725,15 +771,30 @@
                         const ultimaSalida = document.getElementById('ultima-salida');
                         
                         if (ultimaFecha) {
-                            ultimaFecha.textContent = new Date(ultima.fecha_hora).toLocaleDateString('es-EC', options);
+                            // Usar fecha o fecha_hora dependiendo del tipo de usuario
+                            const fechaAsistencia = esDocente ? ultima.fecha : ultima.fecha_hora;
+                            ultimaFecha.textContent = new Date(fechaAsistencia).toLocaleDateString('es-EC', options);
                         }
                         if (ultimaEntrada) {
+                            // Usar hora_entrada directamente para ambos tipos de usuarios
                             ultimaEntrada.textContent = ultima.hora_entrada ? 
                                 new Date(ultima.hora_entrada).toLocaleTimeString('es-EC', timeOptions) : '-';
                         }
                         if (ultimaSalida) {
-                            ultimaSalida.textContent = ultima.hora_salida ? 
-                                new Date(ultima.hora_salida).toLocaleTimeString('es-EC', timeOptions) : '-';
+                            if (esDocente) {
+                                // Para docentes, no mostramos hora de salida
+                                ultimaSalida.textContent = '-';
+                                
+                                // Cambiamos el título para mostrar solo "Entrada"
+                                const entradaSalidaLabel = ultimaSalida.parentElement?.previousElementSibling;
+                                if (entradaSalidaLabel) {
+                                    entradaSalidaLabel.textContent = 'Entrada';
+                                }
+                            } else {
+                                // Para estudiantes, mostramos hora de salida normalmente
+                                ultimaSalida.textContent = ultima.hora_salida ? 
+                                    new Date(ultima.hora_salida).toLocaleTimeString('es-EC', timeOptions) : '-';
+                            }
                         }
                     }
 
@@ -755,9 +816,15 @@
                         // Actualizar la sección de pagos a información de asistencias
                         if (valoresPendientesElement) {
                             const totalSesiones = sesiones.length || 0;
+                            
+                            // Asistencias del docente en el mes actual
+                            // En este caso, las asistencias para docentes vienen directamente como asistencias en la respuesta
                             const asistenciasDelMes = asistencias.filter(a => {
-                                if (!a.fecha_hora) return false;
-                                const fechaAsistencia = new Date(a.fecha_hora);
+                                // Verificar si los datos de asistencia vienen con fecha o fecha_hora
+                                const fechaAsistencia = a.fecha ? new Date(a.fecha) : 
+                                                      (a.fecha_hora ? new Date(a.fecha_hora) : null);
+                                if (!fechaAsistencia) return false;
+                                
                                 const mesAsistencia = `${fechaAsistencia.getFullYear()}-${String(fechaAsistencia.getMonth() + 1).padStart(2, '0')}`;
                                 return mesAsistencia === currentMonth;
                             }).length;
@@ -799,6 +866,9 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="mt-3 border-t pt-2 text-sm text-blue-800 bg-blue-50 p-2 rounded">
+                                    <i class="fas fa-info-circle mr-1"></i> Los docentes pueden registrar múltiples asistencias durante el día.
+                                </div>
                             `;
                             valoresPendientesElement.className = 'p-3';
                         }
@@ -816,22 +886,42 @@
                                             day: 'numeric'
                                         });
                                         
-                                        const asistio = asistencias.some(a => {
-                                            if (!a.fecha_hora) return false;
-                                            // Comparar fechas para verificar si asistió
-                                            const fechaAsistencia = new Date(a.fecha_hora).toLocaleDateString('es-EC');
-                                            const fechaSesion = new Date(sesion.fecha).toLocaleDateString('es-EC');
+                                        // Filtrar todas las asistencias para esta sesión (puede haber múltiples en un día)
+                                        const asistenciasSesion = asistencias.filter(a => {
+                                            // Obtener la fecha de la asistencia según su estructura
+                                            const fechaAsistencia = a.fecha ? 
+                                                new Date(a.fecha).toLocaleDateString('es-EC') : 
+                                                (a.fecha_hora ? new Date(a.fecha_hora).toLocaleDateString('es-EC') : null);
                                             
-                                            // También verificar que la hora de la asistencia coincida aproximadamente con la hora de la sesión
-                                            const horaAsistencia = new Date(a.fecha_hora).getHours();
-                                            const horaInicioSesion = parseInt(sesion.hora_inicio?.split(':')[0] || 0, 10);
-                                            const horaFinSesion = parseInt(sesion.hora_fin?.split(':')[0] || 0, 10);
+                                            if (!fechaAsistencia) return false;
                                             
-                                            // Si la fecha coincide y la hora está dentro del rango de la sesión
-                                            return fechaAsistencia === fechaSesion && 
-                                                   horaAsistencia >= horaInicioSesion - 1 && 
-                                                   horaAsistencia <= horaFinSesion + 1;
+                                            // Fecha de la sesión para comparar
+                                            const fechaSesionStr = fechaSesion.toLocaleDateString('es-EC');
+                                            
+                                            // Verificar que las fechas coincidan
+                                            return fechaAsistencia === fechaSesionStr;
                                         });
+                                        
+                                        // Verificar si asistió al menos una vez
+                                        const asistio = asistenciasSesion.length > 0;
+                                        
+                                        // Obtener horas de entrada como string
+                                        let horasEntrada = '';
+                                        if (asistenciasSesion.length > 0) {
+                                            horasEntrada = asistenciasSesion
+                                                .map(a => {
+                                                    const horaObj = a.hora_entrada ? 
+                                                        new Date(a.hora_entrada) : null;
+                                                    return horaObj ? 
+                                                        horaObj.toLocaleTimeString('es-EC', {
+                                                            hour: '2-digit',
+                                                            minute: '2-digit',
+                                                            hour12: false
+                                                        }) : '';
+                                                })
+                                                .filter(h => h) // Eliminar valores vacíos
+                                                .join(', ');
+                                        }
                                         
                                         return `
                                             <div class="curso-item">
@@ -840,8 +930,15 @@
                                                     <div><i class="fas fa-calendar mr-1"></i>${fechaFormateada}</div>
                                                     <div><i class="fas fa-clock mr-1"></i>${sesion.hora_inicio || ''} - ${sesion.hora_fin || ''}</div>
                                                     <div class="estado-asistencia ${asistio ? 'estado-presente' : 'estado-ausente'}">
-                                                        ${asistio ? 'Asistió' : 'No asistió'}
+                                                        ${asistio 
+                                                            ? `Asistió ${asistenciasSesion.length > 1 
+                                                                ? `(${asistenciasSesion.length} entradas)` 
+                                                                : ''}`
+                                                            : 'No asistió'}
                                                     </div>
+                                                    ${horasEntrada ? 
+                                                        `<div class="mt-1 text-xs text-gray-600"><i class="fas fa-sign-in-alt mr-1"></i>Entradas: ${horasEntrada}</div>` 
+                                                        : ''}
                                                 </div>
                                             </div>
                                         `;
@@ -967,12 +1064,15 @@
                     
                     // Personalizar mensaje según tipo (entrada/salida)
                     if (data.success) {
+                        // Obtener si el usuario es docente del modelo user
+                        const esDocente = document.getElementById('user-name')?.dataset?.esDocente === 'true';
+
                         // Ajustar clase y estilo según el tipo de registro
                         if (data.tipo === 'entrada') {
                             resultDiv.className = 'px-4 py-3 text-center text-green-700 bg-green-100 dark:bg-green-900 dark:text-green-100 font-semibold rounded-b';
                             resultDiv.innerHTML = `
                                 <div class="text-lg">¡Bienvenido, ${userName}!</div>
-                                <div class="text-sm mt-1">Asistencia registrada correctamente</div>
+                                <div class="text-sm mt-1">${esDocente ? 'Asistencia docente registrada correctamente' : 'Asistencia registrada correctamente'}</div>
                             `;
                         } else {
                             resultDiv.className = 'px-4 py-3 text-center text-blue-700 bg-blue-100 dark:bg-blue-900 dark:text-blue-100 font-semibold rounded-b';

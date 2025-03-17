@@ -192,6 +192,12 @@ class AsistenciaController extends Controller
                 ], 404);
             }
 
+            // Verificar si el usuario es docente
+            if ($user->hasRole('Docente')) {
+                return $this->registrarAsistenciaDocente($user, $horaActual);
+            }
+
+            // Si no es docente, continuar con el flujo normal para estudiantes
             // Buscar la última asistencia del usuario
             $ultimaAsistencia = Asistencia::where('user_id', $userId)
                 ->latest('fecha_hora')
@@ -249,16 +255,68 @@ class AsistenciaController extends Controller
                     'tipo' => 'salida'
                 ]);
             }
-
+            
             return response()->json([
                 'success' => false,
-                'message' => 'No se pudo determinar el tipo de registro'
-            ]);
-
+                'message' => 'Error al procesar la asistencia'
+            ], 400);
+            
         } catch (\Exception $e) {
+            \Log::error('Error al registrar asistencia: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error al procesar la asistencia: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Registra la asistencia de un docente
+     */
+    private function registrarAsistenciaDocente($user, $horaActual)
+    {
+        try {
+            // Obtener la fecha actual en formato Y-m-d
+            $fechaActual = $horaActual->format('Y-m-d');
+            
+            // Ya no verificamos si hay asistencia previa en el día, permitiendo múltiples registros
+            
+            // Buscar si existe una sesión programada para hoy
+            $sesion = \App\Models\SesionDocente::where('user_id', $user->id)
+                ->whereDate('fecha', $fechaActual)
+                ->first();
+                
+            // Determinar si es tarde según la hora de inicio de la sesión
+            $estado = 'Presente';
+            if ($sesion) {
+                $horaInicioSesion = Carbon::parse($fechaActual . ' ' . $sesion->hora_inicio);
+                // Si llega más de 15 minutos tarde
+                if ($horaActual->gt($horaInicioSesion->copy()->addMinutes(15))) {
+                    $estado = 'Tarde';
+                }
+            }
+            
+            // Crear la asistencia del docente
+            $asistencia = \App\Models\AsistenciaDocente::create([
+                'user_id' => $user->id,
+                'fecha' => $fechaActual,
+                'hora_entrada' => $horaActual,
+                'estado' => $estado,
+                'sesion_docente_id' => $sesion ? $sesion->id : null,
+                'observaciones' => 'Registro mediante escaneo de QR'
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Asistencia docente registrada: ' . $horaActual->format('H:i'),
+                'tipo' => 'entrada'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error al registrar asistencia de docente: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar la asistencia de docente: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -425,13 +483,29 @@ class AsistenciaController extends Controller
     {
         $user = User::with('profile')->findOrFail($userId);
         
-        // Obtener todas las asistencias del usuario
-        $asistencias = Asistencia::where('user_id', $userId)
-            ->orderBy('fecha_hora', 'desc')
-            ->get();
+        // Verificar si el usuario es docente
+        $esDocente = $user->hasRole('Docente');
+        
+        if ($esDocente) {
+            // Para docentes, obtener asistencias de la tabla asistencias_docentes
+            $asistencias = \App\Models\AsistenciaDocente::where('user_id', $userId)
+                ->orderBy('fecha', 'desc')
+                ->orderBy('hora_entrada', 'desc')
+                ->get()
+                ->map(function($item) {
+                    // Adaptar el formato para que sea compatible con el que espera la vista
+                    $item->fecha_hora = $item->hora_entrada;
+                    return $item;
+                });
+        } else {
+            // Para estudiantes, obtener asistencias de la tabla asistencias (comportamiento original)
+            $asistencias = Asistencia::where('user_id', $userId)
+                ->orderBy('fecha_hora', 'desc')
+                ->get();
+        }
             
         // Procesar los horarios y asistencias de cada curso
-        $matriculasConHorarios = collect($user->matriculas)->map(function($matricula) use ($asistencias) {
+        $matriculasConHorarios = collect($user->matriculas)->map(function($matricula) use ($asistencias, $esDocente) {
             $horario = $matricula->curso->horario;
             return [
                 'matricula' => $matricula,
@@ -442,14 +516,18 @@ class AsistenciaController extends Controller
         
         // Agrupar asistencias por mes para el calendario
         $asistenciasPorMes = $asistencias->groupBy(function($asistencia) {
-            return $asistencia->fecha_hora->format('Y-m');
+            // Usar fecha o fecha_hora dependiendo de qué campo esté disponible
+            return $asistencia->fecha_hora ? 
+                $asistencia->fecha_hora->format('Y-m') : 
+                $asistencia->fecha->format('Y-m');
         });
 
         return view('asistencias.user-attendance', compact(
             'user',
             'asistencias',
             'asistenciasPorMes',
-            'matriculasConHorarios'
+            'matriculasConHorarios',
+            'esDocente'
         ));
     }
 }

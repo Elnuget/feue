@@ -192,10 +192,28 @@ class UserController extends Controller
             $esDocente = $user->hasRole('Docente');
             Log::info('El usuario es docente: ' . ($esDocente ? 'Sí' : 'No'));
 
-            // Obtener asistencias
-            $asistencias = Asistencia::where('user_id', $id)
-                                   ->orderBy('fecha_hora', 'desc')
-                                   ->get();
+            // Obtener asistencias según el tipo de usuario
+            if ($esDocente) {
+                // Para docentes, obtener asistencias de la tabla asistencias_docentes
+                $asistencias = \App\Models\AsistenciaDocente::where('user_id', $id)
+                    ->orderBy('fecha', 'desc')
+                    ->orderBy('hora_entrada', 'desc')
+                    ->get()
+                    ->map(function($asistencia) {
+                        // Adaptar el formato para que sea compatible con lo que espera el frontend
+                        return [
+                            'id' => $asistencia->id,
+                            'fecha' => $asistencia->fecha,
+                            'hora_entrada' => $asistencia->hora_entrada,
+                            'estado' => $asistencia->estado
+                        ];
+                    });
+            } else {
+                // Para estudiantes, obtener asistencias de la tabla asistencias (comportamiento original)
+                $asistencias = Asistencia::where('user_id', $id)
+                    ->orderBy('fecha_hora', 'desc')
+                    ->get();
+            }
 
             Log::info('Asistencias encontradas: ' . $asistencias->count());
 
@@ -222,14 +240,7 @@ class UserController extends Controller
                         'photo' => $profile->photo ? asset('storage/' . $profile->photo) : null
                     ] : null
                 ],
-                'asistencias' => $asistencias->map(function($asistencia) {
-                    return [
-                        'id' => $asistencia->id,
-                        'fecha_hora' => $asistencia->fecha_hora,
-                        'hora_entrada' => $asistencia->hora_entrada,
-                        'hora_salida' => $asistencia->hora_salida
-                    ];
-                })->values(),
+                'asistencias' => $asistencias->values(),
                 'matriculas' => $matriculas->map(function($matricula) {
                     return [
                         'id' => $matricula->id,
