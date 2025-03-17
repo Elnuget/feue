@@ -1,4 +1,5 @@
 <x-app-layout>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <x-slot name="header">
         <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
             {{ __('Credenciales Docentes') }}
@@ -214,10 +215,32 @@
                     const url = `{{ route('credenciales-docentes.print') }}?ids=${selectedIds.join(',')}`;
                     window.open(url, '_blank');
                     
-                    // Recargar la página después de imprimir
-                    setTimeout(() => {
+                    // Actualizar el estado de las credenciales mediante AJAX
+                    fetch(`{{ route('credenciales-docentes.updateStatus') }}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            ids: selectedIds,
+                            status: 'Entregado'
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Recargar la página después de actualizar
+                            window.location.reload();
+                        } else {
+                            console.error('Error al actualizar el estado:', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error en la solicitud:', error);
+                        // Recargar la página de todos modos
                         window.location.reload();
-                    }, 1000);
+                    });
                 } else {
                     alert('Por favor, seleccione al menos un docente.');
                 }

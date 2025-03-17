@@ -91,9 +91,17 @@ class CredencialesDocenteController extends Controller
                 ->encoding('UTF-8')
                 ->generate($qrUrl));
             
-            // Marcar la credencial como entregada
+            // Marcar la credencial como entregada (actualización más explícita)
             if ($docente->profile) {
-                $docente->profile->update(['carnet' => 'Entregado']);
+                $docente->profile->carnet = 'Entregado';
+                $docente->profile->save();
+            } else {
+                // Si no tiene perfil, crear uno
+                $profile = new \App\Models\UserProfile([
+                    'user_id' => $docente->id,
+                    'carnet' => 'Entregado'
+                ]);
+                $profile->save();
             }
         }
         
@@ -101,5 +109,44 @@ class CredencialesDocenteController extends Controller
         $pdf->setPaper([0, 0, 153.014, 242.646]); // Tamaño de tarjeta de crédito en puntos (53.975mm x 85.725mm)
         
         return $pdf->stream('credenciales_docentes.pdf');
+    }
+
+    /**
+     * Actualizar el estado de las credenciales a "Entregado"
+     */
+    public function updateStatus(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'status' => 'required|string'
+        ]);
+
+        $ids = $request->input('ids');
+        $status = $request->input('status');
+        
+        $docentes = User::whereIn('id', $ids)->get();
+        $updated = 0;
+        
+        foreach ($docentes as $docente) {
+            if ($docente->profile) {
+                $docente->profile->carnet = $status;
+                $docente->profile->save();
+                $updated++;
+            } else {
+                // Si no tiene perfil, crear uno
+                $profile = new \App\Models\UserProfile([
+                    'user_id' => $docente->id,
+                    'carnet' => $status
+                ]);
+                $profile->save();
+                $updated++;
+            }
+        }
+        
+        return response()->json([
+            'success' => true,
+            'message' => "{$updated} credenciales actualizadas correctamente",
+            'updated_count' => $updated
+        ]);
     }
 }
