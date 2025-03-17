@@ -81,7 +81,7 @@
             text-align: center;
         }
 
-        .qr-container img {
+        .qr-container img, .qr-image {
             width: 18mm;
             height: 18mm;
             object-fit: contain;
@@ -89,6 +89,8 @@
             padding: 1mm;
             background-color: rgba(255,255,255,0.8); /* Fondo semi-transparente */
             border-radius: 2mm; /* Esquinas redondeadas */
+            margin: 0 auto;
+            display: block;
         }
 
         .vertical-text {
@@ -141,7 +143,8 @@
             bottom: 2mm;
             right: 2mm;
             width: 15mm;
-            height: auto;
+            height: 15mm; /* Altura fija */
+            object-fit: contain; /* Mantiene proporción sin distorsión */
             opacity: 0.9; /* Ligeramente transparente */
         }
     </style>
@@ -193,7 +196,7 @@
             @if(isset($qrCodes[$docente->id]))
                 <img src="data:image/png;base64,{{ $qrCodes[$docente->id] }}" 
                      alt="QR Code" 
-                     style="width: 18mm; height: 18mm; margin: 0 auto;">
+                     class="qr-image">
             @endif
         </div>
 
