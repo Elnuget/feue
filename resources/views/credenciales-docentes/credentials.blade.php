@@ -47,8 +47,9 @@
             object-fit: cover;
             display: block;
             margin: 5mm auto 0;
-            border: 2px solid #ffffff; /* Add border to the photo */
-            border-radius: 4px; /* Optional: add rounded corners */
+            border: 2px solid #ffffff;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3); /* Sombra sutil */
         }
 
         .text-center {
@@ -59,22 +60,24 @@
 
         .user-info {
             margin-top: 2mm;
-            line-height: 1.2;
+            line-height: 1.3; /* Aumentado ligeramente */
         }
 
         .user-info p {
-            margin: 1px 0;
+            margin: 2px 0; /* Aumentado desde 1px */
             padding: 0;
-            text-align: center; /* Center the text */
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Sombra de texto para legibilidad */
         }
 
         .user-info .user-name {
             font-size: 10px;
-            font-style: italic; /* Add italic style */
+            font-style: italic;
+            font-weight: 500; /* Un poco más pronunciado */
         }
 
         .qr-container {
-            margin-top: 4mm;
+            margin-top: 3mm;
             text-align: center;
         }
 
@@ -82,31 +85,37 @@
             width: 18mm;
             height: 18mm;
             object-fit: contain;
+            border: 1px solid rgba(255,255,255,0.3); /* Borde sutil */
+            padding: 1mm;
+            background-color: rgba(255,255,255,0.8); /* Fondo semi-transparente */
+            border-radius: 2mm; /* Esquinas redondeadas */
         }
 
         .vertical-text {
             position: absolute;
-            top: 50%; /* Asegura que el texto comience en el centro vertical */
-            left: -15mm; /* Ajusta la distancia desde el borde izquierdo */
-            transform: translateY(-50%) rotate(-90deg); /* Centrado y rotación de -90° */
-            transform-origin: center; /* Punto de anclaje en el centro del texto */
-            font-size: 10px; /* Tamaño de fuente */
-            font-weight: bold; /* Negrita para mejor visibilidad */
-            color: #ffffff; /* Blanco, asegurando contraste */
-            letter-spacing: 1px; /* Espaciado para legibilidad */
-            text-align: center; /* Center the text */
+            top: 50%;
+            left: -15mm;
+            transform: translateY(-50%) rotate(-90deg);
+            transform-origin: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #ffffff;
+            letter-spacing: 1.2px; /* Ligeramente aumentado */
+            text-align: center;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Sombra para mejor legibilidad */
         }
 
         .vertical-date {
             position: absolute;
-            top: 50%; /* Asegura que el texto comience en el centro vertical */
-            right: calc(-15mm - 6px); /* Ajusta la distancia desde el borde derecho */
-            transform: translateY(-50%) rotate(90deg); /* Centrado y rotación de 90° */
-            transform-origin: center; /* Punto de anclaje en el centro del texto */
-            font-size: 10px; /* Tamaño de fuente */
-            font-weight: bold; /* Negrita para mejor visibilidad */
-            color: #ffffff; /* Blanco, asegurando contraste */
-            letter-spacing: 1px; /* Espaciado para legibilidad */
+            top: 50%;
+            right: calc(-15mm - 6px);
+            transform: translateY(-50%) rotate(90deg);
+            transform-origin: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #ffffff;
+            letter-spacing: 1.2px; /* Ligeramente aumentado */
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Sombra para mejor legibilidad */
         }
 
         .docente-badge {
@@ -117,9 +126,20 @@
             color: white;
             font-weight: bold;
             font-size: 8px;
-            padding: 1mm 2mm;
+            padding: 1.5mm 2.5mm; /* Ligeramente más grande */
             border-radius: 2mm;
             transform: rotate(15deg);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3); /* Sombra sutil */
+        }
+        
+        /* Nuevo estilo para el logo institucional */
+        .institution-logo {
+            position: absolute;
+            bottom: 2mm;
+            right: 2mm;
+            width: 15mm;
+            height: auto;
+            opacity: 0.9; /* Ligeramente transparente */
         }
     </style>
 </head>
@@ -150,8 +170,8 @@
                     class="profile-photo"
                 />
             @else
-                <div style="width: 22mm; height: 30mm; border: 1px solid #000; margin: 5mm auto 0; display: flex; align-items: center; justify-content: center;">
-                    <span style="font-size: 24px;">👤</span>
+                <div style="width: 22mm; height: 30mm; border: 1px solid #fff; margin: 5mm auto 0; display: flex; align-items: center; justify-content: center; background-color: rgba(255,255,255,0.1); border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    <span style="font-size: 28px;">👤</span>
                 </div>
             @endif
         </div>
@@ -162,7 +182,7 @@
             $firstLine = implode(' ', array_slice($parts, 0, 2));
             $secondLine = implode(' ', array_slice($parts, 2));
             @endphp
-            <p><strong style="color: #ffffff;">Carnet de Docente</strong><br><span class="user-name" style="color: #ffffff;">{{ $firstLine }}<br>{{ $secondLine }}</span></p>
+            <p><strong style="color: #ffffff; font-size: 11px;">Carnet de Docente</strong><br><span class="user-name" style="color: #ffffff;">{{ $firstLine }}<br>{{ $secondLine }}</span></p>
             <p><strong style="color: #ffffff;"></strong><br><span style="color: #ffffff;">{{ $docente->profile->cedula ?? 'N/A' }}</span></p>
         </div>
 
@@ -181,8 +201,13 @@
         <div class="vertical-date">
             <strong>{{ __('Fecha de Emisión:') }} {{ now()->format('Y-m-d') }}</strong>
         </div>
+        
+        <!-- Logo institucional (si está disponible en la imagen) -->
+        @if(isset($institucionalLogo))
+            <img src="{{ $institucionalLogo }}" alt="Logo" class="institution-logo">
+        @endif
     </div>
 @endforeach
 
 </body>
-</html> 
+</html>
