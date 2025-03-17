@@ -371,6 +371,10 @@
             color: white;
             font-size: 0.875rem;
             display: none;
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
         @media (min-width: 768px) {
@@ -486,34 +490,39 @@
                                 <span class="text-2xl text-gray-600">👤</span>
                             </div>
 
-                            <!-- Información Destacada -->
-                            <div class="info-destacada">
-                                <!-- Asistencias -->
-                                <div class="tarjeta-info asistencias">
-                                    <h3 class="text-lg font-semibold text-blue-900">Asistencias Registradas</h3>
-                                    <div class="numero-grande" id="numero-asistencias">0</div>
-                                    <div class="ultima-asistencia">
-                                        <div class="ultima-asistencia-titulo">Última Asistencia</div>
-                                        <div class="ultima-asistencia-detalles">
-                                            <div>
-                                                <div class="font-medium">Fecha</div>
-                                                <div id="ultima-fecha">-</div>
-                                            </div>
-                                            <div>
-                                                <div class="font-medium">Entrada/Salida</div>
+                            <div class="w-full">
+                                <!-- Nombre del Usuario -->
+                                <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-3 user-name" id="user-name">Usuario</h2>
+                                
+                                <!-- Información Destacada -->
+                                <div class="info-destacada">
+                                    <!-- Asistencias -->
+                                    <div class="tarjeta-info asistencias">
+                                        <h3 class="text-lg font-semibold text-blue-900">Asistencias Registradas</h3>
+                                        <div class="numero-grande" id="numero-asistencias">0</div>
+                                        <div class="ultima-asistencia">
+                                            <div class="ultima-asistencia-titulo">Última Asistencia</div>
+                                            <div class="ultima-asistencia-detalles">
                                                 <div>
-                                                    <span id="ultima-entrada">-</span> /
-                                                    <span id="ultima-salida">-</span>
+                                                    <div class="font-medium">Fecha</div>
+                                                    <div id="ultima-fecha">-</div>
+                                                </div>
+                                                <div>
+                                                    <div class="font-medium">Entrada/Salida</div>
+                                                    <div>
+                                                        <span id="ultima-entrada">-</span> /
+                                                        <span id="ultima-salida">-</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <!-- Pagos -->
-                                <div class="tarjeta-info pagos">
-                                    <h3 class="text-lg font-semibold text-red-900">Estado de Pagos</h3>
-                                    <div id="valores-pendientes" class="estado-pago">-</div>
+                                    <!-- Pagos -->
+                                    <div class="tarjeta-info pagos">
+                                        <h3 class="text-lg font-semibold text-red-900">Estado de Pagos</h3>
+                                        <div id="valores-pendientes" class="estado-pago">-</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -588,78 +597,90 @@
             });
 
             function cargarInformacionUsuario(userId) {
-                if (!userId) {
-                    const datosUsuario = document.getElementById('datos-usuario');
-                    if (datosUsuario) {
-                        datosUsuario.classList.add('hidden');
-                    }
-                    return;
-                }
-
-                // Restaurar la estructura HTML original
-                const datosUsuario = document.getElementById('datos-usuario');
-                if (!datosUsuario) {
-                    console.error('Elemento datos-usuario no encontrado');
-                    return;
-                }
-
-                // Guardar la estructura HTML original si no está guardada
-                if (!window.estructuraOriginal) {
-                    window.estructuraOriginal = datosUsuario.innerHTML;
-                }
-
-                // Mostrar loading
-                datosUsuario.classList.remove('hidden');
-                datosUsuario.innerHTML = `
-                    <div class="flex items-center justify-center p-4">
-                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                        <span class="ml-2">Cargando información...</span>
-                    </div>
-                `;
-
-                // Cargar datos del usuario mediante AJAX
-                fetch(`{{ route('usuarios.info', ['id' => ':id']) }}`.replace(':id', userId))
-                    .then(response => {
-                        console.log('Status:', response.status); // Debug
-                        return response.json().then(data => {
-                            if (!response.ok) {
-                                throw new Error(data.error || 'Error del servidor');
-                            }
-                            return data;
-                        });
-                    })
-                    .then(data => {
-                        console.log('Datos recibidos:', data);
-                        if (!data.user) {
-                            throw new Error('No se recibieron datos del usuario');
-                        }
-                        // Restaurar estructura original antes de actualizar
-                        datosUsuario.innerHTML = window.estructuraOriginal;
-                        actualizarInterfazUsuario(data);
-                    })
-                    .catch(error => {
-                        console.error('Error detallado:', error);
+                return new Promise((resolve, reject) => {
+                    if (!userId) {
+                        const datosUsuario = document.getElementById('datos-usuario');
                         if (datosUsuario) {
-                            datosUsuario.innerHTML = `
-                                <div class="p-4 text-center">
-                                    <div class="text-red-600 mb-2">Error al cargar la información del usuario</div>
-                                    <div class="text-sm text-gray-600">${error.message}</div>
-                                    <div class="mt-2">
-                                        <button onclick="cargarInformacionUsuario('${userId}')" 
-                                                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
-                                            Intentar nuevamente
-                                        </button>
-                                    </div>
-                                </div>
-                            `;
+                            datosUsuario.classList.add('hidden');
                         }
-                    });
+                        reject(new Error('ID de usuario no válido'));
+                        return;
+                    }
+
+                    // Restaurar la estructura HTML original
+                    const datosUsuario = document.getElementById('datos-usuario');
+                    if (!datosUsuario) {
+                        console.error('Elemento datos-usuario no encontrado');
+                        reject(new Error('Elemento datos-usuario no encontrado'));
+                        return;
+                    }
+
+                    // Guardar la estructura HTML original si no está guardada
+                    if (!window.estructuraOriginal) {
+                        window.estructuraOriginal = datosUsuario.innerHTML;
+                    }
+
+                    // Mostrar loading
+                    datosUsuario.classList.remove('hidden');
+                    datosUsuario.innerHTML = `
+                        <div class="flex items-center justify-center p-4">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                            <span class="ml-2">Cargando información...</span>
+                        </div>
+                    `;
+
+                    // Cargar datos del usuario mediante AJAX
+                    fetch(`{{ route('usuarios.info', ['id' => ':id']) }}`.replace(':id', userId))
+                        .then(response => {
+                            console.log('Status:', response.status); // Debug
+                            return response.json().then(data => {
+                                if (!response.ok) {
+                                    throw new Error(data.error || 'Error del servidor');
+                                }
+                                return data;
+                            });
+                        })
+                        .then(data => {
+                            console.log('Datos recibidos:', data);
+                            if (!data.user) {
+                                throw new Error('No se recibieron datos del usuario');
+                            }
+                            // Restaurar estructura original antes de actualizar
+                            datosUsuario.innerHTML = window.estructuraOriginal;
+                            actualizarInterfazUsuario(data);
+                            resolve(data);
+                        })
+                        .catch(error => {
+                            console.error('Error detallado:', error);
+                            if (datosUsuario) {
+                                datosUsuario.innerHTML = `
+                                    <div class="p-4 text-center">
+                                        <div class="text-red-600 mb-2">Error al cargar la información del usuario</div>
+                                        <div class="text-sm text-gray-600">${error.message}</div>
+                                        <div class="mt-2">
+                                            <button onclick="cargarInformacionUsuario('${userId}')" 
+                                                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+                                                Intentar nuevamente
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                            reject(error);
+                        });
+                });
             }
 
             function actualizarInterfazUsuario(data) {
                 try {
                     console.log('Actualizando interfaz con datos:', data); // Debug
                     const { user, asistencias = [], matriculas = [] } = data;
+                    
+                    // Actualizar nombre de usuario
+                    const userNameElement = document.getElementById('user-name');
+                    if (userNameElement && user.name) {
+                        userNameElement.textContent = user.name;
+                    }
                     
                     // Actualizar foto de perfil
                     const userPhotoDiv = document.getElementById('user-photo');
@@ -770,19 +791,21 @@
                 resultDiv.innerHTML = 'Procesando código QR...';
                 scanRegion.classList.add('success');
 
-                // Cargar información del usuario y registrar asistencia
-                Promise.all([
-                    cargarInformacionUsuario(content),
-                    registrarAsistencia(content)
-                ]).catch(error => {
-                    console.error('Error:', error);
-                    resultDiv.innerHTML = 'Error al procesar el código QR';
-                    resultDiv.className = 'text-red-600';
-                    setTimeout(() => {
-                        resultDiv.style.display = 'none';
-                        scanRegion.classList.remove('success');
-                    }, 3000);
-                });
+                // Primero cargar información del usuario, luego registrar asistencia
+                cargarInformacionUsuario(content)
+                    .then(() => {
+                        // Ahora registrar asistencia
+                        return registrarAsistencia(content);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        resultDiv.innerHTML = 'Error al procesar el código QR';
+                        resultDiv.className = 'text-red-600';
+                        setTimeout(() => {
+                            resultDiv.style.display = 'none';
+                            scanRegion.classList.remove('success');
+                        }, 3000);
+                    });
             }
 
             function registrarAsistencia(userId) {
@@ -803,22 +826,58 @@
                 .then(response => response.json())
                 .then(data => {
                     const resultDiv = document.getElementById('result');
-                    resultDiv.innerHTML = data.message;
                     
+                    // Obtener nombre de usuario
+                    let userName = '';
+                    // Intentar obtener el nombre del elemento user-name
+                    const userNameElement = document.getElementById('user-name');
+                    if (userNameElement) {
+                        userName = userNameElement.textContent || '';
+                    }
+                    
+                    // Si no se encuentra, intentar desde el select
+                    if (!userName) {
+                        const userSelect = document.getElementById('usuario');
+                        if (userSelect && userSelect.selectedOptions && userSelect.selectedOptions.length > 0) {
+                            userName = userSelect.selectedOptions[0].text || '';
+                        }
+                    }
+                    
+                    // Usar un nombre genérico si no se encontró el nombre
+                    if (!userName) {
+                        userName = 'Usuario';
+                    }
+                    
+                    // Personalizar mensaje según tipo (entrada/salida)
                     if (data.success) {
-                        resultDiv.className = 'text-green-600';
-                        if (data.tipo === 'salida') {
-                            setTimeout(() => {
-                                resultDiv.innerHTML = '¡Que tenga un buen día! 👋';
-                            }, 2000);
+                        // Ajustar clase y estilo según el tipo de registro
+                        if (data.tipo === 'entrada') {
+                            resultDiv.className = 'px-4 py-3 text-center text-green-700 bg-green-100 dark:bg-green-900 dark:text-green-100 font-semibold rounded-b';
+                            resultDiv.innerHTML = `
+                                <div class="text-lg">¡Bienvenido, ${userName}!</div>
+                                <div class="text-sm mt-1">Asistencia registrada correctamente</div>
+                            `;
+                        } else {
+                            resultDiv.className = 'px-4 py-3 text-center text-blue-700 bg-blue-100 dark:bg-blue-900 dark:text-blue-100 font-semibold rounded-b';
+                            resultDiv.innerHTML = `
+                                <div class="text-lg">¡Adiós, ${userName}!</div>
+                                <div class="text-sm mt-1">Que tengas un buen día 👋</div>
+                            `;
                         }
                         
-                        // Recargar los datos del usuario después de 5 segundos
+                        // Esconder el mensaje después de un tiempo más largo
+                        setTimeout(() => {
+                            resultDiv.style.display = 'none';
+                            document.querySelector('.scan-region-highlight').classList.remove('success');
+                        }, 6000);
+                        
+                        // Recargar los datos del usuario después de un tiempo
                         setTimeout(() => {
                             cargarInformacionUsuario(userId);
                         }, 5000);
                     } else {
-                        resultDiv.className = 'text-red-600';
+                        resultDiv.innerHTML = data.message;
+                        resultDiv.className = 'px-4 py-3 text-center text-red-700 bg-red-100 dark:bg-red-900 dark:text-red-100 font-semibold rounded-b';
                         setTimeout(() => {
                             resultDiv.style.display = 'none';
                             document.querySelector('.scan-region-highlight').classList.remove('success');
