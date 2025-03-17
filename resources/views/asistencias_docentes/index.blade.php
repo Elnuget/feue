@@ -54,7 +54,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($asistencias as $asistencia)
+                                @foreach($asistencias->sortByDesc('id') as $asistencia)
                                 <tr class="bg-white border-b hover:bg-gray-50">
                                     <td class="py-4 px-6">{{ $asistencia->docente->name }}</td>
                                     <td class="py-4 px-6">{{ $asistencia->fecha->format('d/m/Y') }}</td>
