@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Endroid\QrCode\QrCode as EndroidQrCode;
+use Endroid\QrCode\Writer\PngWriter;
+use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
 
 class CredencialesDocenteController extends Controller
 {
@@ -112,13 +115,18 @@ class CredencialesDocenteController extends Controller
         
         // Generar códigos QR para cada docente
         $qrCodes = [];
+        $writer = new PngWriter();
         foreach ($docentes as $docente) {
-            $qrUrl = route('users.qr', $docente->id);
-            $qrCodes[$docente->id] = base64_encode(QrCode::size(200)
-                ->errorCorrection('H')
-                ->margin(1)
-                ->encoding('UTF-8')
-                ->generate($qrUrl));
+            try {
+                $qrCode = EndroidQrCode::create($docente->id)
+                    ->setSize(200)
+                    ->setMargin(10);
+                
+                $result = $writer->write($qrCode);
+                $qrCodes[$docente->id] = base64_encode($result->getString());
+            } catch (\Exception $e) {
+                \Log::error('Error generando QR: ' . $e->getMessage());
+            }
             
             // Marcar la credencial como entregada (actualización más explícita)
             if ($docente->profile) {
