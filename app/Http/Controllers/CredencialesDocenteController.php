@@ -7,6 +7,9 @@ use App\Models\SesionDocente;
 use App\Models\AsistenciaDocente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CredencialesDocenteController extends Controller
 {
@@ -68,5 +71,35 @@ class CredencialesDocenteController extends Controller
             ->get();
         
         return view('credenciales-docentes.show', compact('docente', 'sesiones', 'asistencias'));
+    }
+
+    /**
+     * Imprimir credenciales de docentes
+     */
+    public function printCredentials(Request $request)
+    {
+        $ids = explode(',', $request->input('ids'));
+        $docentes = User::whereIn('id', $ids)->get();
+        
+        // Generar códigos QR para cada docente
+        $qrCodes = [];
+        foreach ($docentes as $docente) {
+            $qrUrl = route('users.qr', $docente->id);
+            $qrCodes[$docente->id] = base64_encode(QrCode::size(200)
+                ->errorCorrection('H')
+                ->margin(1)
+                ->encoding('UTF-8')
+                ->generate($qrUrl));
+            
+            // Marcar la credencial como entregada
+            if ($docente->profile) {
+                $docente->profile->update(['carnet' => 'Entregado']);
+            }
+        }
+        
+        $pdf = PDF::loadView('credenciales-docentes.credentials', compact('docentes', 'qrCodes'));
+        $pdf->setPaper([0, 0, 153.014, 242.646]); // Tamaño de tarjeta de crédito en puntos (53.975mm x 85.725mm)
+        
+        return $pdf->stream('credenciales_docentes.pdf');
     }
 }

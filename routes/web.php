@@ -233,5 +233,6 @@ Route::middleware(['auth'])->group(function () {
 // Rutas para credenciales docentes
 Route::get('/credenciales-docentes', [CredencialesDocenteController::class, 'index'])->name('credenciales-docentes.index');
 Route::get('/credenciales-docentes/{id}', [CredencialesDocenteController::class, 'show'])->name('credenciales-docentes.show');
+Route::get('/credenciales-docentes-print', [CredencialesDocenteController::class, 'printCredentials'])->name('credenciales-docentes.print');
 
 require __DIR__.'/auth.php';

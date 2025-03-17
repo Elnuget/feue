@@ -7,6 +7,43 @@
 
     <div class="py-12">
         <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <!-- Opciones Card -->
+            <div class="mb-6 overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
+                <div class="p-6">
+                    <div x-data="{ openOptions: false }" class="space-y-4">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button @click="openOptions = !openOptions" class="rounded-md bg-blue-500 px-3 py-1.5 text-sm text-white hover:bg-blue-700">
+                                {{ __('Opciones de Fondo') }}
+                            </button>
+                            <button id="print-credentials" class="rounded-md bg-blue-500 px-3 py-1.5 text-sm text-white hover:bg-blue-700">
+                                {{ __('Imprimir Credenciales') }}
+                            </button>
+                        </div>
+                        
+                        <div x-show="openOptions" x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 transform -translate-y-2"
+                             x-transition:enter-end="opacity-100 transform translate-y-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 transform translate-y-0"
+                             x-transition:leave-end="opacity-0 transform -translate-y-2"
+                             class="w-full">
+                            <div class="flex items-center space-x-4">
+                                <form action="{{ route('matriculas.uploadBackground') }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-2">
+                                    @csrf
+                                    <input type="file" name="background" accept="image/*" class="rounded-md border-gray-300" />
+                                    <button type="submit" class="rounded-md bg-blue-500 px-3 py-1.5 text-sm text-white hover:bg-blue-700">
+                                        {{ __('Subir Fondo') }}
+                                    </button>
+                                </form>
+                                <a href="{{ asset('storage/imagenes_de_fondo_permanentes/background.jpg') }}" download class="rounded-md bg-blue-500 px-3 py-1.5 text-sm text-white hover:bg-blue-700">
+                                    {{ __('Descargar Fondo Actual') }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     
@@ -28,10 +65,16 @@
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                                        <input type="checkbox" id="select-all" class="h-4 w-4">
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                                         Docente
                                     </th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                                         Correo
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                                        Credencial
                                     </th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                                         Sesiones
@@ -52,7 +95,10 @@
                             </thead>
                             <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                                 @foreach($docentes as $docente)
-                                    <tr>
+                                    <tr class="{{ ($docente->profile && $docente->profile->carnet == 'Entregado') ? 'bg-pastel-orange' : '' }}">
+                                        <td class="whitespace-nowrap px-6 py-4">
+                                            <input type="checkbox" class="select-row h-4 w-4" value="{{ $docente->id }}">
+                                        </td>
                                         <td class="whitespace-nowrap px-6 py-4">
                                             <div class="flex items-center">
                                                 @if($docente->profile && $docente->profile->photo)
@@ -72,6 +118,11 @@
                                         </td>
                                         <td class="whitespace-nowrap px-6 py-4">
                                             <div class="text-sm text-gray-900 dark:text-gray-100">{{ $docente->email }}</div>
+                                        </td>
+                                        <td class="whitespace-nowrap px-6 py-4">
+                                            <div class="text-sm text-gray-900 dark:text-gray-100">
+                                                {{ ($docente->profile && $docente->profile->carnet == 'Entregado') ? 'Entregado' : 'NO' }}
+                                            </div>
                                         </td>
                                         <td class="whitespace-nowrap px-6 py-4">
                                             <div class="text-sm text-gray-900 dark:text-gray-100">{{ $docente->total_sesiones }}</div>
@@ -125,6 +176,7 @@
     @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Búsqueda de docentes
             const searchInput = document.getElementById('search');
             const rows = document.querySelectorAll('tbody tr');
 
@@ -140,7 +192,43 @@
                     }
                 });
             });
+
+            // Selección de todos los checkboxes
+            const selectAllCheckbox = document.getElementById('select-all');
+            const rowCheckboxes = document.querySelectorAll('.select-row');
+
+            selectAllCheckbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                rowCheckboxes.forEach(checkbox => checkbox.checked = isChecked);
+            });
+
+            // Impresión de credenciales
+            const printCredentialsButton = document.getElementById('print-credentials');
+            
+            printCredentialsButton.addEventListener('click', function() {
+                const selectedIds = Array.from(rowCheckboxes)
+                    .filter(checkbox => checkbox.checked)
+                    .map(checkbox => checkbox.value);
+
+                if (selectedIds.length > 0) {
+                    const url = `{{ route('credenciales-docentes.print') }}?ids=${selectedIds.join(',')}`;
+                    window.open(url, '_blank');
+                    
+                    // Recargar la página después de imprimir
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    alert('Por favor, seleccione al menos un docente.');
+                }
+            });
         });
     </script>
     @endpush
+
+    <style>
+    .bg-pastel-orange {
+        background-color: #FFCC99 !important;
+    }
+    </style>
 </x-app-layout> 
