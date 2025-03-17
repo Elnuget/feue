@@ -59,37 +59,29 @@
 
         .user-info {
             margin-top: 2mm;
-            line-height: 1.3; /* Aumentado ligeramente */
+            line-height: 1.2;
         }
 
         .user-info p {
-            margin: 2px 0; /* Aumentado desde 1px */
+            margin: 1px 0;
             padding: 0;
-            text-align: center;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Sombra de texto para legibilidad */
+            text-align: center; /* Center the text */
         }
 
         .user-info .user-name {
             font-size: 10px;
-            font-style: italic;
-            font-weight: 500; /* Un poco más pronunciado */
+            font-style: italic; /* Add italic style */
         }
 
         .qr-container {
-            margin-top: 3mm;
+            margin-top: 4mm;
             text-align: center;
         }
 
-        .qr-image {
+        .qr-container img {
             width: 18mm;
             height: 18mm;
             object-fit: contain;
-            border: 1px solid rgba(255,255,255,0.3);
-            padding: 1mm;
-            background-color: rgba(255,255,255,0.8);
-            border-radius: 2mm;
-            margin: 0 auto;
-            display: block;
         }
 
         .vertical-text {
@@ -135,17 +127,6 @@
             text-transform: uppercase;
             z-index: 10; /* Asegura que esté por encima de otros elementos */
         }
-        
-        /* Nuevo estilo para el logo institucional */
-        .institution-logo {
-            position: absolute;
-            bottom: 2mm;
-            right: 2mm;
-            width: 15mm;
-            height: 15mm; /* Altura fija */
-            object-fit: contain; /* Mantiene proporción sin distorsión */
-            opacity: 0.9; /* Ligeramente transparente */
-        }
     </style>
 </head>
 <body>
@@ -189,7 +170,7 @@
             $secondLine = implode(' ', array_slice($parts, 2));
             @endphp
             <p><span style="color: #ffffff; font-size: 11px; font-weight: normal;">Carnet de Docente</span><br><span class="user-name" style="color: #ffffff; font-weight: 700;">Prof. {{ $firstLine }}<br>{{ $secondLine }}</span></p>
-            <p><strong style="color: #ffffff;"></strong><br><span style="color: #ffffff;">{{ $docente->profile->cedula ?? 'N/A' }}</span></p>
+            <p><span style="color: #ffffff;">{{ $docente->profile->cedula ?? 'N/A' }}</span></p>
         </div>
 
         <div class="qr-container">
@@ -207,14 +188,6 @@
         <div class="vertical-date">
             <strong>{{ __('Fecha de Emisión:') }} {{ now()->format('Y-m-d') }}</strong>
         </div>
-        
-        <!-- Logo institucional (si está disponible en la imagen) -->
-        @if(isset($institucionalLogo))
-            <img src="{{ $institucionalLogo }}" 
-                 alt="Logo" 
-                 class="institution-logo"
-                 style="width: 15mm; height: 15mm; object-fit: contain;">
-        @endif
     </div>
 @endforeach
 
