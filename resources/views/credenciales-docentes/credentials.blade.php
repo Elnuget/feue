@@ -120,16 +120,19 @@
 
         .docente-badge {
             position: absolute;
-            top: 2mm;
-            right: 2mm;
-            background-color: #ff6b00;
+            top: -6mm; /* Posicionado más arriba */
+            right: -19mm; /* Ajustado para mantener la diagonal correcta */
+            background-color: #00703c; /* Color sólido, magenta intenso */
             color: white;
-            font-weight: bold;
-            font-size: 8px;
-            padding: 1.5mm 2.5mm; /* Ligeramente más grande */
-            border-radius: 2mm;
-            transform: rotate(15deg);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3); /* Sombra sutil */
+            font-weight: 700;
+            font-size: 10px;
+            padding: 2mm 17mm; /* Padding extendido para crear una "tira" más ancha */
+            transform: rotate(45deg); /* Rotación diagonal */
+            box-shadow: 0 2px 3px rgba(0,0,0,0.4); /* Sombra sutil */
+            letter-spacing: 1.2px; 
+            text-align: center;
+            text-transform: uppercase;
+            z-index: 10; /* Asegura que esté por encima de otros elementos */
         }
         
         /* Nuevo estilo para el logo institucional */
@@ -182,7 +185,7 @@
             $firstLine = implode(' ', array_slice($parts, 0, 2));
             $secondLine = implode(' ', array_slice($parts, 2));
             @endphp
-            <p><strong style="color: #ffffff; font-size: 11px;">Carnet de Docente</strong><br><span class="user-name" style="color: #ffffff;">{{ $firstLine }}<br>{{ $secondLine }}</span></p>
+            <p><span style="color: #ffffff; font-size: 11px; font-weight: normal;">Carnet de Docente</span><br><span class="user-name" style="color: #ffffff; font-weight: 700;">Prof. {{ $firstLine }}<br>{{ $secondLine }}</span></p>
             <p><strong style="color: #ffffff;"></strong><br><span style="color: #ffffff;">{{ $docente->profile->cedula ?? 'N/A' }}</span></p>
         </div>
 
