@@ -81,14 +81,14 @@
             text-align: center;
         }
 
-        .qr-container img, .qr-image {
+        .qr-image {
             width: 18mm;
             height: 18mm;
             object-fit: contain;
-            border: 1px solid rgba(255,255,255,0.3); /* Borde sutil */
+            border: 1px solid rgba(255,255,255,0.3);
             padding: 1mm;
-            background-color: rgba(255,255,255,0.8); /* Fondo semi-transparente */
-            border-radius: 2mm; /* Esquinas redondeadas */
+            background-color: rgba(255,255,255,0.8);
+            border-radius: 2mm;
             margin: 0 auto;
             display: block;
         }
@@ -174,6 +174,7 @@
                     src="data:image/jpeg;base64,{{ base64_encode(file_get_contents($photoPath)) }}"
                     alt="Foto de perfil"
                     class="profile-photo"
+                    style="width: 22mm; height: 30mm; object-fit: cover;"
                 />
             @else
                 <div style="width: 22mm; height: 30mm; border: 1px solid #fff; margin: 5mm auto 0; display: flex; align-items: center; justify-content: center; background-color: rgba(255,255,255,0.1); border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
@@ -196,7 +197,7 @@
             @if(isset($qrCodes[$docente->id]))
                 <img src="data:image/png;base64,{{ $qrCodes[$docente->id] }}" 
                      alt="QR Code" 
-                     class="qr-image">
+                     style="width: 18mm; height: 18mm; object-fit: contain; border: 1px solid rgba(255,255,255,0.3); padding: 1mm; background-color: rgba(255,255,255,0.8); border-radius: 2mm; margin: 0 auto; display: block;">
             @endif
         </div>
 
@@ -210,7 +211,10 @@
         
         <!-- Logo institucional (si está disponible en la imagen) -->
         @if(isset($institucionalLogo))
-            <img src="{{ $institucionalLogo }}" alt="Logo" class="institution-logo">
+            <img src="{{ $institucionalLogo }}" 
+                 alt="Logo" 
+                 class="institution-logo"
+                 style="width: 15mm; height: 15mm; object-fit: contain;">
         @endif
     </div>
 @endforeach
