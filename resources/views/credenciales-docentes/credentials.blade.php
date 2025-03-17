@@ -49,7 +49,17 @@
             margin: 5mm auto 0;
             border: 2px solid #ffffff;
             border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3); /* Sombra sutil */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            max-width: 22mm; /* Limita el ancho máximo */
+            max-height: 30mm; /* Limita la altura máxima */
+        }
+        
+        .photo-container {
+            width: 22mm;
+            height: 30mm;
+            margin: 5mm auto 0;
+            overflow: hidden; /* Oculta cualquier desbordamiento */
+            position: relative;
         }
 
         .text-center {
@@ -122,7 +132,7 @@
             position: absolute;
             top: -6mm; /* Posicionado más arriba */
             right: -19mm; /* Ajustado para mantener la diagonal correcta */
-            background-color: #00703c; /* Color sólido, magenta intenso */
+            background-color: #ca005e; /* Color sólido, magenta intenso */
             color: white;
             font-weight: 700;
             font-size: 10px;
@@ -166,17 +176,19 @@
                 }
             @endphp
             
-            @if($photoPath && file_exists($photoPath))
-                <img 
-                    src="data:image/jpeg;base64,{{ base64_encode(file_get_contents($photoPath)) }}"
-                    alt="Foto de perfil"
-                    class="profile-photo"
-                />
-            @else
-                <div style="width: 22mm; height: 30mm; border: 1px solid #fff; margin: 5mm auto 0; display: flex; align-items: center; justify-content: center; background-color: rgba(255,255,255,0.1); border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-                    <span style="font-size: 28px;">👤</span>
-                </div>
-            @endif
+            <div class="photo-container">
+                @if($photoPath && file_exists($photoPath))
+                    <img 
+                        src="data:image/jpeg;base64,{{ base64_encode(file_get_contents($photoPath)) }}"
+                        alt="Foto de perfil"
+                        class="profile-photo"
+                    />
+                @else
+                    <div style="width: 22mm; height: 30mm; border: 1px solid #fff; display: flex; align-items: center; justify-content: center; background-color: rgba(255,255,255,0.1); border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                        <span style="font-size: 28px;">👤</span>
+                    </div>
+                @endif
+            </div>
         </div>
 
         <div class="user-info text-center">
