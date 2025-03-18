@@ -366,7 +366,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
                 body: JSON.stringify({
-                    user_ids: selectedIds
+                    user_ids: selectedIds,
+                    tipo_registro: 'asistencia'
                 })
             });
 
