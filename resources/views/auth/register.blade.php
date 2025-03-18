@@ -87,6 +87,11 @@
             <select name="curso_id" id="curso_id" required class="block mt-1 w-full">
                 <option value="">Selecciona un Curso</option>
             </select>
+            <div id="curso_details" class="mt-2 p-3 bg-gray-50 rounded-md text-sm hidden">
+                <div id="curso_nombre" class="font-bold"></div>
+                <div id="curso_precio" class="text-green-600"></div>
+                <div id="curso_horario" class="text-gray-700"></div>
+            </div>
         </div>
 
         <div class="mt-4">
@@ -280,6 +285,7 @@
             const tipoCursoId = this.value;
             const cursoSelect = document.getElementById('curso_id');
             cursoSelect.innerHTML = '<option value="">Selecciona un Curso</option>'; // Reset con opción por defecto
+            document.getElementById('curso_details').classList.add('hidden');
 
             if (tipoCursoId) {
                 const cursosPorTipo = @json($cursosPorTipo);
@@ -289,11 +295,11 @@
                     );
                     cursosOrdenados.forEach(curso => {
                         if (curso.estado === 'Activo') {
-                            const option = new Option(
-                                `${curso.nombre} - $${parseFloat(curso.precio).toFixed(2)}`,
-                                curso.id
-                            );
+                            // Creamos opciones más simples para el combobox
+                            const option = new Option(curso.nombre, curso.id);
                             option.dataset.precio = curso.precio;
+                            option.dataset.horario = curso.horario || 'Horario no disponible';
+                            option.dataset.nombre = curso.nombre;
                             cursoSelect.add(option);
                         }
                     });
@@ -320,10 +326,21 @@
 
         document.getElementById('curso_id').addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
-            if (selectedOption) {
+            const detallesDiv = document.getElementById('curso_details');
+            
+            if (selectedOption && selectedOption.value) {
                 const precio = parseFloat(selectedOption.getAttribute('data-precio')).toFixed(2);
                 document.getElementById('monto_total').value = precio;
                 document.getElementById('monto').value = precio;
+                
+                // Actualizar detalles del curso
+                document.getElementById('curso_nombre').textContent = selectedOption.getAttribute('data-nombre');
+                document.getElementById('curso_precio').textContent = `Precio: $${precio}`;
+                document.getElementById('curso_horario').textContent = `Horario: ${selectedOption.getAttribute('data-horario')}`;
+                
+                detallesDiv.classList.remove('hidden');
+            } else {
+                detallesDiv.classList.add('hidden');
             }
         });
 
