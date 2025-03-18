@@ -367,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({
                     user_ids: selectedIds,
-                    tipo_registro: 'asistencia'
+                    tipo_registro: 'entrada'
                 })
             });
 
