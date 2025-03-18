@@ -807,9 +807,9 @@
 
                     <!-- Modal para resultados del cuestionario -->
                     @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
-                        <div id="resultadosModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-4xl">
-                                <div class="flex justify-between items-center mb-4">
+                        <div id="resultadosModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4 overflow-y-auto">
+                            <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg w-full max-w-4xl my-8 mx-auto max-h-[90vh] overflow-y-auto">
+                                <div class="flex justify-between items-center mb-4 sticky top-0 bg-white dark:bg-gray-800 z-10 py-2">
                                     <div>
                                         <h3 class="text-lg font-bold">Resultados del Cuestionario</h3>
                                         <p class="text-sm text-gray-500" id="resultados-cuestionario-titulo"></p>
@@ -868,50 +868,53 @@
                                         return;
                                     }
 
+                                    // Versión responsiva de la tabla
                                     let html = `
-                                        <div class="overflow-x-auto">
-                                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                                <thead class="bg-gray-50 dark:bg-gray-700">
-                                                    <tr>
-                                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                                            Estudiante
-                                                        </th>
-                                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                                            Mejor Calificación
-                                                        </th>
-                                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                                            Intentos Realizados
-                                                        </th>
-                                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                                            Último Intento
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                        <div class="overflow-x-auto -mx-4 sm:-mx-0">
+                                            <div class="inline-block min-w-full align-middle">
+                                                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                                    <thead class="bg-gray-50 dark:bg-gray-700">
+                                                        <tr>
+                                                            <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                                Estudiante
+                                                            </th>
+                                                            <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                                Calificación
+                                                            </th>
+                                                            <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                                Intentos
+                                                            </th>
+                                                            <th scope="col" class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                                Último
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     `;
 
                                     data.resultados.forEach(resultado => {
                                         html += `
-                                            <tr>
-                                                <td class="px-6 py-4 whitespace-nowrap">
+                                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
                                                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                                                         ${resultado.nombre}
                                                     </div>
-                                                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px] sm:max-w-full">
                                                         ${resultado.email}
                                                     </div>
                                                 </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
                                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                                         ${parseFloat(resultado.mejor_calificacion) >= 70 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
                                                         ${resultado.mejor_calificacion}%
                                                     </span>
                                                 </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                                     ${resultado.intentos_realizados}
                                                 </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                    ${new Date(resultado.ultimo_intento).toLocaleString()}
+                                                <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                    <span class="hidden sm:inline">${new Date(resultado.ultimo_intento).toLocaleString()}</span>
+                                                    <span class="sm:hidden">${new Date(resultado.ultimo_intento).toLocaleDateString()}</span>
                                                 </td>
                                             </tr>
                                         `;
@@ -921,6 +924,7 @@
                                                 </tbody>
                                             </table>
                                         </div>
+                                    </div>
                                     `;
 
                                     content.innerHTML = html;
