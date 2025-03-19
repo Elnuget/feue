@@ -530,4 +530,12 @@ class AsistenciaController extends Controller
             'esDocente'
         ));
     }
+    
+    /**
+     * Muestra las asistencias del usuario. Este método redirige a showUserAttendance.
+     */
+    public function usuarioAsistencias($userId)
+    {
+        return $this->showUserAttendance($userId);
+    }
 }
