@@ -53,6 +53,11 @@
             </x-nav-link>
         @endif
 
+        <!-- Mi Código QR - Visible para todos los usuarios -->
+        <x-nav-link :href="route('users.qr', auth()->id())" :active="request()->routeIs('users.qr')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+            🔲 {{ __('Mi Código QR') }}
+        </x-nav-link>
+
         @if(!auth()->user()->hasRole('Docente'))
             <x-nav-link :href="route('matriculas.index')" :active="request()->routeIs('matriculas.index')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
                 📝 {{ __('Matrículas') }}
@@ -62,10 +67,6 @@
                 💳 {{ __('Pagos') }}
             </x-nav-link>
             
-            <x-nav-link :href="route('users.qr', auth()->id())" :active="request()->routeIs('users.qr')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
-                🔲 {{ __('Mi Código QR') }}
-            </x-nav-link>
-
             <x-nav-link :href="route('asistencias.usuario', auth()->id())" :active="request()->routeIs('asistencias.usuario')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
                 📅 {{ __('Mis Asistencias') }}
             </x-nav-link>
