@@ -23,6 +23,9 @@
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <!-- Google Fonts para fuente elegante -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Great+Vibes&display=swap" rel="stylesheet">
+
     <style>
         @page {
             size: landscape;
@@ -30,20 +33,39 @@
         }
         .certificate-container {
             width: 100%;
-            max-width: 1024px;
+            max-width: 1100px;
+            height: 800px;
             margin: 0 auto;
-            padding: 2rem;
             position: relative;
-            background-color: white;
-        }
-        .certificate-border {
-            border: 2px solid #234E70;
-            padding: 2rem;
-            position: relative;
+            background-image: url('{{ asset("fonto_Certificado.png") }}');
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
         }
         .certificate-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            padding-top: 1rem; /* Reducido para subir el contenido */
             text-align: center;
-            position: relative;
+        }
+        .certificate-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 6rem;
+            letter-spacing: 2px;
+            margin-bottom: -2rem; /* Reducido desde 1.5rem */
+        }
+        .nombre-destacado {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            margin-bottom: 1rem; /* Reducido desde 1.5rem */
         }
         .watermark {
             position: absolute;
@@ -59,24 +81,42 @@
         .signature-container {
             display: flex;
             justify-content: space-between;
-            margin-top: 4rem;
-            padding: 0 2rem;
+            width: 90%;
+            margin-top: 3rem;
+            padding-top: 3rem;
         }
         .signature {
             text-align: center;
             width: 200px;
         }
-        .signature-line {
-            width: 100%;
-            border-bottom: 1px solid #000;
-            margin-bottom: 0.5rem;
+        .registro-senescyt {
+            position: absolute;
+            bottom: 40px; /* Subimos un poco la posición */
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        /* Ajustamos el interlineado para el texto del certificado */
+        .texto-certificado {
+            line-height: 1.3; /* Reducimos el interlineado */
+            margin-bottom: 5px; /* Reducimos el margen inferior */
         }
         @media print {
             body {
                 background-color: white;
+                margin: 0;
+                padding: 0;
             }
             .no-print {
                 display: none;
+            }
+            .certificate-container {
+                margin: 0;
+                height: 100vh;
+                max-width: 100%;
+                box-shadow: none;
+                border-radius: 0;
             }
         }
     </style>
@@ -108,48 +148,29 @@
 
     <!-- Certificado -->
     <div class="py-12">
-        <div class="certificate-container bg-white shadow-xl rounded-lg">
-            <div class="certificate-border">
-                <div class="certificate-content">
-                    <div class="watermark">CAP-U</div>
-                    
-                    <h1 class="text-2xl font-bold mb-8">SE CONFIERE EL SIGUIENTE CERTIFICADO</h1>
-                    
-                    <h2 class="text-5xl font-bold mb-4">CERTIFICADO</h2>
-                    
-                    <p class="text-xl mb-8">A</p>
+        <div class="certificate-container shadow-xl rounded-lg">
+            <div class="certificate-content">
+                <h1 class="text-2xl font-bold mb-2">SE CONFIERE EL SIGUIENTE</h1>
+                
+                <h2 class="certificate-title">CERTIFICADO</h2>
+                
+                <p class="text-xl mb-1">A</p>
 
-                    <h3 class="text-2xl font-bold mb-8">{{ $certificado->nombre_completo }}</h3>
+                <h3 class="nombre-destacado">{{ $certificado->nombre_completo }}</h3>
 
-                    <p class="text-xl mb-4">Por ser parte del programa de capacitación continua en</p>
-                    <p class="text-xl font-bold mb-8">el curso de {{ $certificado->nombre_curso }}</p>
+                <p class="text-xl mb-2 texto-certificado">Por ser parte del programa de capacitación continua en</p>
+                <p class="text-xl font-bold mb-5 texto-certificado">el curso de {{ $certificado->nombre_curso }}</p>
 
-                    <p class="text-xl mb-8">
-                        Con una carga académica de {{ $certificado->horas_curso }} horas prácticas en {{ $certificado->sede_curso }}. Dado en
-                        la ciudad de Quito el {{ $certificado->fecha_emision->format('d \d\e F \d\e\l Y') }}.
-                    </p>
+                <p class="text-xl texto-certificado">
+                    Con una carga académica de {{ $certificado->horas_curso }} horas prácticas en {{ $certificado->sede_curso }}.
+                </p>
+                <p class="text-xl mb-4 texto-certificado">
+                    Dado en la ciudad de Quito el {{ $certificado->fecha_emision->formatLocalized('%d de %B del %Y') }}.
+                </p>
 
-                    <div class="signature-container">
-                        <div class="signature">
-                            <div class="signature-line"></div>
-                            <p class="font-bold">Ab. Xavier Remache</p>
-                            <p class="text-sm">COORDINADOR FEUE NACIONAL</p>
-                        </div>
-                        <div class="signature">
-                            <div class="signature-line"></div>
-                            <p class="font-bold">Ab. Erik Barba</p>
-                            <p class="text-sm">GERENTE DE CAP - U</p>
-                        </div>
-                        <div class="signature">
-                            <div class="signature-line"></div>
-                            <p class="font-bold">Sr. Adrián Durán</p>
-                            <p class="text-sm">REPRESENTANTE ASESEC</p>
-                        </div>
-                    </div>
-
-                    <div class="mt-8 text-sm">
-                        Registro No. SENESCYT-CGAJ-DAJ-{{ $certificado->numero_certificado }}
-                    </div>
+                <!-- Registro SENESCYT en la parte inferior -->
+                <div class="registro-senescyt">
+                    Registro No. SENESCYT-CGAJ-DAJ-{{ $certificado->numero_certificado }}
                 </div>
             </div>
         </div>
@@ -176,4 +197,4 @@
         </div>
     </div>
 </body>
-</html> 
+</html>
