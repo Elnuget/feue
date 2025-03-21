@@ -24,28 +24,29 @@ class CertificadoController extends Controller
         // Obtener los cursos que tienen matrículas
         $cursosMatriculados = \App\Models\Curso::whereHas('matriculas')->get();
         
-        $query = Certificado::with('usuario')
-            ->join('users', 'certificados.usuario_id', '=', 'users.id')
-            ->orderBy('users.name', 'asc')
-            ->select('certificados.*');
+        $query = Certificado::with(['usuario' => function($q) {
+            $q->with('matriculas');
+        }])
+        ->join('users', 'certificados.usuario_id', '=', 'users.id')
+        ->orderBy('users.name', 'asc')
+        ->select('certificados.*');
 
         // Aplicar filtro por tipo de curso
         if (request()->has('tipo_curso') && request('tipo_curso') !== '') {
             $tipoCursoId = request('tipo_curso');
-            $cursosIds = \App\Models\Curso::where('tipo_curso_id', $tipoCursoId)
-                ->whereHas('matriculas')
-                ->pluck('id');
-            $cursosFiltrados = \App\Models\Curso::whereIn('id', $cursosIds)->get();
-            $nombresCursos = $cursosFiltrados->pluck('nombre')->toArray();
-            $query->whereIn('nombre_curso', $nombresCursos);
+            $query->whereHas('usuario.matriculas', function($q) use ($tipoCursoId) {
+                $q->whereHas('curso', function($q) use ($tipoCursoId) {
+                    $q->where('tipo_curso_id', $tipoCursoId);
+                });
+            });
         }
 
         // Aplicar filtro por curso específico
         if (request()->has('curso_id') && request('curso_id') !== '') {
-            $curso = \App\Models\Curso::find(request('curso_id'));
-            if ($curso) {
-                $query->where('nombre_curso', $curso->nombre);
-            }
+            $cursoId = request('curso_id');
+            $query->whereHas('usuario.matriculas', function($q) use ($cursoId) {
+                $q->where('curso_id', $cursoId);
+            });
         }
 
         // Obtener número de registros por página (50 por defecto)

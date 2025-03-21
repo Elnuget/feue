@@ -33,4 +33,16 @@ class Certificado extends Model
     {
         return $this->belongsTo(User::class, 'usuario_id');
     }
+
+    public function matriculas()
+    {
+        return $this->hasOneThrough(
+            \App\Models\Matricula::class,
+            \App\Models\User::class,
+            'id', // Clave foránea en users
+            'usuario_id', // Clave foránea en matriculas
+            'usuario_id', // Clave local en certificados
+            'id' // Clave local en users
+        );
+    }
 } 
