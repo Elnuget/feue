@@ -165,7 +165,7 @@
                     Con una carga académica de {{ $certificado->horas_curso }} horas prácticas en {{ $certificado->sede_curso }}.
                 </p>
                 <p class="text-xl mb-4 texto-certificado">
-                    Dado en la ciudad de Quito el {{ $certificado->fecha_emision->formatLocalized('%d de %B del %Y') }}.
+                    Dado en la ciudad de Quito el {{ \Carbon\Carbon::parse($certificado->fecha_emision)->locale('es')->isoFormat('D [de] MMMM [del] YYYY') }}.
                 </p>
 
                 <!-- Registro SENESCYT en la parte inferior -->

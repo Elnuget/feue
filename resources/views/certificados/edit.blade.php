@@ -28,6 +28,9 @@
                             </div>
                         @endif
 
+                        <!-- Campo oculto para usuario_id -->
+                        <input type="hidden" name="usuario_id" value="{{ $certificado->usuario_id }}">
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <x-input-label for="numero_certificado" :value="__('Número de Certificado')" />
@@ -65,6 +68,23 @@
                                     <option value="1" {{ old('estado', $certificado->estado) ? 'selected' : '' }}>Activo</option>
                                     <option value="0" {{ !old('estado', $certificado->estado) ? 'selected' : '' }}>Inactivo</option>
                                 </select>
+                            </div>
+
+                            <div>
+                                <x-input-label for="fecha_emision" :value="__('Fecha de Emisión')" />
+                                <x-text-input id="fecha_emision" name="fecha_emision" type="date" class="mt-1 block w-full" 
+                                    :value="old('fecha_emision', $certificado->fecha_emision->format('Y-m-d'))" required />
+                            </div>
+
+                            <div>
+                                <x-input-label for="anio_emision" :value="__('Año de Emisión (2 dígitos)')" />
+                                <x-text-input id="anio_emision" name="anio_emision" type="text" class="mt-1 block w-full" 
+                                    :value="old('anio_emision', $certificado->anio_emision)" required maxlength="2" />
+                            </div>
+
+                            <div class="col-span-2">
+                                <x-input-label for="observaciones" :value="__('Observaciones')" />
+                                <textarea id="observaciones" name="observaciones" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm">{{ old('observaciones', $certificado->observaciones) }}</textarea>
                             </div>
                         </div>
 

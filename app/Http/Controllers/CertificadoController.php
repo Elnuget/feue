@@ -97,6 +97,7 @@ class CertificadoController extends Controller
         $validated = $request->validate([
             'usuario_id' => 'required|exists:users,id',
             'nombre_completo' => 'required|string|max:255',
+            'nombre_curso' => 'required|string|max:255',
             'horas_curso' => 'required|integer',
             'sede_curso' => 'required|string|max:100',
             'fecha_emision' => 'required|date',
