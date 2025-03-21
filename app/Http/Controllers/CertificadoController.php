@@ -20,7 +20,9 @@ class CertificadoController extends Controller
     public function index()
     {
         $tiposCursos = \App\Models\TipoCurso::all();
-        $cursos = \App\Models\Curso::all();
+        
+        // Obtener los cursos que tienen matrículas
+        $cursosMatriculados = \App\Models\Curso::whereHas('matriculas')->get();
         
         $query = Certificado::with('usuario')
             ->join('users', 'certificados.usuario_id', '=', 'users.id')
@@ -30,7 +32,9 @@ class CertificadoController extends Controller
         // Aplicar filtro por tipo de curso
         if (request()->has('tipo_curso') && request('tipo_curso') !== '') {
             $tipoCursoId = request('tipo_curso');
-            $cursosIds = \App\Models\Curso::where('tipo_curso_id', $tipoCursoId)->pluck('id');
+            $cursosIds = \App\Models\Curso::where('tipo_curso_id', $tipoCursoId)
+                ->whereHas('matriculas')
+                ->pluck('id');
             $cursosFiltrados = \App\Models\Curso::whereIn('id', $cursosIds)->get();
             $nombresCursos = $cursosFiltrados->pluck('nombre')->toArray();
             $query->whereIn('nombre_curso', $nombresCursos);
@@ -49,7 +53,7 @@ class CertificadoController extends Controller
 
         $certificados = $query->paginate($perPage)->withQueryString();
 
-        return view('certificados.index', compact('certificados', 'tiposCursos', 'cursos'));
+        return view('certificados.index', compact('certificados', 'tiposCursos', 'cursosMatriculados'));
     }
 
     public function create()
@@ -121,19 +125,14 @@ class CertificadoController extends Controller
             $request->validate([
                 'matricula_ids' => 'required|array',
                 'matricula_ids.*' => 'exists:matriculas,id',
-                'curso_id' => 'required|exists:cursos,id'
+                'curso_id' => 'required|exists:cursos,id',
+                'curso_nombre' => 'required|string',
+                'curso_horas' => 'required|integer',
+                'curso_sede' => 'required|string'
             ]);
 
             $curso = \App\Models\Curso::with('tipoCurso')->findOrFail($request->curso_id);
             
-            // Verificar que el curso tenga horas definidas
-            if (!$curso->horas) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'El curso no tiene horas definidas. Por favor, configure las horas del curso primero.'
-                ], 400);
-            }
-
             $matriculas = \App\Models\Matricula::whereIn('id', $request->matricula_ids)
                 ->with('usuario')
                 ->get();
@@ -153,13 +152,13 @@ class CertificadoController extends Controller
                 
                 $numeroCertificado = sprintf('CERT-%s-%04d', $anioActual, $numeroSecuencial);
 
-                // Crear el certificado usando el nombre del tipo de curso como sede
+                // Crear el certificado usando los datos del modal
                 Certificado::create([
                     'usuario_id' => $matricula->usuario_id,
-                    'nombre_completo' => "'{$matricula->usuario->name}'",
-                    'nombre_curso' => $curso->nombre,
-                    'horas_curso' => (int)$curso->horas,
-                    'sede_curso' => $curso->tipoCurso->nombre ?? 'Sin tipo de curso definido',
+                    'nombre_completo' => $matricula->usuario->name,
+                    'nombre_curso' => $request->curso_nombre,
+                    'horas_curso' => (int)$request->curso_horas,
+                    'sede_curso' => $request->curso_sede,
                     'fecha_emision' => now(),
                     'anio_emision' => $anioActual,
                     'numero_certificado' => $numeroCertificado,

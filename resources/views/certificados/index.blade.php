@@ -33,7 +33,7 @@
                                 </select>
                                 <select id="curso_id" name="curso_id" class="w-1/3 rounded-md border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300" {{ !request('tipo_curso') ? 'disabled' : '' }}>
                                     <option value="">Seleccione un curso</option>
-                                    @foreach($cursos->where('tipo_curso_id', request('tipo_curso')) as $curso)
+                                    @foreach($cursosMatriculados->where('tipo_curso_id', request('tipo_curso')) as $curso)
                                         <option value="{{ $curso->id }}" {{ request('curso_id') == $curso->id ? 'selected' : '' }}>
                                             {{ $curso->nombre }} ({{ $curso->horario }})
                                         </option>
@@ -139,14 +139,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Optimizar el manejo de cursos con memoización
     const cursosPorTipo = {};
-    const cursos = @json($cursos->groupBy('tipo_curso_id'));
+    const cursosMatriculados = @json($cursosMatriculados->groupBy('tipo_curso_id'));
 
     const actualizarCursos = (tipoCursoId) => {
         cursoSelect.disabled = !tipoCursoId;
         cursoSelect.innerHTML = '<option value="">Seleccione un curso</option>';
         
-        if (tipoCursoId && cursos[tipoCursoId]) {
-            cursos[tipoCursoId].forEach(curso => {
+        if (tipoCursoId && cursosMatriculados[tipoCursoId]) {
+            cursosMatriculados[tipoCursoId].forEach(curso => {
                 const option = document.createElement('option');
                 option.value = curso.id;
                 option.textContent = `${curso.nombre} (${curso.horario})`;

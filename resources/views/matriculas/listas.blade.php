@@ -187,6 +187,37 @@
     </div>
 </x-app-layout>
 
+<!-- Modal para previsualizar certificados -->
+<div id="certificatePreviewModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full" role="dialog">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">{{ __('Previsualización de Certificado') }}</h3>
+            <div class="mt-4">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">{{ __('Nombre del Curso') }}</label>
+                    <input type="text" id="curso_nombre_preview" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">{{ __('Horas del Curso') }}</label>
+                    <input type="text" id="curso_horas_preview" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">{{ __('Sede (Tipo de Curso)') }}</label>
+                    <input type="text" id="curso_sede_preview" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+            </div>
+            <div class="flex justify-end mt-6 gap-3">
+                <button id="cancelCertificateBtn" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                    {{ __('Cancelar') }}
+                </button>
+                <button id="generateCertificateBtn" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+                    {{ __('Generar') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 .bg-pastel-orange {
     background-color: #FFCC99 !important;
@@ -365,7 +396,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Manejo de generación de certificados
     const generateCertificatesButton = document.getElementById('generate-certificates');
-    generateCertificatesButton?.addEventListener('click', async function() {
+    const certificatePreviewModal = document.getElementById('certificatePreviewModal');
+    const cancelCertificateBtn = document.getElementById('cancelCertificateBtn');
+    const generateCertificateBtn = document.getElementById('generateCertificateBtn');
+    const cursoNombrePreview = document.getElementById('curso_nombre_preview');
+    const cursoHorasPreview = document.getElementById('curso_horas_preview');
+    const cursoSedePreview = document.getElementById('curso_sede_preview');
+
+    generateCertificatesButton?.addEventListener('click', function() {
         const selectedIds = Array.from(rowCheckboxes)
             .reduce((acc, checkbox) => {
                 if (checkbox.checked) acc.push(checkbox.value);
@@ -383,6 +421,50 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // Obtener información del curso seleccionado
+        const cursoSeleccionado = cursos.find(curso => curso.id == cursoId);
+        const tipoCursoSeleccionado = document.getElementById('tipo_curso');
+        const tipoCursoNombre = tipoCursoSeleccionado.options[tipoCursoSeleccionado.selectedIndex].text;
+
+        // Llenar los campos del modal con la información actual
+        cursoNombrePreview.value = cursoSeleccionado ? cursoSeleccionado.nombre : '';
+        cursoHorasPreview.value = cursoSeleccionado ? cursoSeleccionado.horas || '' : '';
+        cursoSedePreview.value = tipoCursoNombre;
+
+        // Mostrar el modal
+        certificatePreviewModal.classList.remove('hidden');
+    });
+
+    cancelCertificateBtn?.addEventListener('click', function() {
+        certificatePreviewModal.classList.add('hidden');
+    });
+
+    generateCertificateBtn?.addEventListener('click', async function() {
+        const selectedIds = Array.from(rowCheckboxes)
+            .reduce((acc, checkbox) => {
+                if (checkbox.checked) acc.push(checkbox.value);
+                return acc;
+            }, []);
+
+        const cursoId = document.getElementById('curso_id').value;
+        const cursoNombre = cursoNombrePreview.value.trim();
+        const cursoHoras = parseInt(cursoHorasPreview.value);
+        const cursoSede = cursoSedePreview.value.trim();
+
+        // Validar campos
+        if (!cursoNombre) {
+            alert('Por favor, ingrese el nombre del curso');
+            return;
+        }
+        if (!cursoHoras || isNaN(cursoHoras)) {
+            alert('Por favor, ingrese un número válido de horas');
+            return;
+        }
+        if (!cursoSede) {
+            alert('Por favor, ingrese la sede del curso');
+            return;
+        }
+
         try {
             const response = await fetch('{{ route("certificados.store-multiple") }}', {
                 method: 'POST',
@@ -392,7 +474,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({
                     matricula_ids: selectedIds,
-                    curso_id: cursoId
+                    curso_id: cursoId,
+                    curso_nombre: cursoNombre,
+                    curso_horas: cursoHoras,
+                    curso_sede: cursoSede
                 })
             });
 
@@ -400,6 +485,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (response.ok) {
                 alert('Certificados generados exitosamente');
+                certificatePreviewModal.classList.add('hidden');
                 window.location.reload();
             } else {
                 throw new Error(data.message || 'Error al generar los certificados');
@@ -407,6 +493,13 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Error:', error);
             alert('Error al generar los certificados: ' + error.message);
+        }
+    });
+
+    // Cerrar el modal al hacer clic fuera de él
+    certificatePreviewModal?.addEventListener('click', function(e) {
+        if (e.target === certificatePreviewModal) {
+            certificatePreviewModal.classList.add('hidden');
         }
     });
 });
