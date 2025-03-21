@@ -49,11 +49,27 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) rotate(-30deg);
             opacity: 0.1;
             font-size: 8rem;
             color: #234E70;
             pointer-events: none;
+            z-index: 0;
+        }
+        .signature-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 4rem;
+            padding: 0 2rem;
+        }
+        .signature {
+            text-align: center;
+            width: 200px;
+        }
+        .signature-line {
+            width: 100%;
+            border-bottom: 1px solid #000;
+            margin-bottom: 0.5rem;
         }
         @media print {
             body {
@@ -95,58 +111,44 @@
         <div class="certificate-container bg-white shadow-xl rounded-lg">
             <div class="certificate-border">
                 <div class="certificate-content">
-                    <div class="watermark">CERTIFICADO</div>
+                    <div class="watermark">CAP-U</div>
                     
-                    <!-- Encabezado -->
-                    <div class="text-3xl font-bold text-gray-800 mb-8">
-                        CERTIFICADO DE CULMINACIÓN
-                    </div>
+                    <h1 class="text-2xl font-bold mb-8">SE CONFIERE EL SIGUIENTE CERTIFICADO</h1>
+                    
+                    <h2 class="text-5xl font-bold mb-4">CERTIFICADO</h2>
+                    
+                    <p class="text-xl mb-8">A</p>
 
-                    <!-- Número de certificado -->
-                    <div class="text-sm text-gray-600 mb-8">
-                        N° {{ $certificado->numero_certificado }}
-                    </div>
+                    <h3 class="text-2xl font-bold mb-8">{{ $certificado->nombre_completo }}</h3>
 
-                    <!-- Contenido principal -->
-                    <div class="text-lg mb-6">
-                        Se certifica que:
-                    </div>
+                    <p class="text-xl mb-4">Por ser parte del programa de capacitación continua en</p>
+                    <p class="text-xl font-bold mb-8">el curso de {{ $certificado->nombre_curso }}</p>
 
-                    <div class="text-2xl font-bold text-gray-800 mb-6">
-                        {{ $certificado->nombre_completo }}
-                    </div>
+                    <p class="text-xl mb-8">
+                        Con una carga académica de {{ $certificado->horas_curso }} horas prácticas en {{ $certificado->sede_curso }}. Dado en
+                        la ciudad de Quito el {{ $certificado->fecha_emision->format('d \d\e F \d\e\l Y') }}.
+                    </p>
 
-                    <div class="text-lg mb-6">
-                        Ha completado satisfactoriamente el curso:
-                    </div>
-
-                    <div class="text-2xl font-bold text-blue-800 mb-6">
-                        {{ $certificado->nombre_curso }}
-                    </div>
-
-                    <div class="text-lg mb-6">
-                        Con una duración de {{ $certificado->horas_curso }} horas académicas
-                    </div>
-
-                    <div class="text-lg mb-8">
-                        Sede: {{ $certificado->sede_curso }}
-                    </div>
-
-                    <!-- Fecha -->
-                    <div class="text-lg mb-8">
-                        {{ $certificado->fecha_emision->format('d \d\e F \d\e\l Y') }}
-                    </div>
-
-                    <!-- Firmas -->
-                    <div class="flex justify-around mt-16">
-                        <div class="text-center">
-                            <div class="w-48 border-t-2 border-gray-400"></div>
-                            <div class="mt-2 text-sm text-gray-600">Director Académico</div>
+                    <div class="signature-container">
+                        <div class="signature">
+                            <div class="signature-line"></div>
+                            <p class="font-bold">Ab. Xavier Remache</p>
+                            <p class="text-sm">COORDINADOR FEUE NACIONAL</p>
                         </div>
-                        <div class="text-center">
-                            <div class="w-48 border-t-2 border-gray-400"></div>
-                            <div class="mt-2 text-sm text-gray-600">Coordinador General</div>
+                        <div class="signature">
+                            <div class="signature-line"></div>
+                            <p class="font-bold">Ab. Erik Barba</p>
+                            <p class="text-sm">GERENTE DE CAP - U</p>
                         </div>
+                        <div class="signature">
+                            <div class="signature-line"></div>
+                            <p class="font-bold">Sr. Adrián Durán</p>
+                            <p class="text-sm">REPRESENTANTE ASESEC</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 text-sm">
+                        Registro No. SENESCYT-CGAJ-DAJ-{{ $certificado->numero_certificado }}
                     </div>
                 </div>
             </div>
