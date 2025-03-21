@@ -19,8 +19,34 @@ class CertificadoController extends Controller
 
     public function index()
     {
-        $certificados = Certificado::with('usuario')->paginate(10);
-        return view('certificados.index', compact('certificados'));
+        $tiposCursos = \App\Models\TipoCurso::all();
+        $cursos = \App\Models\Curso::all();
+        
+        $query = Certificado::with('usuario');
+
+        // Aplicar filtro por tipo de curso
+        if (request()->has('tipo_curso') && request('tipo_curso') !== '') {
+            $tipoCursoId = request('tipo_curso');
+            $cursosIds = \App\Models\Curso::where('tipo_curso_id', $tipoCursoId)->pluck('id');
+            $cursosFiltrados = \App\Models\Curso::whereIn('id', $cursosIds)->get();
+            $nombresCursos = $cursosFiltrados->pluck('nombre')->toArray();
+            $query->whereIn('nombre_curso', $nombresCursos);
+        }
+
+        // Aplicar filtro por curso específico
+        if (request()->has('curso_id') && request('curso_id') !== '') {
+            $curso = \App\Models\Curso::find(request('curso_id'));
+            if ($curso) {
+                $query->where('nombre_curso', $curso->nombre);
+            }
+        }
+
+        // Obtener número de registros por página (50 por defecto)
+        $perPage = request('per_page', 50);
+
+        $certificados = $query->paginate($perPage)->withQueryString();
+
+        return view('certificados.index', compact('certificados', 'tiposCursos', 'cursos'));
     }
 
     public function create()
@@ -95,7 +121,7 @@ class CertificadoController extends Controller
                 'curso_id' => 'required|exists:cursos,id'
             ]);
 
-            $curso = \App\Models\Curso::findOrFail($request->curso_id);
+            $curso = \App\Models\Curso::with('tipoCurso')->findOrFail($request->curso_id);
             
             // Verificar que el curso tenga horas definidas
             if (!$curso->horas) {
@@ -124,12 +150,13 @@ class CertificadoController extends Controller
                 
                 $numeroCertificado = sprintf('CERT-%s-%04d', $anioActual, $numeroSecuencial);
 
-                // Crear el certificado asegurando que el nombre esté entre comillas
+                // Crear el certificado usando el nombre del tipo de curso como sede
                 Certificado::create([
                     'usuario_id' => $matricula->usuario_id,
                     'nombre_completo' => "'{$matricula->usuario->name}'",
-                    'horas_curso' => (int)$curso->horas, // Convertir explícitamente a entero
-                    'sede_curso' => 'Sede Principal',
+                    'nombre_curso' => $curso->nombre,
+                    'horas_curso' => (int)$curso->horas,
+                    'sede_curso' => $curso->tipoCurso->nombre ?? 'Sin tipo de curso definido',
                     'fecha_emision' => now(),
                     'anio_emision' => $anioActual,
                     'numero_certificado' => $numeroCertificado,

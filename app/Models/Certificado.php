@@ -14,6 +14,7 @@ class Certificado extends Model
     protected $fillable = [
         'usuario_id',
         'nombre_completo',
+        'nombre_curso',
         'horas_curso',
         'sede_curso',
         'fecha_emision',
