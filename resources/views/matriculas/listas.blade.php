@@ -21,6 +21,9 @@
                                     <button id="print-certificates" class="btn btn-primary bg-purple-500 hover:bg-purple-700 text-white text-sm py-1.5 px-3 rounded">
                                         {{ __('Imprimir Certificados') }}
                                     </button>
+                                    <button id="generate-certificates" class="btn btn-primary bg-green-500 hover:bg-green-700 text-white text-sm py-1.5 px-3 rounded">
+                                        {{ __('Generar Certificados') }}
+                                    </button>
                                 @endif
                                 <button id="register-attendance" class="btn btn-primary bg-green-500 hover:bg-green-700 text-white text-sm py-1.5 px-3 rounded">
                                     {{ __('Registrar Asistencia') }}
@@ -382,6 +385,53 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             alert('Error al registrar la asistencia: ' + error.message);
+        }
+    });
+
+    // Manejo de generación de certificados
+    const generateCertificatesButton = document.getElementById('generate-certificates');
+    generateCertificatesButton?.addEventListener('click', async function() {
+        const selectedIds = Array.from(rowCheckboxes)
+            .reduce((acc, checkbox) => {
+                if (checkbox.checked) acc.push(checkbox.value);
+                return acc;
+            }, []);
+
+        if (selectedIds.length === 0) {
+            alert('Por favor, seleccione al menos un estudiante.');
+            return;
+        }
+
+        const cursoId = document.getElementById('curso_id').value;
+        if (!cursoId) {
+            alert('Por favor, seleccione un curso.');
+            return;
+        }
+
+        try {
+            const response = await fetch('{{ route("certificados.store-multiple") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    matricula_ids: selectedIds,
+                    curso_id: cursoId
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Certificados generados exitosamente');
+                window.location.reload();
+            } else {
+                throw new Error(data.message || 'Error al generar los certificados');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error al generar los certificados: ' + error.message);
         }
     });
 });
