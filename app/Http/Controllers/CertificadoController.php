@@ -22,7 +22,10 @@ class CertificadoController extends Controller
         $tiposCursos = \App\Models\TipoCurso::all();
         $cursos = \App\Models\Curso::all();
         
-        $query = Certificado::with('usuario');
+        $query = Certificado::with('usuario')
+            ->join('users', 'certificados.usuario_id', '=', 'users.id')
+            ->orderBy('users.name', 'asc')
+            ->select('certificados.*');
 
         // Aplicar filtro por tipo de curso
         if (request()->has('tipo_curso') && request('tipo_curso') !== '') {
