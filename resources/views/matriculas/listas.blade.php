@@ -18,9 +18,6 @@
                                     <button id="print-credentials" class="btn btn-primary bg-blue-500 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded">
                                         {{ __('Imprimir Credenciales') }}
                                     </button>
-                                    <button id="print-certificates" class="btn btn-primary bg-purple-500 hover:bg-purple-700 text-white text-sm py-1.5 px-3 rounded">
-                                        {{ __('Imprimir Certificados') }}
-                                    </button>
                                     <button id="generate-certificates" class="btn btn-primary bg-green-500 hover:bg-green-700 text-white text-sm py-1.5 px-3 rounded">
                                         {{ __('Generar Certificados') }}
                                     </button>
@@ -241,7 +238,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectAllCheckbox = document.getElementById('select-all');
     const rowCheckboxes = document.querySelectorAll('tbody .select-row');
     const printCredentialsButton = document.getElementById('print-credentials');
-    const printCertificatesButton = document.getElementById('print-certificates');
     const registerAttendanceButton = document.getElementById('register-attendance');
 
     // Debounce function para optimizar eventos
@@ -320,27 +316,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.querySelector('table').innerHTML = newDoc.querySelector('table').innerHTML;
                 })
                 .catch(error => console.error('Error al recargar:', error));
-        } else {
-            alert('Por favor, seleccione al menos una fila.');
-        }
-    });
-
-    // Manejo de impresión de certificados
-    printCertificatesButton?.addEventListener('click', function() {
-        const selectedIds = Array.from(rowCheckboxes)
-            .reduce((acc, checkbox) => {
-                if (checkbox.checked) acc.push(checkbox.value);
-                return acc;
-            }, []);
-
-        if (selectedIds.length > 0) {
-            const cursoId = document.getElementById('curso_id').value;
-            if (!cursoId) {
-                alert('Por favor, seleccione un curso.');
-                return;
-            }
-            const url = `{{ route('matriculas.printCertificates') }}?ids=${selectedIds.join(',')}&curso_id=${cursoId}`;
-            window.open(url, '_blank');
         } else {
             alert('Por favor, seleccione al menos una fila.');
         }
