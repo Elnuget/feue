@@ -81,6 +81,10 @@
                 📚 {{ __('Cursos') }}
             </x-nav-link>
             
+            <x-nav-link :href="route('certificados.index')" :active="request()->routeIs('certificados.*')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+                📜 {{ __('Certificados') }}
+            </x-nav-link>
+            
             <x-nav-link :href="route('pruebas')" :active="request()->routeIs('pruebas')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
                 👑 {{ __('Admin') }}
             </x-nav-link>

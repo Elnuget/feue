@@ -21,6 +21,7 @@ use App\Http\Controllers\CuestionarioController;
 use App\Http\Controllers\TareaController;
 use App\Http\Controllers\EntregaController;
 use App\Http\Controllers\CredencialesDocenteController;
+use App\Http\Controllers\CertificadoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::resource('certificados', CertificadoController::class);
 });
 
 // Agregar la ruta checkCedula fuera del grupo de middleware 'auth' y 'verified'
