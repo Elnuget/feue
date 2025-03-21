@@ -36,13 +36,17 @@ use App\Http\Controllers\CertificadoController;
 
 Route::get('/', [CursoController::class, 'welcome']);
 
+// Ruta pública para ver certificados
+Route::get('/certificados/{certificado}', [CertificadoController::class, 'show'])->name('certificados.show');
+
 Route::get('/dashboard', [CursoController::class, 'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::resource('certificados', CertificadoController::class);
+    // Rutas protegidas de certificados
+    Route::resource('certificados', CertificadoController::class)->except(['show']);
 });
 
 // Agregar la ruta checkCedula fuera del grupo de middleware 'auth' y 'verified'

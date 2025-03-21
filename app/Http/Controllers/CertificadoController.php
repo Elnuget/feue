@@ -14,7 +14,7 @@ class CertificadoController extends Controller
                 abort(403, 'No tienes permiso para acceder a esta sección.');
             }
             return $next($request);
-        });
+        })->except(['show']);
     }
 
     public function index()
