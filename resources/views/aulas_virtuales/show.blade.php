@@ -784,9 +784,9 @@
 
                     <!-- Modal para calificar tarea -->
                     @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
-                        <div id="calificarModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-                            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-2xl">
-                                <div class="flex justify-between items-center mb-4">
+                        <div id="calificarModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4 overflow-y-auto">
+                            <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg w-full max-w-2xl my-8 mx-auto max-h-[90vh] overflow-y-auto">
+                                <div class="flex justify-between items-center mb-4 sticky top-0 bg-white dark:bg-gray-800 z-10 py-2">
                                     <div>
                                         <h3 class="text-lg font-bold">Calificar Tarea</h3>
                                         <p class="text-sm text-gray-500" id="tarea-titulo"></p>
