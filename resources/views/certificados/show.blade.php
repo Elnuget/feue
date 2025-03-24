@@ -102,6 +102,20 @@
             line-height: 1.3; /* Reducimos el interlineado */
             margin-bottom: 5px; /* Reducimos el margen inferior */
         }
+        .qr-container {
+            position: absolute;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .qr-container img {
+            width: 120px;
+            height: 120px;
+        }
         @media print {
             body {
                 background-color: white;
@@ -117,6 +131,9 @@
                 max-width: 100%;
                 box-shadow: none;
                 border-radius: 0;
+            }
+            .qr-container {
+                box-shadow: none;
             }
         }
     </style>
@@ -172,6 +189,11 @@
                 <div class="registro-senescyt">
                     Registro No. SENESCYT-CGAJ-DAJ-{{ $certificado->numero_certificado }}
                 </div>
+            </div>
+
+            <!-- Código QR -->
+            <div class="qr-container">
+                {!! QrCode::size(120)->generate(route('certificados.show', $certificado->id)) !!}
             </div>
         </div>
 
