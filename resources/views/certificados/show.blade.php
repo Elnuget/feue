@@ -105,7 +105,7 @@
         .qr-container {
             position: absolute;
             right: 40px;
-            top: 50%;
+            top: 65%; /* Cambiado de 50% a 65% para moverlo más abajo */
             transform: translateY(-50%);
             background-color: white;
             padding: 10px;
