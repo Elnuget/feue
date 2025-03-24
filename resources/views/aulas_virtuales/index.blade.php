@@ -55,8 +55,22 @@
                         @endif
                     </div>
 
+                    <!-- Campo de búsqueda -->
+                    <div class="mb-6">
+                        <div class="relative">
+                            <input type="text" 
+                                   id="searchInput" 
+                                   class="w-full px-4 py-2 pl-10 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
+                                   placeholder="Buscar aulas virtuales..."
+                                   oninput="filterCards()">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Grid de tarjetas -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="aulasGrid">
                         @foreach ($aulasVirtuales as $aula)
                             <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
                                 <div class="p-6">
@@ -116,4 +130,24 @@
             </div>
         </div>
     </div>
+
+    <!-- Script para el filtrado -->
+    <script>
+        function filterCards() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('#aulasGrid > div');
+            
+            cards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                const cursos = Array.from(card.querySelectorAll('.bg-blue-100')).map(span => span.textContent.toLowerCase()).join(' ');
+                
+                const matchesSearch = title.includes(searchTerm) || 
+                                    description.includes(searchTerm) ||
+                                    cursos.includes(searchTerm);
+                
+                card.style.display = matchesSearch ? 'block' : 'none';
+            });
+        }
+    </script>
 </x-app-layout>
