@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Certificado;
+use App\Mail\CertificadoGenerado;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class CertificadoController extends Controller
 {
@@ -76,7 +78,12 @@ class CertificadoController extends Controller
             'observaciones' => 'nullable|string',
         ]);
 
-        Certificado::create($validated);
+        $certificado = Certificado::create($validated);
+
+        // Enviar correo electrónico
+        if ($certificado->usuario->email) {
+            Mail::to($certificado->usuario->email)->send(new CertificadoGenerado($certificado));
+        }
 
         return redirect()->route('certificados.index')
             ->with('success', 'Certificado creado exitosamente.');
@@ -155,7 +162,7 @@ class CertificadoController extends Controller
                 $numeroCertificado = sprintf('CERT-%s-%04d', $anioActual, $numeroSecuencial);
 
                 // Crear el certificado usando los datos del modal
-                Certificado::create([
+                $certificado = Certificado::create([
                     'usuario_id' => $matricula->usuario_id,
                     'nombre_completo' => $matricula->usuario->name,
                     'nombre_curso' => $request->curso_nombre,
@@ -167,6 +174,11 @@ class CertificadoController extends Controller
                     'estado' => true,
                     'observaciones' => 'Generado automáticamente'
                 ]);
+
+                // Enviar correo electrónico
+                if ($matricula->usuario->email) {
+                    Mail::to($matricula->usuario->email)->send(new CertificadoGenerado($certificado));
+                }
 
                 $certificadosCreados++;
             }
