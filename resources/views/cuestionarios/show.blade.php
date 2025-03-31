@@ -196,20 +196,6 @@
         </div>
     </div>
 
-    <!-- Modal de Pantalla Completa -->
-    <div id="modalPantallaCompleta" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-96 text-center">
-            <h3 class="text-lg font-semibold mb-4">Modo Pantalla Completa Requerido</h3>
-            <p class="mb-6 text-gray-600 dark:text-gray-400">
-                Para continuar con el cuestionario, es necesario activar el modo pantalla completa.
-            </p>
-            <button onclick="activarPantallaCompleta()" 
-                    class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                <i class="fas fa-expand mr-2"></i>Activar Pantalla Completa
-            </button>
-        </div>
-    </div>
-
     @push('styles')
     <style>
         /* Estilos para el switch */
@@ -292,7 +278,20 @@
                 document.querySelector(`.pregunta[data-pregunta="${preguntaActual}"]`).classList.add('hidden');
                 document.querySelector(`.pregunta[data-pregunta="${nuevaPregunta}"]`).classList.remove('hidden');
                 preguntaActual = nuevaPregunta;
+                actualizarBotonesNavegacion();
             }
+        }
+
+        // Función para actualizar la visibilidad de los botones de navegación
+        function actualizarBotonesNavegacion() {
+            const botonAnterior = document.querySelector('button[onclick="navegarPregunta(\'anterior\')"]');
+            const botonSiguiente = document.querySelector('button[onclick="navegarPregunta(\'siguiente\')"]');
+            
+            // Ocultar botón anterior en la primera pregunta
+            botonAnterior.style.display = preguntaActual === 1 ? 'none' : 'block';
+            
+            // Ocultar botón siguiente en la última pregunta
+            botonSiguiente.style.display = preguntaActual === totalPreguntas ? 'none' : 'block';
         }
 
         // Guardar respuesta
@@ -401,49 +400,8 @@
             }
         }
 
-        // Funciones para manejar pantalla completa
-        function verificarPantallaCompleta() {
-            const esPantallaCompleta = document.fullscreenElement || 
-                                     document.webkitFullscreenElement || 
-                                     document.mozFullScreenElement || 
-                                     document.msFullscreenElement;
-            
-            const modal = document.getElementById('modalPantallaCompleta');
-            
-            if (!esPantallaCompleta) {
-                modal.style.display = 'flex';
-                document.getElementById('cuestionarioForm').style.pointerEvents = 'none';
-            } else {
-                modal.style.display = 'none';
-                document.getElementById('cuestionarioForm').style.pointerEvents = 'auto';
-            }
-        }
-
-        async function activarPantallaCompleta() {
-            try {
-                const element = document.documentElement;
-                if (element.requestFullscreen) {
-                    await element.requestFullscreen();
-                } else if (element.webkitRequestFullscreen) {
-                    await element.webkitRequestFullscreen();
-                } else if (element.mozRequestFullScreen) {
-                    await element.mozRequestFullScreen();
-                } else if (element.msRequestFullscreen) {
-                    await element.msRequestFullscreen();
-                }
-            } catch (error) {
-                console.error('Error al activar pantalla completa:', error);
-            }
-        }
-
-        // Eventos para detectar cambios en el modo pantalla completa
-        document.addEventListener('fullscreenchange', verificarPantallaCompleta);
-        document.addEventListener('webkitfullscreenchange', verificarPantallaCompleta);
-        document.addEventListener('mozfullscreenchange', verificarPantallaCompleta);
-        document.addEventListener('MSFullscreenChange', verificarPantallaCompleta);
-
-        // Verificar estado inicial
-        verificarPantallaCompleta();
+        // Inicializar la visibilidad de los botones
+        actualizarBotonesNavegacion();
     </script>
     @endpush
 </x-app-layout> 
