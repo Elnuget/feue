@@ -35,6 +35,15 @@ class CertificadoController extends Controller
         ->orderBy('users.name', 'asc')
         ->select('certificados.*');
 
+        // Aplicar búsqueda por nombre de usuario o curso
+        if (request()->has('search') && request('search') !== '') {
+            $searchTerm = request('search');
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('users.name', 'like', "%{$searchTerm}%")
+                  ->orWhere('certificados.nombre_curso', 'like', "%{$searchTerm}%");
+            });
+        }
+
         // Aplicar filtro por tipo de curso
         if (request()->has('tipo_curso') && request('tipo_curso') !== '') {
             $tipoCursoId = request('tipo_curso');
