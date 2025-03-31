@@ -954,8 +954,8 @@
                     @endif
 
                     <!-- Modal de Verificación -->
-                    <div id="modalVerificacion" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-                        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-2xl">
+                    <div id="modalVerificacion" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4 overflow-y-auto">
+                        <div class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg w-full max-w-2xl my-8 mx-auto">
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-lg font-bold">Verificación de Requisitos</h3>
                                 <button onclick="cerrarModalVerificacion()" class="text-gray-500 hover:text-gray-700">
@@ -965,70 +965,70 @@
                                 </button>
                             </div>
 
-                            <div class="space-y-6">
-                                <!-- Paso 1: Verificación de pantallas (antes paso 3) -->
-                                <div id="paso1" class="border rounded-lg p-4">
-                                    <div class="flex items-center justify-between">
+                            <div class="space-y-4 sm:space-y-6">
+                                <!-- Paso 1: Verificación de pantallas (solo para escritorio) -->
+                                <div id="paso1" class="border rounded-lg p-3 sm:p-4 hidden md:block">
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                         <div>
-                                            <h4 class="font-semibold">Paso 1: Verificar Pantallas Conectadas</h4>
+                                            <h4 class="font-semibold text-base sm:text-lg">Paso 1: Verificar Pantallas Conectadas</h4>
                                             <p class="text-sm text-gray-600 dark:text-gray-400">
                                                 Solo debe tener una pantalla activa.
                                             </p>
                                         </div>
-                                        <div id="paso1Status" class="text-yellow-500">
+                                        <div id="paso1Status" class="text-yellow-500 text-sm sm:text-base">
                                             Pendiente
                                         </div>
                                     </div>
-                                    <button onclick="verificarPantallas()" class="mt-2 bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition">
+                                    <button onclick="verificarPantallas()" class="mt-2 w-full sm:w-auto bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition">
                                         Verificar Pantallas
                                     </button>
                                 </div>
 
-                                <!-- Paso 2: Verificación de cámara y micrófono (sin cambios) -->
-                                <div id="paso2" class="border rounded-lg p-4 opacity-50">
-                                    <div class="flex items-center justify-between">
+                                <!-- Paso 2: Verificación de cámara y micrófono -->
+                                <div id="paso2" class="border rounded-lg p-3 sm:p-4">
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                         <div>
-                                            <h4 class="font-semibold">Paso 2: Verificar Cámara y Micrófono</h4>
+                                            <h4 class="font-semibold text-base sm:text-lg">Paso 1: Verificar Cámara y Micrófono</h4>
                                             <p class="text-sm text-gray-600 dark:text-gray-400">
                                                 Necesitamos acceso a su cámara y micrófono.
                                             </p>
                                         </div>
-                                        <div id="paso2Status" class="text-yellow-500">
+                                        <div id="paso2Status" class="text-yellow-500 text-sm sm:text-base">
                                             Pendiente
                                         </div>
                                     </div>
                                     <div class="mt-2 space-y-2">
-                                        <video id="videoPreview" class="w-full h-32 bg-black hidden" autoplay muted></video>
-                                        <button onclick="verificarDispositivos()" class="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition" disabled>
+                                        <video id="videoPreview" class="w-full h-32 bg-black hidden rounded-lg" autoplay muted></video>
+                                        <button onclick="verificarDispositivos()" class="w-full sm:w-auto bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition">
                                             Verificar Dispositivos
                                         </button>
                                     </div>
                                 </div>
 
-                                <!-- Paso 3: Verificación de pestañas (antes paso 1) -->
-                                <div id="paso3" class="border rounded-lg p-4 opacity-50">
-                                    <div class="flex items-center justify-between">
+                                <!-- Paso 3: Verificación de pestañas -->
+                                <div id="paso3" class="border rounded-lg p-3 sm:p-4 opacity-50">
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                         <div>
-                                            <h4 class="font-semibold">Paso 3: Verificar Pestañas del Navegador</h4>
+                                            <h4 class="font-semibold text-base sm:text-lg">Paso 2: Verificar Pestañas del Navegador</h4>
                                             <p class="text-sm text-gray-600 dark:text-gray-400">
                                                 Por favor, cierre todas las pestañas excepto esta.
                                             </p>
                                         </div>
-                                        <div id="paso3Status" class="text-yellow-500">
+                                        <div id="paso3Status" class="text-yellow-500 text-sm sm:text-base">
                                             Pendiente
                                         </div>
                                     </div>
-                                    <button onclick="verificarPestanas()" class="mt-2 bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition" disabled>
+                                    <button onclick="verificarPestanas()" class="mt-2 w-full sm:w-auto bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-1 px-3 rounded transition" disabled>
                                         Verificar Pestañas
                                     </button>
                                 </div>
                             </div>
 
-                            <div class="mt-6 flex justify-end space-x-2">
-                                <button onclick="cerrarModalVerificacion()" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
+                            <div class="mt-6 flex flex-col sm:flex-row justify-end gap-2">
+                                <button onclick="cerrarModalVerificacion()" class="w-full sm:w-auto px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
                                     Cancelar
                                 </button>
-                                <button id="btnComenzar" onclick="comenzarCuestionario()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors" disabled>
+                                <button id="btnComenzar" onclick="comenzarCuestionario()" class="w-full sm:w-auto px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors" disabled>
                                     Comenzar Cuestionario
                                 </button>
                             </div>
@@ -1452,6 +1452,25 @@
             document.getElementById('modalVerificacion').classList.remove('hidden');
             document.getElementById('modalVerificacion').classList.add('flex');
             resetearVerificacion();
+            
+            // Verificar si es dispositivo móvil
+            const esDispositivoMovil = window.innerWidth < 768;
+            const paso1 = document.getElementById('paso1');
+            
+            if (esDispositivoMovil) {
+                paso1.classList.add('hidden');
+                // En móvil, el paso 2 y 3 se convierten en paso 1 y 2
+                document.querySelector('#paso2 h4').textContent = 'Paso 1: Verificar Cámara y Micrófono';
+                document.querySelector('#paso3 h4').textContent = 'Paso 2: Verificar Pestañas del Navegador';
+                // Habilitar el paso 2 inmediatamente en móvil
+                document.getElementById('paso2').classList.remove('opacity-50');
+                document.querySelector('#paso2 button').disabled = false;
+            } else {
+                paso1.classList.remove('hidden');
+                // En escritorio, mantener los títulos originales
+                document.querySelector('#paso2 h4').textContent = 'Paso 2: Verificar Cámara y Micrófono';
+                document.querySelector('#paso3 h4').textContent = 'Paso 3: Verificar Pestañas del Navegador';
+            }
         }
 
         function cerrarModalVerificacion() {
@@ -1465,27 +1484,40 @@
         }
 
         function resetearVerificacion() {
+            const esDispositivoMovil = window.innerWidth < 768;
             pasosCompletados = { paso1: false, paso2: false, paso3: false };
-            document.getElementById('paso1Status').textContent = 'Pendiente';
-            document.getElementById('paso1Status').className = 'text-yellow-500';
+            
+            if (!esDispositivoMovil) {
+                document.getElementById('paso1Status').textContent = 'Pendiente';
+                document.getElementById('paso1Status').className = 'text-yellow-500';
+            }
+            
             document.getElementById('paso2Status').textContent = 'Pendiente';
             document.getElementById('paso2Status').className = 'text-yellow-500';
             document.getElementById('paso3Status').textContent = 'Pendiente';
             document.getElementById('paso3Status').className = 'text-yellow-500';
-            document.getElementById('paso2').classList.add('opacity-50');
+            
+            if (!esDispositivoMovil) {
+                document.getElementById('paso2').classList.add('opacity-50');
+                document.querySelector('#paso2 button').disabled = true;
+            }
+            
             document.getElementById('paso3').classList.add('opacity-50');
-            document.getElementById('videoPreview').classList.add('hidden');
-            document.querySelector('#paso2 button').disabled = true;
             document.querySelector('#paso3 button').disabled = true;
+            document.getElementById('videoPreview').classList.add('hidden');
             document.getElementById('btnComenzar').disabled = true;
         }
 
         function actualizarEstadoPasos() {
-            const todosCompletados = Object.values(pasosCompletados).every(paso => paso);
-            document.getElementById('btnComenzar').disabled = !todosCompletados;
+            const esDispositivoMovil = window.innerWidth < 768;
+            // Solo verificamos los dos primeros pasos
+            const pasosCompletadosRequeridos = esDispositivoMovil ? 
+                pasosCompletados.paso2 : 
+                pasosCompletados.paso1 && pasosCompletados.paso2;
             
-            // Habilitar paso siguiente si el anterior está completado
-            if (pasosCompletados.paso1) {
+            document.getElementById('btnComenzar').disabled = !pasosCompletadosRequeridos;
+            
+            if (!esDispositivoMovil && pasosCompletados.paso1) {
                 document.getElementById('paso2').classList.remove('opacity-50');
                 document.querySelector('#paso2 button').disabled = false;
             }
@@ -1606,7 +1638,13 @@
         }
 
         function comenzarCuestionario() {
-            if (Object.values(pasosCompletados).every(paso => paso)) {
+            const esDispositivoMovil = window.innerWidth < 768;
+            // Solo verificamos los dos primeros pasos
+            const pasosCompletadosRequeridos = esDispositivoMovil ? 
+                pasosCompletados.paso2 : 
+                pasosCompletados.paso1 && pasosCompletados.paso2;
+
+            if (pasosCompletadosRequeridos) {
                 if (stream) {
                     stream.getTracks().forEach(track => track.stop());
                     stream = null;
