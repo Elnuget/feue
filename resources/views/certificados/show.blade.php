@@ -199,9 +199,9 @@
 
         <!-- Botones de acción -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 flex justify-center space-x-4 no-print">
-            <button onclick="window.print()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                <i class="fas fa-print mr-2"></i> Imprimir Certificado
-            </button>
+            <a href="{{ route('certificados.pdf', $certificado) }}" target="_blank" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                <i class="fas fa-file-pdf mr-2"></i> Descargar PDF
+            </a>
             @auth
                 @if(auth()->user()->hasRole(1))
                     <a href="{{ route('certificados.edit', $certificado) }}" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">

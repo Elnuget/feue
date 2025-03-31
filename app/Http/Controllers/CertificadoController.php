@@ -6,6 +6,7 @@ use App\Models\Certificado;
 use App\Mail\CertificadoGenerado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use PDF;
 
 class CertificadoController extends Controller
 {
@@ -16,7 +17,7 @@ class CertificadoController extends Controller
                 abort(403, 'No tienes permiso para acceder a esta sección.');
             }
             return $next($request);
-        })->except(['show']);
+        })->except(['show', 'pdf']);
     }
 
     public function index()
@@ -126,6 +127,13 @@ class CertificadoController extends Controller
 
         return redirect()->route('certificados.index')
             ->with('success', 'Certificado eliminado exitosamente.');
+    }
+
+    public function pdf(Certificado $certificado)
+    {
+        $pdf = PDF::loadView('certificados.pdf', compact('certificado'));
+        $pdf->setPaper('a4', 'landscape');
+        return $pdf->stream('certificado.pdf');
     }
 
     public function storeMultiple(Request $request)

@@ -38,6 +38,7 @@ Route::get('/', [CursoController::class, 'welcome']);
 
 // Ruta pública para ver certificados
 Route::get('/certificados/{certificado}', [CertificadoController::class, 'show'])->name('certificados.show');
+Route::get('/certificados/{certificado}/pdf', [CertificadoController::class, 'pdf'])->name('certificados.pdf');
 
 Route::get('/dashboard', [CursoController::class, 'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
 
