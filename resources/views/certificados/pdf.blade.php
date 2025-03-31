@@ -12,15 +12,16 @@
             margin: 0;
             padding: 0;
             font-family: 'DejaVu Sans', sans-serif;
+            background-image: url('data:image/png;base64,{{ base64_encode(file_get_contents(public_path('fonto_Certificado.png'))) }}');
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
         }
         .certificate-container {
             width: 100%;
             height: 100vh;
             position: relative;
-            background-image: url('{{ asset("fonto_Certificado.png") }}');
-            background-size: 100% 100%;
-            background-position: center;
-            background-repeat: no-repeat;
         }
         .certificate-content {
             position: absolute;
@@ -37,19 +38,21 @@
             text-align: center;
         }
         .certificate-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 6rem;
+            font-size: 60px;
+            font-weight: bold;
             letter-spacing: 2px;
-            margin-bottom: -2rem;
+            margin-bottom: 20px;
+            margin-top: 20px;
         }
         .nombre-destacado {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
+            font-size: 30px;
+            font-weight: bold;
+            margin: 20px 0;
         }
         .texto-certificado {
-            line-height: 1.3;
-            margin-bottom: 5px;
+            font-size: 18px;
+            line-height: 1.5;
+            margin: 10px 0;
         }
         .registro-senescyt {
             position: absolute;
@@ -57,7 +60,7 @@
             left: 0;
             right: 0;
             text-align: center;
-            font-size: 0.9rem;
+            font-size: 14px;
         }
         .qr-container {
             position: absolute;
@@ -72,26 +75,30 @@
             width: 120px;
             height: 120px;
         }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="certificate-container">
         <div class="certificate-content">
-            <h1 class="text-2xl font-bold mb-2">SE CONFIERE EL SIGUIENTE</h1>
+            <h1>SE CONFIERE EL SIGUIENTE</h1>
             
-            <h2 class="certificate-title">CERTIFICADO</h2>
+            <div class="certificate-title">CERTIFICADO</div>
             
-            <p class="text-xl mb-1">A</p>
+            <p>A</p>
 
-            <h3 class="nombre-destacado">{{ $certificado->nombre_completo }}</h3>
+            <div class="nombre-destacado">{{ $certificado->nombre_completo }}</div>
 
-            <p class="text-xl mb-2 texto-certificado">Por ser parte del programa de capacitación continua en</p>
-            <p class="text-xl font-bold mb-5 texto-certificado">el curso de {{ $certificado->nombre_curso }}</p>
+            <p class="texto-certificado">Por ser parte del programa de capacitación continua en</p>
+            <p class="texto-certificado" style="font-weight: bold;">el curso de {{ $certificado->nombre_curso }}</p>
 
-            <p class="text-xl texto-certificado">
+            <p class="texto-certificado">
                 Con una carga académica de {{ $certificado->horas_curso }} horas prácticas en {{ $certificado->sede_curso }}.
             </p>
-            <p class="text-xl mb-4 texto-certificado">
+            <p class="texto-certificado">
                 Dado en la ciudad de Quito el {{ \Carbon\Carbon::parse($certificado->fecha_emision)->locale('es')->isoFormat('D [de] MMMM [del] YYYY') }}.
             </p>
 
