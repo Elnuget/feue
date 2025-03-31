@@ -150,6 +150,11 @@
                                 </div>
                             </div>
                         </form>
+
+                        <!-- Contenedor para el listado de preguntas -->
+                        <div id="listadoPreguntas" class="mt-8 space-y-4">
+                            <!-- Las preguntas agregadas se mostrarán aquí -->
+                        </div>
                     </div>
 
                     <!-- Paso 3: Configuración -->
@@ -358,8 +363,8 @@
                 }
                 preguntaData.respuesta_correcta = respuestaCorrecta.value;
             } else {
+                // Manejo de preguntas de opción múltiple
                 const opciones = [];
-                let tieneRespuestaCorrecta = false;
                 const opcionesInputs = form.querySelectorAll('[name^="opciones["]');
                 const respuestaCorrecta = form.querySelector('input[name="opciones_correcta"]:checked');
 
@@ -388,25 +393,94 @@
                     return;
                 }
 
-                // Filtrar cualquier elemento null o undefined del array
                 preguntaData.opciones = opciones.filter(opcion => opcion !== null && opcion !== undefined);
                 preguntaData.opciones_correcta = respuestaCorrecta.value;
             }
 
-            console.log('Pregunta a agregar:', preguntaData); // Para depuración
-
+            console.log('Pregunta a agregar:', preguntaData);
             preguntas.push(preguntaData);
             document.getElementById('contadorPreguntas').textContent = preguntas.length;
             
-            // Limpiar formulario
+            // Limpiar completamente el formulario
             form.reset();
             document.getElementById('opcionesContainer').innerHTML = '';
+            opcionCount = 0; // Reiniciar el contador de opciones
             agregarOpcion();
             agregarOpcion();
 
-            // Mostrar mensaje de éxito
+            // Actualizar la lista de preguntas mostradas
+            actualizarListaPreguntas();
+
             mostrarMensaje('Pregunta agregada exitosamente');
         }
+
+        function actualizarListaPreguntas() {
+            const container = document.getElementById('listadoPreguntas');
+            container.innerHTML = '';
+
+            preguntas.forEach((pregunta, index) => {
+                const preguntaDiv = document.createElement('div');
+                preguntaDiv.className = 'bg-white dark:bg-gray-700 p-4 rounded-lg shadow mb-4';
+                
+                let opcionesHtml = '';
+                if (pregunta.tipo === 'verdadero_falso') {
+                    opcionesHtml = `
+                        <div class="ml-4 mt-2">
+                            <div class="flex items-center">
+                                <span class="${pregunta.respuesta_correcta === 'verdadero' ? 'text-green-500 font-bold' : ''}">• Verdadero</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="${pregunta.respuesta_correcta === 'falso' ? 'text-green-500 font-bold' : ''}">• Falso</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    opcionesHtml = `
+                        <div class="ml-4 mt-2">
+                            ${pregunta.opciones.map((opcion, opIndex) => `
+                                <div class="flex items-center">
+                                    <span class="${opIndex.toString() === pregunta.opciones_correcta ? 'text-green-500 font-bold' : ''}">
+                                        • ${opcion.texto}
+                                    </span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                preguntaDiv.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-semibold text-lg">${index + 1}. ${pregunta.pregunta}</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Tipo: ${pregunta.tipo === 'verdadero_falso' ? 'Verdadero/Falso' : 'Opción Múltiple'}</p>
+                            ${opcionesHtml}
+                        </div>
+                        <button onclick="eliminarPregunta(${index})" class="text-red-500 hover:text-red-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(preguntaDiv);
+            });
+        }
+
+        function eliminarPregunta(index) {
+            preguntas.splice(index, 1);
+            document.getElementById('contadorPreguntas').textContent = preguntas.length;
+            actualizarListaPreguntas();
+            mostrarMensaje('Pregunta eliminada exitosamente');
+        }
+
+        // Inicializar el contenedor de listado de preguntas
+        document.addEventListener('DOMContentLoaded', function() {
+            const listadoContainer = document.createElement('div');
+            listadoContainer.id = 'listadoPreguntas';
+            listadoContainer.className = 'mt-8 space-y-4';
+            document.querySelector('#paso2Content').appendChild(listadoContainer);
+        });
 
         async function guardarCuestionario() {
             if (preguntas.length === 0) {

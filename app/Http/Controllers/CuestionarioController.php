@@ -137,21 +137,14 @@ class CuestionarioController extends Controller
 
                     // Crear opciones para opción múltiple
                     foreach ($preguntaData['opciones'] as $opcionIndex => $opcion) {
-                        // Log para depuración de cada opción
-                        Log::info("Procesando opción #{$opcionIndex} de pregunta #{$index}:", ['opcion' => $opcion]);
-
-                        if (!is_array($opcion) || !isset($opcion['texto'])) {
-                            throw new \Exception("Formato inválido en la opción #{$opcionIndex} de la pregunta #{$index}");
-                        }
-
-                        if (trim($opcion['texto']) === '') {
+                        if (!isset($opcion['texto']) || trim($opcion['texto']) === '') {
                             throw new \Exception("La opción #{$opcionIndex} de la pregunta #{$index} no puede estar vacía");
                         }
 
                         Opcion::create([
                             'pregunta_id' => $pregunta->id,
                             'texto' => $opcion['texto'],
-                            'es_correcta' => (int)$preguntaData['opciones_correcta'] === $opcionIndex
+                            'es_correcta' => (string)$opcionIndex === (string)$preguntaData['opciones_correcta']
                         ]);
                     }
                 }
