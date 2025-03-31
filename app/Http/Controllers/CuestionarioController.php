@@ -22,26 +22,7 @@ class CuestionarioController extends Controller
             abort(403, 'No tienes permiso para realizar esta acción.');
         }
 
-        // Verificar si ya existe un cuestionario en proceso de creación
-        $cuestionarioExistente = $aulaVirtual->cuestionarios()
-            ->where('activo', false)
-            ->latest()
-            ->first();
-
-        if ($cuestionarioExistente) {
-            $cuestionario = $cuestionarioExistente;
-        } else {
-            // Crear el cuestionario primero con valores por defecto
-            $cuestionario = $aulaVirtual->cuestionarios()->create([
-                'titulo' => 'Nuevo Cuestionario',
-                'activo' => false,
-                'tiempo_limite' => 30,
-                'intentos_permitidos' => 1,
-                'permite_revision' => false
-            ]);
-        }
-
-        return view('cuestionarios.create', compact('aulaVirtual', 'cuestionario'));
+        return view('cuestionarios.create', compact('aulaVirtual'));
     }
 
     public function store(Request $request, AulaVirtual $aulaVirtual)
