@@ -33,25 +33,25 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
-            padding-top: 12rem;
+            padding: 1rem;
+            padding-top: 9rem;
             text-align: center;
         }
         .certificate-title {
             font-family: 'Playfair Display', serif;
             font-size: 6rem;
             letter-spacing: 2px;
-            margin-bottom: -2rem;
+            margin-bottom: -1rem;
         }
         .nombre-destacado {
             font-family: 'Playfair Display', serif;
             font-size: 2.5rem;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
         }
         .texto-certificado {
             font-size: 1.25rem;
-            line-height: 1.3;
-            margin-bottom: 5px;
+            line-height: 0.7;
+            margin-bottom: 0px;
         }
         .registro-senescyt {
             position: absolute;
