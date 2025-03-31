@@ -7,6 +7,7 @@ use App\Mail\CertificadoGenerado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use PDF;
+use QrCode;
 
 class CertificadoController extends Controller
 {
@@ -131,8 +132,22 @@ class CertificadoController extends Controller
 
     public function pdf(Certificado $certificado)
     {
-        $pdf = PDF::loadView('certificados.pdf', compact('certificado'));
+        // Generar el código QR
+        $qrCode = QrCode::size(120)
+            ->generate(route('certificados.show', $certificado->id));
+        
+        // Convertir el QR a base64
+        $qrCodeBase64 = base64_encode($qrCode);
+        
+        $pdf = PDF::loadView('certificados.pdf', compact('certificado', 'qrCodeBase64'));
         $pdf->setPaper('a4', 'landscape');
+        
+        // Configurar opciones adicionales para el PDF
+        $pdf->setOption('enable-local-file-access', true);
+        $pdf->setOption('javascript-delay', 1000);
+        $pdf->setOption('images', true);
+        $pdf->setOption('enable-smart-shrinking', true);
+        
         return $pdf->stream('certificado.pdf');
     }
 

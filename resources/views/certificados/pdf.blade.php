@@ -34,25 +34,24 @@
             align-items: center;
             justify-content: center;
             padding: 2rem;
-            padding-top: 1rem;
+            padding-top: 12rem;
             text-align: center;
         }
         .certificate-title {
-            font-size: 60px;
-            font-weight: bold;
+            font-family: 'Playfair Display', serif;
+            font-size: 6rem;
             letter-spacing: 2px;
-            margin-bottom: 20px;
-            margin-top: 20px;
+            margin-bottom: -2rem;
         }
         .nombre-destacado {
-            font-size: 30px;
-            font-weight: bold;
-            margin: 20px 0;
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
         }
         .texto-certificado {
-            font-size: 18px;
-            line-height: 1.5;
-            margin: 10px 0;
+            font-size: 1.25rem;
+            line-height: 1.3;
+            margin-bottom: 5px;
         }
         .registro-senescyt {
             position: absolute;
@@ -60,7 +59,7 @@
             left: 0;
             right: 0;
             text-align: center;
-            font-size: 14px;
+            font-size: 0.9rem;
         }
         .qr-container {
             position: absolute;
@@ -76,8 +75,9 @@
             height: 120px;
         }
         h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 2px;
         }
     </style>
 </head>
@@ -88,7 +88,7 @@
             
             <div class="certificate-title">CERTIFICADO</div>
             
-            <p>A</p>
+            <p class="texto-certificado">A</p>
 
             <div class="nombre-destacado">{{ $certificado->nombre_completo }}</div>
 
@@ -108,7 +108,7 @@
         </div>
 
         <div class="qr-container">
-            {!! QrCode::size(120)->generate(route('certificados.show', $certificado->id)) !!}
+            <img src="data:image/png;base64,{{ $qrCodeBase64 }}" alt="Código QR">
         </div>
     </div>
 </body>
