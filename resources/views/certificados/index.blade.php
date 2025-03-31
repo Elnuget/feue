@@ -4,9 +4,14 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Gestión de Certificados') }}
             </h2>
-            <a href="{{ route('certificados.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                {{ __('Nuevo Certificado') }}
-            </a>
+            <div class="flex gap-4">
+                <button id="generatePdfBtn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" disabled>
+                    {{ __('Generar PDF') }}
+                </button>
+                <a href="{{ route('certificados.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    {{ __('Nuevo Certificado') }}
+                </a>
+            </div>
         </div>
     </x-slot>
 
@@ -50,6 +55,9 @@
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500">
+                                    </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">#</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Usuario</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Curso</th>
@@ -59,6 +67,9 @@
                             <tbody class="bg-white divide-y divide-gray-200 dark:divide-gray-700 dark:bg-gray-800">
                                 @foreach($certificados as $index => $certificado)
                                     <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                                            <input type="checkbox" name="certificado_ids[]" value="{{ $certificado->id }}" class="certificado-checkbox rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500">
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                                             {{ ($certificados->currentPage() - 1) * $certificados->perPage() + $loop->iteration }}
                                         </td>
@@ -101,6 +112,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const tipoCursoSelect = document.getElementById('tipo_curso');
     const cursoSelect = document.getElementById('curso_id');
     const perPageSelect = document.getElementById('per_page');
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const certificadoCheckboxes = document.querySelectorAll('.certificado-checkbox');
+    const generatePdfBtn = document.getElementById('generatePdfBtn');
 
     // Función debounce para optimizar eventos
     const debounce = (func, wait) => {
@@ -155,5 +169,41 @@ document.addEventListener('DOMContentLoaded', function() {
     if (tipoCursoSelect.value) {
         actualizarCursos(tipoCursoSelect.value);
     }
+
+    // Manejar selección de todos los certificados
+    selectAllCheckbox.addEventListener('change', function() {
+        certificadoCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateGeneratePdfButton();
+    });
+
+    // Manejar selección individual de certificados
+    certificadoCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateGeneratePdfButton();
+            // Actualizar el estado del checkbox "Seleccionar todos"
+            const allChecked = Array.from(certificadoCheckboxes).every(cb => cb.checked);
+            selectAllCheckbox.checked = allChecked;
+        });
+    });
+
+    // Actualizar estado del botón de generación de PDF
+    function updateGeneratePdfButton() {
+        const hasChecked = Array.from(certificadoCheckboxes).some(cb => cb.checked);
+        generatePdfBtn.disabled = !hasChecked;
+    }
+
+    // Manejar generación de PDF
+    generatePdfBtn.addEventListener('click', function() {
+        const selectedIds = Array.from(certificadoCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+        
+        if (selectedIds.length > 0) {
+            const url = `{{ route('certificados.pdf.multiple') }}?ids=${selectedIds.join(',')}`;
+            window.open(url, '_blank');
+        }
+    });
 });
 </script> 

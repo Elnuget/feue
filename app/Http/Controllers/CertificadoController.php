@@ -151,6 +151,45 @@ class CertificadoController extends Controller
         return $pdf->stream('certificado.pdf');
     }
 
+    public function pdfMultiple(Request $request)
+    {
+        try {
+            $ids = explode(',', $request->query('ids'));
+            $certificados = Certificado::whereIn('id', $ids)
+                ->with('usuario')
+                ->get()
+                ->sortBy(function($certificado) {
+                    return $certificado->usuario->name;
+                });
+
+            if ($certificados->isEmpty()) {
+                return back()->with('error', 'No se encontraron certificados para imprimir.');
+            }
+
+            // Generar códigos QR para cada certificado
+            $certificados->each(function($certificado) {
+                $qrCode = QrCode::size(120)
+                    ->generate(route('certificados.show', $certificado->id));
+                $certificado->qr_code_base64 = base64_encode($qrCode);
+            });
+
+            $pdf = PDF::loadView('certificados.pdf_multiple', compact('certificados'));
+            $pdf->setPaper('a4', 'landscape');
+            
+            // Configurar opciones adicionales para el PDF
+            $pdf->setOption('enable-local-file-access', true);
+            $pdf->setOption('javascript-delay', 1000);
+            $pdf->setOption('images', true);
+            $pdf->setOption('enable-smart-shrinking', true);
+            
+            return $pdf->stream('certificados.pdf');
+
+        } catch (\Exception $e) {
+            \Log::error('Error al generar certificados: ' . $e->getMessage());
+            return back()->with('error', 'Error al generar los certificados: ' . $e->getMessage());
+        }
+    }
+
     public function storeMultiple(Request $request)
     {
         try {
