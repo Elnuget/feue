@@ -215,12 +215,17 @@
                 montoInput.value = '0';
                 // Habilitar el campo de monto para que el usuario pueda introducir el valor
                 montoInput.readOnly = false;
-            } else {
+            } else if (tipoPago === 'Pago Único') {
                 // Ocultar mensaje
                 mensajePagoMensual.classList.add('hidden');
                 // Restaurar el valor original del monto (que se establece cuando se selecciona un curso)
                 montoInput.value = montoTotal;
-                // Bloquear el campo de monto
+                // Habilitar el campo de monto para que el usuario pueda modificarlo
+                montoInput.readOnly = false;
+            } else {
+                // Si no hay tipo de pago seleccionado
+                mensajePagoMensual.classList.add('hidden');
+                montoInput.value = '0';
                 montoInput.readOnly = true;
             }
         }

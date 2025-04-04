@@ -218,7 +218,7 @@ class UserController extends Controller
             Log::info('Asistencias encontradas: ' . $asistencias->count());
 
             // Obtener matrículas con cursos
-            $matriculas = Matricula::with('curso')
+            $matriculas = Matricula::with(['curso', 'pagos'])
                                  ->where('usuario_id', $id)
                                  ->get();
 
@@ -245,6 +245,16 @@ class UserController extends Controller
                     return [
                         'id' => $matricula->id,
                         'valor_pendiente' => $matricula->valor_pendiente,
+                        'tipo_pago' => $matricula->tipo_pago,
+                        'created_at' => $matricula->created_at,
+                        'pagos' => $matricula->pagos->map(function($pago) {
+                            return [
+                                'id' => $pago->id,
+                                'monto' => $pago->monto,
+                                'fecha_pago' => $pago->fecha_pago,
+                                'estado' => $pago->estado
+                            ];
+                        }),
                         'curso' => $matricula->curso ? [
                             'id' => $matricula->curso->id,
                             'nombre' => $matricula->curso->nombre,

@@ -965,12 +965,111 @@
                         
                         // Actualizar estado de pagos
                         if (valoresPendientesElement) {
+                            // Verificar si hay matrículas con pago mensual
+                            const matriculasMensuales = matriculas.filter(m => m.tipo_pago === 'Mensual');
+                            const matriculasUnicas = matriculas.filter(m => m.tipo_pago === 'Pago Único');
+                            
+                            // Obtener el tipo de pago de la matrícula más reciente
+                            const matriculaActual = matriculas.sort((a, b) => 
+                                new Date(b.created_at) - new Date(a.created_at)
+                            )[0];
+
+                            console.log('Matrícula actual:', matriculaActual); // Debug
+                            
+                            // Asegurarse de que el tipo de pago tenga un valor válido
+                            const tipoPagoActual = matriculaActual && matriculaActual.tipo_pago 
+                                ? matriculaActual.tipo_pago 
+                                : (matriculaActual && matriculaActual.valor_pendiente > 0 ? 'Pago Único' : 'No especificado');
+                            
+                            console.log('Tipo de pago:', tipoPagoActual); // Debug
+                            
+                            // Obtener el último pago registrado
+                            const ultimoPago = matriculas.reduce((ultimo, matricula) => {
+                                if (!matricula.pagos || matricula.pagos.length === 0) return ultimo;
+                                
+                                const pagosMatricula = matricula.pagos
+                                    .filter(p => p.estado === 'Aprobado')
+                                    .sort((a, b) => new Date(b.fecha_pago) - new Date(a.fecha_pago));
+                                
+                                if (pagosMatricula.length === 0) return ultimo;
+                                
+                                const ultimoPagoMatricula = pagosMatricula[0];
+                                if (!ultimo || new Date(ultimoPagoMatricula.fecha_pago) > new Date(ultimo.fecha_pago)) {
+                                    return ultimoPagoMatricula;
+                                }
+                                return ultimo;
+                            }, null);
+                            
+                            // Verificar pagos del mes actual para matrículas mensuales
+                            const pagosDelMes = matriculasMensuales.some(matricula => {
+                                return matricula.pagos && matricula.pagos.some(pago => {
+                                    if (pago.estado !== 'Aprobado') return false;
+                                    
+                                    const fechaPago = new Date(pago.fecha_pago);
+                                    const mesPago = `${fechaPago.getFullYear()}-${String(fechaPago.getMonth() + 1).padStart(2, '0')}`;
+                                    return mesPago === currentMonth;
+                                });
+                            });
+                            
+                            // Calcular el total pendiente de todas las matrículas
                             const totalPendiente = matriculas.reduce((total, matricula) => {
                                 return total + (parseFloat(matricula.valor_pendiente) || 0);
                             }, 0);
-
-                            valoresPendientesElement.textContent = totalPendiente > 0 ? 'Valores Pendientes' : 'Al Día';
-                            valoresPendientesElement.className = `estado-pago ${totalPendiente > 0 ? 'pendiente' : 'al-dia'}`;
+                            
+                            // Determinar el estado de pago
+                            let estadoPago = 'Al Día';
+                            let claseEstado = 'al-dia';
+                            
+                            // Si hay matrículas mensuales, verificar primero si hay pagos del mes
+                            if (matriculasMensuales.length > 0) {
+                                if (pagosDelMes) {
+                                    estadoPago = 'Pago Mensual Correctamente';
+                                    claseEstado = 'al-dia';
+                                } else {
+                                    estadoPago = 'Valores Pendientes';
+                                    claseEstado = 'pendiente';
+                                }
+                            } 
+                            // Si no hay matrículas mensuales o todas están al día, verificar el total pendiente
+                            else if (totalPendiente > 0) {
+                                estadoPago = 'Valores Pendientes';
+                                claseEstado = 'pendiente';
+                            }
+                            
+                            // Actualizar el elemento con el estado de pago
+                            valoresPendientesElement.innerHTML = `
+                                <div class="estado-pago ${claseEstado}">${estadoPago}</div>
+                                <div class="mt-2 text-sm">
+                                    <div class="font-medium">Tipo de Pago:</div>
+                                    <div class="text-gray-600">
+                                        ${tipoPagoActual}
+                                    </div>
+                                </div>
+                                ${ultimoPago ? `
+                                    <div class="mt-2 text-sm">
+                                        <div class="font-medium">Último Pago:</div>
+                                        <div class="text-gray-600">
+                                            ${new Date(ultimoPago.fecha_pago).toLocaleDateString('es-EC')} - 
+                                            $${parseFloat(ultimoPago.monto).toFixed(2)}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            `;
+                            
+                            // Agregar información adicional sobre el tipo de pago
+                            const infoPago = document.createElement('div');
+                            infoPago.className = 'text-xs mt-1 text-gray-600';
+                            
+                            if (tipoPagoActual === 'Mensual') {
+                                infoPago.innerHTML = `<i class="fas fa-info-circle mr-1"></i> Pago Mensual - ${pagosDelMes ? 'Pagado este mes' : 'Pendiente este mes'}`;
+                            } else if (tipoPagoActual === 'Pago Único') {
+                                infoPago.innerHTML = `<i class="fas fa-info-circle mr-1"></i> Pago Único - ${totalPendiente > 0 ? 'Pendiente' : 'Completado'}`;
+                            }
+                            
+                            // Agregar la información solo si hay matrículas
+                            if (matriculas.length > 0) {
+                                valoresPendientesElement.appendChild(infoPago);
+                            }
                         }
                     }
 
