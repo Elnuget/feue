@@ -54,6 +54,7 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'phone' => ['nullable','string','max:20'],
+            'cedula' => ['required', 'string', 'max:20', 'unique:user_profiles,cedula'],
         ]);
         
         $name = mb_strtoupper($request->name, 'UTF-8');
@@ -67,6 +68,7 @@ class RegisteredUserController extends Controller
         \App\Models\UserProfile::create([
             'user_id' => $user->id,
             'phone' => $request->phone,
+            'cedula' => $request->cedula,
         ]);
 
         $role = Role::find(2); // Default role ID 2
