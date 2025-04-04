@@ -16,6 +16,7 @@ class Matricula extends Model
         'monto_total',
         'valor_pendiente',
         'estado_matricula',
+        'tipo_pago',
     ];
 
     public function usuario()

@@ -99,6 +99,21 @@
                             </div>
                         </div>
 
+                        <!-- Tipo de Pago -->
+                        <div class="relative">
+                            <label for="tipo_pago" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tipo de Pago</label>
+                            <div class="mt-1 flex rounded-md shadow-sm">
+                                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </span>
+                                <select name="tipo_pago" id="tipo_pago" class="flex-1 block w-full rounded-none rounded-r-md border-gray-300 dark:bg-gray-700 dark:text-gray-300">
+                                    <option value="">Selecciona un tipo de pago</option>
+                                    <option value="Pago Único" {{ $matricula->tipo_pago == 'Pago Único' ? 'selected' : '' }}>Pago Único</option>
+                                    <option value="Mensual" {{ $matricula->tipo_pago == 'Mensual' ? 'selected' : '' }}>Mensual</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <!-- Estado de Matrícula -->
                         <div class="relative">
                             <label for="estado_matricula" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Estado de Matrícula</label>

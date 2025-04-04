@@ -72,6 +72,17 @@
                             </div>
                         </div>
                         <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tipo de Pago</label>
+                            <div class="mt-1 flex rounded-md shadow-sm">
+                                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </span>
+                                <input type="text" value="{{ $matricula->tipo_pago ?? 'No especificado' }}" readonly class="flex-1 block w-full rounded-none rounded-r-md border-gray-300 dark:bg-gray-700 dark:text-gray-300">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+                        <div class="relative">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Estado de Matricula</label>
                             <div class="mt-1 flex rounded-md shadow-sm">
                                 <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">

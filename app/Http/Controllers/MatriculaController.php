@@ -92,6 +92,7 @@ class MatriculaController extends Controller
             'valor_pendiente' => 'nullable|numeric',
             'estado_matricula' => 'required|in:Pendiente,Aprobada,Completada,Rechazada',
             'universidad_id' => 'required_if:curso_id,1,2,3|exists:universidades,id',
+            'tipo_pago' => 'nullable|in:Pago Único,Mensual',
         ]);
 
         // Check if user is already enrolled in this course
@@ -185,6 +186,7 @@ class MatriculaController extends Controller
             'monto_total' => 'required|numeric',
             'valor_pendiente' => 'nullable|numeric',
             'estado_matricula' => 'required|in:Pendiente,Aprobada,Completada,Rechazada',
+            'tipo_pago' => 'nullable|in:Pago Único,Mensual',
         ]);
 
         if (!auth()->user()->hasRole(1) && $matricula->usuario_id != auth()->id()) {

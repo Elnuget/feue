@@ -141,6 +141,11 @@
                                     <th 
                                         class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider"
                                     >
+                                        Tipo de Pago
+                                    </th>
+                                    <th 
+                                        class="px-4 py-2 text-left text-xs font-medium text-white uppercase tracking-wider"
+                                    >
                                         Estado
                                     </th>
                                     @if(auth()->user()->hasRole(1))
@@ -203,6 +208,11 @@
                                             class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300"
                                         >
                                             {{ $matricula->valor_pendiente }}
+                                        </td>
+                                        <td 
+                                            class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300"
+                                        >
+                                            {{ $matricula->tipo_pago ?? 'No especificado' }}
                                         </td>
                                         <td 
                                             class="px-4 py-2 text-sm text-gray-500 dark:text-gray-300"
