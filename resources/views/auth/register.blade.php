@@ -1,178 +1,250 @@
 <x-guest-layout>
     @section('page_title', 'Register')
-    <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data" id="registration-form">
         @csrf
 
-        <!-- CEDULA Y VERIFICACIÓN -->
-        <div>
-            <x-input-label for="cedula" :value="__('Cédula')"/> 🆔
-            <p class="text-xs text-gray-500 mt-1">
-                La cédula debe no estar registrada en el sistema para poder registrarse. Si ya tienes una cuenta, puedes <a href="{{ route('login') }}" class="underline text-indigo-600 hover:text-indigo-900">iniciar sesión</a>.
-            </p>
-            <p class="text-xs text-gray-500 mt-1">
-                Los campos de registro se habilitarán una vez que verifiques tu cédula.
-            </p>
-            <div class="flex">
-                <x-text-input id="cedula" class="block mat-1 w-full" type="text" name="cedula" 
-                              :value="old('cedula')" required autocomplete="cedula" />
-                <button type="button" id="verify-cedula" class="ml-2 px-4 py-2 bg-blue-500 text-white rounded">
-                    Verificar
+        <!-- Indicador de progreso -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div class="step-indicator active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-title">Verificación</div>
+                </div>
+                <div class="step-indicator" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-title">Datos Personales</div>
+                </div>
+                <div class="step-indicator" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-title">Matrícula</div>
+                </div>
+                <div class="step-indicator" data-step="4">
+                    <div class="step-number">4</div>
+                    <div class="step-title">Pago</div>
+                </div>
+            </div>
+            <div class="progress-bar mt-2">
+                <div class="progress-fill" style="width: 25%"></div>
+            </div>
+        </div>
+
+        <!-- PASO 1: VERIFICACIÓN DE CÉDULA -->
+        <div class="step-content active" id="step-1">
+            <h2 class="text-xl font-bold mb-4">Verificación de Cédula</h2>
+            
+            <div>
+                <x-input-label for="cedula" :value="__('Cédula')"/> 🆔
+                <p class="text-xs text-gray-500 mt-1">
+                    La cédula debe no estar registrada en el sistema para poder registrarse. Si ya tienes una cuenta, puedes <a href="{{ route('login') }}" class="underline text-indigo-600 hover:text-indigo-900">iniciar sesión</a>.
+                </p>
+                <p class="text-xs text-gray-500 mt-1">
+                    Los campos de registro se habilitarán una vez que verifiques tu cédula.
+                </p>
+                <div class="flex">
+                    <x-text-input id="cedula" class="block mat-1 w-full" type="text" name="cedula" 
+                                  :value="old('cedula')" required autocomplete="cedula" />
+                    <button type="button" id="verify-cedula" class="ml-2 px-4 py-2 bg-blue-500 text-white rounded">
+                        Verificar
+                    </button>
+                </div>
+                <div id="cedula-feedback" class="mt-2 text-sm"></div>
+                <x-input-error :messages="$errors->get('cedula')" class="mt-2" />
+            </div>
+
+            <div class="flex justify-end mt-6">
+                <button type="button" class="next-step-btn px-4 py-2 bg-blue-500 text-white rounded" data-next="2" disabled>
+                    Siguiente
                 </button>
             </div>
-            <div id="cedula-feedback" class="mt-2 text-sm"></div>
-            <x-input-error :messages="$errors->get('cedula')" class="mt-2" />
         </div>
 
-        <!-- APELLIDOS Y NOMBRES -->
-        <div>
-            <x-input-label for="name" :value="__('APELLIDOS Y NOMBRES')"/> 📝
-            <!-- Aplicamos text-transform: uppercase para mostrar el texto en mayúsculas -->
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" 
-                          :value="old('name')" required autofocus autocomplete="name" 
-                          style="text-transform: uppercase;" disabled/>
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
-        </div>
+        <!-- PASO 2: DATOS PERSONALES -->
+        <div class="step-content hidden" id="step-2">
+            <h2 class="text-xl font-bold mb-4">Datos Personales</h2>
+            
+            <!-- APELLIDOS Y NOMBRES -->
+            <div>
+                <x-input-label for="name" :value="__('APELLIDOS Y NOMBRES')"/> 📝
+                <!-- Aplicamos text-transform: uppercase para mostrar el texto en mayúsculas -->
+                <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" 
+                              :value="old('name')" required autofocus autocomplete="name" 
+                              style="text-transform: uppercase;" disabled/>
+                <x-input-error :messages="$errors->get('name')" class="mt-2" />
+            </div>
 
-        <!-- Correo Electrónico -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Correo Electrónico')"/> 📧
-            <x-text-input id="email" class="block mt-1 w-full" 
-                          type="email" name="email" 
-                          :value="old('email')" required autocomplete="username" disabled/>
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+            <!-- Correo Electrónico -->
+            <div class="mt-4">
+                <x-input-label for="email" :value="__('Correo Electrónico')"/> 📧
+                <x-text-input id="email" class="block mt-1 w-full" 
+                              type="email" name="email" 
+                              :value="old('email')" required autocomplete="username" disabled/>
+                <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            </div>
 
-        <!-- Celular -->
-        <div class="mt-4">
-            <x-input-label for="phone" :value="__('Celular')"/> 📱
-            <x-text-input id="phone" class="block mt-1 w-full"
-                          type="text"
-                          name="phone"
-                          :value="old('phone')" />
-            <x-input-error :messages="$errors->get('phone')" class="mt-2" />
-        </div>
+            <!-- Celular -->
+            <div class="mt-4">
+                <x-input-label for="phone" :value="__('Celular')"/> 📱
+                <x-text-input id="phone" class="block mt-1 w-full"
+                              type="text"
+                              name="phone"
+                              :value="old('phone')" />
+                <x-input-error :messages="$errors->get('phone')" class="mt-2" />
+            </div>
 
-        <!-- Contraseña -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Contraseña')"/> 🔒
-            <x-text-input id="password" class="block mt-1 w-full"
-                          type="password"
-                          name="password"
-                          required autocomplete="new-password" disabled/>
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+            <!-- Contraseña -->
+            <div class="mt-4">
+                <x-input-label for="password" :value="__('Contraseña')"/> 🔒
+                <x-text-input id="password" class="block mt-1 w-full"
+                              type="password"
+                              name="password"
+                              required autocomplete="new-password" disabled/>
+                <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            </div>
 
-        <!-- Confirmar Contraseña -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirmar Contraseña')"/> 🔒
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                          type="password"
-                          name="password_confirmation" required autocomplete="new-password" disabled/>
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
+            <!-- Confirmar Contraseña -->
+            <div class="mt-4">
+                <x-input-label for="password_confirmation" :value="__('Confirmar Contraseña')"/> 🔒
+                <x-text-input id="password_confirmation" class="block mt-1 w-full"
+                              type="password"
+                              name="password_confirmation" required autocomplete="new-password" disabled/>
+                <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+            </div>
 
-        <!-- Campos para registrar matrícula -->
-        <div class="mt-4">
-            <x-input-label for="tipo_curso_id" :value="__('Sede')"/> 📚
-            <select name="tipo_curso_id" id="tipo_curso_id" required class="block mt-1 w-full">
-                <option value="">Selecciona una Sede</option>
-                @foreach($tiposCursos as $tipoCurso)
-                    <option value="{{ $tipoCurso->id }}">{{ $tipoCurso->nombre }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="mt-4">
-            <x-input-label for="curso_id" :value="__('Curso')"/> 📖
-            <select name="curso_id" id="curso_id" required class="block mt-1 w-full">
-                <option value="">Selecciona un Curso</option>
-            </select>
-            <div id="curso_details" class="mt-2 p-3 bg-gray-50 rounded-md text-sm hidden">
-                <div id="curso_nombre" class="font-bold"></div>
-                <div id="curso_precio" class="text-green-600"></div>
-                <div id="curso_horario" class="text-gray-700"></div>
+            <div class="flex justify-between mt-6">
+                <button type="button" class="prev-step-btn px-4 py-2 bg-gray-300 text-gray-700 rounded" data-prev="1">
+                    Anterior
+                </button>
+                <button type="button" class="next-step-btn px-4 py-2 bg-blue-500 text-white rounded" data-next="3">
+                    Siguiente
+                </button>
             </div>
         </div>
 
-        <div class="mt-4">
-            <x-input-label for="fecha_matricula" :value="__('Fecha de Matrícula')"/> 📅
-            <x-text-input id="fecha_matricula" class="block mt-1 w-full" type="date" name="fecha_matricula" 
-                          value="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" required />
-        </div>
-
-        <div class="mt-4">
-            <x-input-label for="monto_total" :value="__('Monto Total')"/> 💰
-            <x-text-input id="monto_total" class="block mt-1 w-full" type="number" name="monto_total" 
-                          required readonly placeholder="Selecciona un curso" />
-        </div>
-
-        <!-- Tipo de Pago -->
-        <div class="mt-4">
-            <x-input-label for="tipo_pago" :value="__('Tipo de Pago')"/> 💳
-            <select name="tipo_pago" id="tipo_pago" class="block mt-1 w-full" onchange="handleTipoPagoChange()">
-                <option value="">Selecciona un tipo de pago</option>
-                <option value="Pago Único">Pago Único</option>
-                <option value="Mensual">Mensual</option>
-            </select>
-        </div>
-
-        <!-- Mensaje para pago mensual -->
-        <div id="mensaje_pago_mensual" class="mt-2 p-3 bg-blue-50 text-blue-700 rounded-md text-sm hidden">
-            <p>Para pagos mensuales, por favor introduce el valor que pagarás mensualmente.</p>
-        </div>
-
-        <!-- Campos para registrar pago -->
-        <div class="mt-4">
-            <x-input-label for="metodo_pago_id" :value="__('Método de Pago')"/> 💳
-            <select name="metodo_pago_id" id="metodo_pago_id" required class="block mt-1 w-full">
-                @foreach($metodosPago as $metodo)
-                    <option value="{{ $metodo->id }}">{{ $metodo->nombre }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="mt-4">
-            <x-input-label for="monto" :value="__('Monto de Pago')"/> 💵
-            <x-text-input id="monto" class="block mt-1 w-full" type="number" name="monto" 
-                          value="0" step="0.01" placeholder="Monto de pago" required />
-        </div>
-
-        <div class="mt-4">
-            <x-input-label for="fecha_pago" :value="__('Fecha de Pago')"/> 📅
-            <x-text-input id="fecha_pago" class="block mt-1 w-full" type="date" name="fecha_pago" 
-                          value="{{ now()->timezone('America/Guayaquil')->toDateString() }}" required />
-        </div>
-
-        <div class="col-span-1 md:col-span-2" id="comprobante_pago_container">
-            <x-input-label for="comprobante_pago" :value="__('Comprobante de Pago')"/> 📎
-            <div class="mt-1 flex items-center">
-                <input type="file" name="comprobante_pago" id="comprobante_pago"
-                       accept=".png, .jpg, .jpeg, .pdf"
-                       class="block w-full text-sm text-gray-500
-                              file:mr-4 file:py-2 file:px-4
-                              file:rounded-full file:border-0
-                              file:text-sm file:font-semibold
-                              file:bg-blue-50 file:text-blue-700
-                              hover:file:bg-blue-100"
-                       onchange="handleFileSelect(this)">
+        <!-- PASO 3: MATRÍCULA -->
+        <div class="step-content hidden" id="step-3">
+            <h2 class="text-xl font-bold mb-4">Matrícula</h2>
+            
+            <!-- Campos para registrar matrícula -->
+            <div class="mt-4">
+                <x-input-label for="tipo_curso_id" :value="__('Sede')"/> 📚
+                <select name="tipo_curso_id" id="tipo_curso_id" required class="block mt-1 w-full">
+                    <option value="">Selecciona una Sede</option>
+                    @foreach($tiposCursos as $tipoCurso)
+                        <option value="{{ $tipoCurso->id }}">{{ $tipoCurso->nombre }}</option>
+                    @endforeach
+                </select>
             </div>
-            <div id="fileError" class="mt-2 text-sm text-red-600 hidden"></div>
-            <div id="filePreview" class="mt-2 hidden">
-                <img id="imagePreview" class="max-w-xs hidden" alt="Vista previa">
-                <p id="pdfPreview" class="text-sm text-gray-600 hidden">
-                    Archivo PDF seleccionado
-                </p>
+
+            <div class="mt-4">
+                <x-input-label for="curso_id" :value="__('Curso')"/> 📖
+                <select name="curso_id" id="curso_id" required class="block mt-1 w-full">
+                    <option value="">Selecciona un Curso</option>
+                </select>
+                <div id="curso_details" class="mt-2 p-3 bg-gray-50 rounded-md text-sm hidden">
+                    <div id="curso_nombre" class="font-bold"></div>
+                    <div id="curso_precio" class="text-green-600"></div>
+                    <div id="curso_horario" class="text-gray-700"></div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <x-input-label for="fecha_matricula" :value="__('Fecha de Matrícula')"/> 📅
+                <x-text-input id="fecha_matricula" class="block mt-1 w-full" type="date" name="fecha_matricula" 
+                              value="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" required />
+            </div>
+
+            <div class="mt-4">
+                <x-input-label for="monto_total" :value="__('Monto Total')"/> 💰
+                <x-text-input id="monto_total" class="block mt-1 w-full" type="number" name="monto_total" 
+                              required readonly placeholder="Selecciona un curso" />
+            </div>
+
+            <div class="flex justify-between mt-6">
+                <button type="button" class="prev-step-btn px-4 py-2 bg-gray-300 text-gray-700 rounded" data-prev="2">
+                    Anterior
+                </button>
+                <button type="button" class="next-step-btn px-4 py-2 bg-blue-500 text-white rounded" data-next="4">
+                    Siguiente
+                </button>
             </div>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('login') }}">
-                {{ __('¿Ya estás registrado?') }}
-            </a>
+        <!-- PASO 4: PAGO -->
+        <div class="step-content hidden" id="step-4">
+            <h2 class="text-xl font-bold mb-4">Pago</h2>
+            
+            <!-- Tipo de Pago -->
+            <div class="mt-4">
+                <x-input-label for="tipo_pago" :value="__('Tipo de Pago')"/> 💳
+                <select name="tipo_pago" id="tipo_pago" class="block mt-1 w-full" onchange="handleTipoPagoChange()">
+                    <option value="">Selecciona un tipo de pago</option>
+                    <option value="Pago Único">Pago Único</option>
+                    <option value="Mensual">Mensual</option>
+                </select>
+            </div>
 
-            <x-primary-button class="ms-4" disabled>
-                {{ __('Registrarse') }}
-            </x-primary-button>
+            <!-- Mensaje para pago mensual -->
+            <div id="mensaje_pago_mensual" class="mt-2 p-3 bg-blue-50 text-blue-700 rounded-md text-sm hidden">
+                <p>Para pagos mensuales, por favor introduce el valor que pagarás mensualmente.</p>
+            </div>
+
+            <!-- Campos para registrar pago -->
+            <div class="mt-4">
+                <x-input-label for="metodo_pago_id" :value="__('Método de Pago')"/> 💳
+                <select name="metodo_pago_id" id="metodo_pago_id" required class="block mt-1 w-full">
+                    @foreach($metodosPago as $metodo)
+                        <option value="{{ $metodo->id }}">{{ $metodo->nombre }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="mt-4">
+                <x-input-label for="monto" :value="__('Monto de Pago')"/> 💵
+                <x-text-input id="monto" class="block mt-1 w-full" type="number" name="monto" 
+                              value="0" step="0.01" placeholder="Monto de pago" required />
+            </div>
+
+            <div class="mt-4">
+                <x-input-label for="fecha_pago" :value="__('Fecha de Pago')"/> 📅
+                <x-text-input id="fecha_pago" class="block mt-1 w-full" type="date" name="fecha_pago" 
+                              value="{{ now()->timezone('America/Guayaquil')->toDateString() }}" required />
+            </div>
+
+            <div class="col-span-1 md:col-span-2" id="comprobante_pago_container">
+                <x-input-label for="comprobante_pago" :value="__('Comprobante de Pago')"/> 📎
+                <div class="mt-1 flex items-center">
+                    <input type="file" name="comprobante_pago" id="comprobante_pago"
+                           accept=".png, .jpg, .jpeg, .pdf"
+                           class="block w-full text-sm text-gray-500
+                                  file:mr-4 file:py-2 file:px-4
+                                  file:rounded-full file:border-0
+                                  file:text-sm file:font-semibold
+                                  file:bg-blue-50 file:text-blue-700
+                                  hover:file:bg-blue-100"
+                           onchange="handleFileSelect(this)">
+                </div>
+                <div id="fileError" class="mt-2 text-sm text-red-600 hidden"></div>
+                <div id="filePreview" class="mt-2 hidden">
+                    <img id="imagePreview" class="max-w-xs hidden" alt="Vista previa">
+                    <p id="pdfPreview" class="text-sm text-gray-600 hidden">
+                        Archivo PDF seleccionado
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex justify-between mt-6">
+                <button type="button" class="prev-step-btn px-4 py-2 bg-gray-300 text-gray-700 rounded" data-prev="3">
+                    Anterior
+                </button>
+                <div class="flex items-center">
+                    <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 mr-4" href="{{ route('login') }}">
+                        {{ __('¿Ya estás registrado?') }}
+                    </a>
+                    <x-primary-button class="ms-4" disabled>
+                        {{ __('Registrarse') }}
+                    </x-primary-button>
+                </div>
+            </div>
         </div>
     </form>
 
@@ -198,6 +270,53 @@
                 setTimeout(() => toast.remove(), 500);
             }, timeoutDuration);
         }
+
+        // Funciones para la navegación por pasos
+        document.querySelectorAll('.next-step-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const currentStep = parseInt(this.getAttribute('data-next')) - 1;
+                const nextStep = parseInt(this.getAttribute('data-next'));
+                
+                // Ocultar el paso actual
+                document.getElementById(`step-${currentStep}`).classList.add('hidden');
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+                
+                // Mostrar el siguiente paso
+                document.getElementById(`step-${nextStep}`).classList.remove('hidden');
+                document.getElementById(`step-${nextStep}`).classList.add('active');
+                
+                // Actualizar indicadores de progreso
+                document.querySelector(`.step-indicator[data-step="${currentStep}"]`).classList.remove('active');
+                document.querySelector(`.step-indicator[data-step="${nextStep}"]`).classList.add('active');
+                
+                // Actualizar barra de progreso
+                const progressFill = document.querySelector('.progress-fill');
+                progressFill.style.width = `${(nextStep / 4) * 100}%`;
+            });
+        });
+
+        document.querySelectorAll('.prev-step-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const currentStep = parseInt(this.getAttribute('data-prev')) + 1;
+                const prevStep = parseInt(this.getAttribute('data-prev'));
+                
+                // Ocultar el paso actual
+                document.getElementById(`step-${currentStep}`).classList.add('hidden');
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+                
+                // Mostrar el paso anterior
+                document.getElementById(`step-${prevStep}`).classList.remove('hidden');
+                document.getElementById(`step-${prevStep}`).classList.add('active');
+                
+                // Actualizar indicadores de progreso
+                document.querySelector(`.step-indicator[data-step="${currentStep}"]`).classList.remove('active');
+                document.querySelector(`.step-indicator[data-step="${prevStep}"]`).classList.add('active');
+                
+                // Actualizar barra de progreso
+                const progressFill = document.querySelector('.progress-fill');
+                progressFill.style.width = `${(prevStep / 4) * 100}%`;
+            });
+        });
 
         /**
          * Función para manejar el cambio en el tipo de pago
@@ -275,6 +394,7 @@
             const feedback = document.getElementById('cedula-feedback');
             const formFields = document.querySelectorAll('input:not([name="cedula"])');
             const submitButton = document.querySelector('button[type="submit"]');
+            const nextStepBtn = document.querySelector('.next-step-btn[data-next="2"]');
 
             // Reset feedback
             feedback.textContent = '';
@@ -285,6 +405,7 @@
                 feedback.classList.add('text-red-500');
                 formFields.forEach(field => field.disabled = true);
                 submitButton.disabled = true;
+                nextStepBtn.disabled = true;
                 return;
             }
 
@@ -293,6 +414,7 @@
                 feedback.classList.add('text-red-500');
                 formFields.forEach(field => field.disabled = true);
                 submitButton.disabled = true;
+                nextStepBtn.disabled = true;
                 return;
             }
 
@@ -312,11 +434,13 @@
                     feedback.classList.add('text-red-500');
                     formFields.forEach(field => field.disabled = true);
                     submitButton.disabled = true;
+                    nextStepBtn.disabled = true;
                 } else {
                     feedback.textContent = 'La cédula está disponible.';
                     feedback.classList.add('text-green-500');
                     formFields.forEach(field => field.disabled = false);
                     submitButton.disabled = false;
+                    nextStepBtn.disabled = false;
                 }
             })
             .catch(error => {
@@ -324,6 +448,7 @@
                 feedback.classList.add('text-red-500');
                 formFields.forEach(field => field.disabled = true);
                 submitButton.disabled = true;
+                nextStepBtn.disabled = true;
             });
         });
 
@@ -400,6 +525,7 @@
             const filePreview = document.getElementById('filePreview');
             const imagePreview = document.getElementById('imagePreview');
             const pdfPreview = document.getElementById('pdfPreview');
+            const submitButton = document.querySelector('button[type="submit"]');
 
             fileError.classList.add('hidden');
             imagePreview.classList.add('hidden');
@@ -415,6 +541,7 @@
                     fileError.textContent = 'El archivo es demasiado grande. Máximo 5MB permitido.';
                     fileError.classList.remove('hidden');
                     input.value = '';
+                    submitButton.disabled = true;
                     return;
                 }
 
@@ -424,6 +551,7 @@
                     fileError.textContent = 'Tipo de archivo no válido. Solo se permiten JPG, PNG y PDF.';
                     fileError.classList.remove('hidden');
                     input.value = '';
+                    submitButton.disabled = true;
                     return;
                 }
 
@@ -441,7 +569,7 @@
                 }
                 
                 // Habilitar el botón de envío si hay un archivo válido
-                document.querySelector('button[type="submit"]').disabled = false;
+                submitButton.disabled = false;
             }
         }
 
@@ -476,4 +604,76 @@
             }
         });
     </script>
+
+    <style>
+        /* Estilos para los indicadores de pasos */
+        .step-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            flex: 1;
+        }
+        
+        .step-indicator:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background-color: #e5e7eb;
+            z-index: -1;
+        }
+        
+        .step-indicator.active:not(:last-child)::after {
+            background-color: #3b82f6;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e5e7eb;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .step-indicator.active .step-number {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .step-title {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-align: center;
+        }
+        
+        .step-indicator.active .step-title {
+            color: #3b82f6;
+            font-weight: bold;
+        }
+        
+        .progress-bar {
+            height: 4px;
+            background-color: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #3b82f6;
+            transition: width 0.3s ease;
+        }
+        
+        .step-content {
+            transition: opacity 0.3s ease;
+        }
+    </style>
 </x-guest-layout>
