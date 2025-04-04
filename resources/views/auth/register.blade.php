@@ -109,11 +109,16 @@
         <!-- Tipo de Pago -->
         <div class="mt-4">
             <x-input-label for="tipo_pago" :value="__('Tipo de Pago')"/> 💳
-            <select name="tipo_pago" id="tipo_pago" class="block mt-1 w-full">
+            <select name="tipo_pago" id="tipo_pago" class="block mt-1 w-full" onchange="handleTipoPagoChange()">
                 <option value="">Selecciona un tipo de pago</option>
                 <option value="Pago Único">Pago Único</option>
                 <option value="Mensual">Mensual</option>
             </select>
+        </div>
+
+        <!-- Mensaje para pago mensual -->
+        <div id="mensaje_pago_mensual" class="mt-2 p-3 bg-blue-50 text-blue-700 rounded-md text-sm hidden">
+            <p>Para pagos mensuales, por favor introduce el valor que pagarás mensualmente.</p>
         </div>
 
         <!-- Campos para registrar pago -->
@@ -129,7 +134,7 @@
         <div class="mt-4">
             <x-input-label for="monto" :value="__('Monto de Pago')"/> 💵
             <x-text-input id="monto" class="block mt-1 w-full" type="number" name="monto" 
-                          value="0" step="0.01" placeholder="Monto de pago" required readonly />
+                          value="0" step="0.01" placeholder="Monto de pago" required />
         </div>
 
         <div class="mt-4">
@@ -192,6 +197,32 @@
                 toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 500);
             }, timeoutDuration);
+        }
+
+        /**
+         * Función para manejar el cambio en el tipo de pago
+         */
+        function handleTipoPagoChange() {
+            const tipoPago = document.getElementById('tipo_pago').value;
+            const montoInput = document.getElementById('monto');
+            const mensajePagoMensual = document.getElementById('mensaje_pago_mensual');
+            const montoTotal = document.getElementById('monto_total').value;
+            
+            if (tipoPago === 'Mensual') {
+                // Mostrar mensaje para pago mensual
+                mensajePagoMensual.classList.remove('hidden');
+                // Establecer monto a 0
+                montoInput.value = '0';
+                // Habilitar el campo de monto para que el usuario pueda introducir el valor
+                montoInput.readOnly = false;
+            } else {
+                // Ocultar mensaje
+                mensajePagoMensual.classList.add('hidden');
+                // Restaurar el valor original del monto (que se establece cuando se selecciona un curso)
+                montoInput.value = montoTotal;
+                // Bloquear el campo de monto
+                montoInput.readOnly = true;
+            }
         }
 
         /**
@@ -341,7 +372,12 @@
             if (selectedOption && selectedOption.value) {
                 const precio = parseFloat(selectedOption.getAttribute('data-precio')).toFixed(2);
                 document.getElementById('monto_total').value = precio;
-                document.getElementById('monto').value = precio;
+                
+                // Si el tipo de pago no es mensual, establecer el monto de pago igual al monto total
+                const tipoPago = document.getElementById('tipo_pago').value;
+                if (tipoPago !== 'Mensual') {
+                    document.getElementById('monto').value = precio;
+                }
                 
                 // Actualizar detalles del curso
                 document.getElementById('curso_nombre').textContent = selectedOption.getAttribute('data-nombre');

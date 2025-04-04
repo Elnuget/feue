@@ -79,7 +79,7 @@ class RegisteredUserController extends Controller
             'curso_id' => $request->curso_id,
             'fecha_matricula' => $request->fecha_matricula,
             'monto_total' => $request->monto_total,
-            'valor_pendiente' => $request->monto, // Asignar el valor del pago como pendiente
+            'valor_pendiente' => $request->monto_total, // Establecer el valor pendiente igual al monto total
             'estado_matricula' => 'Aprobada', // Cambiar estado a Aprobada
             'tipo_pago' => $request->tipo_pago, // Agregar el tipo de pago
         ]);
