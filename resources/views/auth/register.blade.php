@@ -106,6 +106,16 @@
                           required readonly placeholder="Selecciona un curso" />
         </div>
 
+        <!-- Tipo de Pago -->
+        <div class="mt-4">
+            <x-input-label for="tipo_pago" :value="__('Tipo de Pago')"/> 💳
+            <select name="tipo_pago" id="tipo_pago" class="block mt-1 w-full">
+                <option value="">Selecciona un tipo de pago</option>
+                <option value="Pago Único">Pago Único</option>
+                <option value="Mensual">Mensual</option>
+            </select>
+        </div>
+
         <!-- Campos para registrar pago -->
         <div class="mt-4">
             <x-input-label for="metodo_pago_id" :value="__('Método de Pago')"/> 💳

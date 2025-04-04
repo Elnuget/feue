@@ -81,6 +81,7 @@ class RegisteredUserController extends Controller
             'monto_total' => $request->monto_total,
             'valor_pendiente' => $request->monto, // Asignar el valor del pago como pendiente
             'estado_matricula' => 'Aprobada', // Cambiar estado a Aprobada
+            'tipo_pago' => $request->tipo_pago, // Agregar el tipo de pago
         ]);
 
         // Crear el pago
