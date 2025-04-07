@@ -18,8 +18,9 @@ class AcuerdoConfidencialidadController extends Controller
             ->get();
 
         $usuarios = User::all();
+        $cursos = Curso::with('tipoCurso')->get();
 
-        return view('acuerdos-confidencialidad.index', compact('acuerdos', 'usuarios'));
+        return view('acuerdos-confidencialidad.index', compact('acuerdos', 'usuarios', 'cursos'));
     }
 
     public function create()

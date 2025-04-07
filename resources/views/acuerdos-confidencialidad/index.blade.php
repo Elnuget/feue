@@ -9,28 +9,49 @@
         <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex-1 mr-4">
-                            @if(auth()->user()->hasRole('admin'))
-                            <label for="filter_user_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                {{ __('Filtrar por Usuario') }}
-                            </label>
-                            <select name="filter_user_id" id="filter_user_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm select2">
-                                <option value="">{{ __('Todos los usuarios') }}</option>
-                                @foreach($usuarios as $usuario)
-                                    <option value="{{ $usuario->id }}">
-                                        {{ $usuario->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @endif
-                        </div>
-                        <div>
+                    <div class="mb-6">
+                        <div class="flex justify-end space-x-4">
+                            <a href="{{ route('acuerdos-confidencialidad.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                                <i class="fas fa-sync-alt mr-2"></i>{{ __('Mostrar Todos') }}
+                            </a>
                             <a href="{{ route('acuerdos-confidencialidad.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                {{ __('Nuevo Acuerdo') }}
+                                <i class="fas fa-plus mr-2"></i>{{ __('Nuevo Acuerdo') }}
                             </a>
                         </div>
                     </div>
+
+                    @if(auth()->user()->hasRole('admin'))
+                    <div class="mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="filter_user_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    {{ __('Filtrar por Usuario') }}
+                                </label>
+                                <select name="filter_user_id" id="filter_user_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm select2">
+                                    <option value="">{{ __('Todos los usuarios') }}</option>
+                                    @foreach($usuarios as $usuario)
+                                        <option value="{{ $usuario->id }}">
+                                            {{ $usuario->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label for="filter_curso_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    {{ __('Filtrar por Curso') }}
+                                </label>
+                                <select name="filter_curso_id" id="filter_curso_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm select2">
+                                    <option value="">{{ __('Todos los cursos') }}</option>
+                                    @foreach($cursos as $curso)
+                                        <option value="{{ $curso->id }}">
+                                            {{ $curso->nombre }} | {{ $curso->tipoCurso->nombre ?? 'Sin tipo' }} | {{ $curso->horario }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
 
                     @if(session('success'))
                         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -69,7 +90,9 @@
                                 </thead>
                                 <tbody>
                                     @foreach($acuerdosToShow as $acuerdo)
-                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600" data-user-id="{{ $acuerdo->user_id }}">
+                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600" 
+                                            data-user-id="{{ $acuerdo->user_id }}"
+                                            data-curso-id="{{ $acuerdo->curso_id }}">
                                             <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
                                                 {{ $acuerdo->user->name }}
                                             </td>
@@ -196,26 +219,28 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             $('.select2').select2({
-                placeholder: "{{ __('Seleccionar usuario...') }}",
+                placeholder: "{{ __('Seleccionar...') }}",
                 allowClear: true,
                 width: '100%'
             });
 
-            $('#filter_user_id').on('change', function() {
-                const selectedUserId = $(this).val();
+            function filterTable() {
+                const selectedUserId = $('#filter_user_id').val();
+                const selectedCursoId = $('#filter_curso_id').val();
                 const rows = document.querySelectorAll('tbody tr');
                 
                 rows.forEach(row => {
-                    const userCell = row.querySelector('td:first-child');
-                    const userId = userCell.closest('tr').getAttribute('data-user-id');
+                    const userId = row.getAttribute('data-user-id');
+                    const cursoId = row.getAttribute('data-curso-id');
                     
-                    if (!selectedUserId || userId === selectedUserId) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
+                    const userMatch = !selectedUserId || userId === selectedUserId;
+                    const cursoMatch = !selectedCursoId || cursoId === selectedCursoId;
+                    
+                    row.style.display = (userMatch && cursoMatch) ? '' : 'none';
                 });
-            });
+            }
+
+            $('#filter_user_id, #filter_curso_id').on('change', filterTable);
         });
     </script>
     @endpush
