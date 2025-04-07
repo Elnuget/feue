@@ -121,7 +121,7 @@ class AcuerdoConfidencialidadController extends Controller
             'curso_id' => 'required|exists:cursos,id',
         ]);
 
-        $usuario = User::findOrFail($request->user_id);
+        $usuario = User::with('userProfile')->findOrFail($request->user_id);
         $curso = Curso::findOrFail($request->curso_id);
 
         $pdf = PDF::loadView('acuerdos-confidencialidad.pdf', compact('usuario', 'curso'));

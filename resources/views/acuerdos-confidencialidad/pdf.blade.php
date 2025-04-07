@@ -55,7 +55,7 @@
 
     <div class="content">
         <p>En la ciudad de Quito, a los {{ \Carbon\Carbon::now()->locale('es')->isoFormat('D [días del mes de] MMMM [del] YYYY') }}, yo {{ $usuario->name }}, 
-        con documento de identidad {{ $usuario->cedula ?? 'N/A' }}, en mi calidad de estudiante del curso "{{ $curso->nombre }}", 
+        con documento de identidad {{ $usuario->userProfile->cedula ?? 'N/A' }}, en mi calidad de estudiante del curso "{{ $curso->nombre }}", 
         me comprometo a mantener la más estricta confidencialidad sobre toda la información, documentos, metodologías y materiales 
         proporcionados durante el desarrollo del curso.</p>
 
@@ -73,7 +73,7 @@
     <div class="signature-section">
         <div class="signature-line">
             {{ $usuario->name }}<br>
-            CI: {{ $usuario->cedula ?? 'N/A' }}
+            CI: {{ $usuario->userProfile->cedula ?? 'N/A' }}
         </div>
     </div>
 
