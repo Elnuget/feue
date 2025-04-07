@@ -18,6 +18,12 @@
                         <i class="fas fa-qrcode text-3xl mb-2"></i>
                         Mi Código QR
                     </a>
+
+                    <!-- Acuerdos de Confidencialidad - Visible para todos -->
+                    <a href="{{ route('acuerdos-confidencialidad.index') }}" class="bg-blue-500 hover:bg-blue-700 text-white text-center font-bold py-6 px-4 rounded-lg shadow-lg flex flex-col items-center">
+                        <i class="fas fa-file-alt text-3xl mb-2"></i>
+                        Acuerdos de Confidencialidad
+                    </a>
                 </div>
             </div>
 
