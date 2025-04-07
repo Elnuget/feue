@@ -9,10 +9,27 @@
         <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <div class="mb-4">
-                        <a href="{{ route('acuerdos-confidencialidad.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                            {{ __('Nuevo Acuerdo') }}
-                        </a>
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex-1 mr-4">
+                            @if(auth()->user()->hasRole('admin'))
+                            <label for="filter_user_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                {{ __('Filtrar por Usuario') }}
+                            </label>
+                            <select name="filter_user_id" id="filter_user_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm select2">
+                                <option value="">{{ __('Todos los usuarios') }}</option>
+                                @foreach($usuarios as $usuario)
+                                    <option value="{{ $usuario->id }}">
+                                        {{ $usuario->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @endif
+                        </div>
+                        <div>
+                            <a href="{{ route('acuerdos-confidencialidad.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                {{ __('Nuevo Acuerdo') }}
+                            </a>
+                        </div>
                     </div>
 
                     @if(session('success'))
@@ -52,7 +69,7 @@
                                 </thead>
                                 <tbody>
                                     @foreach($acuerdosToShow as $acuerdo)
-                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600" data-user-id="{{ $acuerdo->user_id }}">
                                             <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
                                                 {{ $acuerdo->user->name }}
                                             </td>
@@ -133,4 +150,73 @@
             </div>
         </div>
     </div>
+
+    @push('styles')
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .select2-container--default .select2-selection--single {
+            height: 38px;
+            border-color: rgb(209 213 219);
+            border-radius: 0.375rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 38px;
+            padding-left: 0.75rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+        .dark .select2-container--default .select2-selection--single {
+            background-color: rgb(17 24 39);
+            border-color: rgb(55 65 81);
+            color: rgb(209 213 219);
+        }
+        .dark .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: rgb(209 213 219);
+        }
+        .dark .select2-dropdown {
+            background-color: rgb(17 24 39);
+            border-color: rgb(55 65 81);
+        }
+        .dark .select2-container--default .select2-results__option {
+            color: rgb(209 213 219);
+        }
+        .dark .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: rgb(55 65 81);
+        }
+        .dark .select2-search__field {
+            background-color: rgb(17 24 39);
+            color: rgb(209 213 219);
+        }
+    </style>
+    @endpush
+
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            $('.select2').select2({
+                placeholder: "{{ __('Seleccionar usuario...') }}",
+                allowClear: true,
+                width: '100%'
+            });
+
+            $('#filter_user_id').on('change', function() {
+                const selectedUserId = $(this).val();
+                const rows = document.querySelectorAll('tbody tr');
+                
+                rows.forEach(row => {
+                    const userCell = row.querySelector('td:first-child');
+                    const userId = userCell.closest('tr').getAttribute('data-user-id');
+                    
+                    if (!selectedUserId || userId === selectedUserId) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+    @endpush
 </x-app-layout> 

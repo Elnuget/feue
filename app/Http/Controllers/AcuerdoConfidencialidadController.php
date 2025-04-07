@@ -17,7 +17,9 @@ class AcuerdoConfidencialidadController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        return view('acuerdos-confidencialidad.index', compact('acuerdos'));
+        $usuarios = User::all();
+
+        return view('acuerdos-confidencialidad.index', compact('acuerdos', 'usuarios'));
     }
 
     public function create()
