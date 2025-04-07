@@ -60,6 +60,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('matriculas/print-certificates', [MatriculaController::class, 'printCertificates'])->name('matriculas.printCertificates');
     Route::post('certificados/store-multiple', [CertificadoController::class, 'storeMultiple'])->name('certificados.store-multiple');
     
+    // Ruta para vista previa del PDF de acuerdos de confidencialidad
+    Route::get('acuerdos-confidencialidad/preview-pdf', [AcuerdoConfidencialidadController::class, 'previewPdf'])
+        ->name('acuerdos-confidencialidad.preview-pdf');
+    
     // Rutas para búsqueda de usuarios y obtención de información
     Route::get('/usuarios/search', [\App\Http\Controllers\UserController::class, 'search'])->name('usuarios.search');
     Route::get('/usuarios/{id}/info', [\App\Http\Controllers\UserController::class, 'getInfo'])->name('usuarios.info');

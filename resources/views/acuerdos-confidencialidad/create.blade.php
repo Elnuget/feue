@@ -9,7 +9,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <form action="{{ route('acuerdos-confidencialidad.store') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('acuerdos-confidencialidad.store') }}" method="POST" enctype="multipart/form-data" id="acuerdoForm">
                         @csrf
 
                         @if(auth()->user()->hasRole('admin'))
@@ -66,8 +66,11 @@
                             @enderror
                         </div>
 
-                        <div class="flex items-center justify-end mt-4">
-                            <a href="{{ route('acuerdos-confidencialidad.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2">
+                        <div class="flex items-center justify-end mt-4 space-x-4">
+                            <button type="button" id="previewPdfBtn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                                {{ __('Vista Previa PDF') }}
+                            </button>
+                            <a href="{{ route('acuerdos-confidencialidad.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                                 {{ __('Cancelar') }}
                             </a>
                             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
@@ -135,6 +138,23 @@
             // Configurar placeholders específicos
             $('#user_id').data('placeholder', "{{ __('Buscar usuario...') }}");
             $('#curso_id').data('placeholder', "{{ __('Buscar curso...') }}");
+
+            // Manejar la vista previa del PDF
+            document.getElementById('previewPdfBtn').addEventListener('click', function() {
+                const formData = new FormData(document.getElementById('acuerdoForm'));
+                formData.append('preview', 'true');
+                
+                // Abrir en nueva ventana
+                const user_id = document.querySelector('[name="user_id"]').value;
+                const curso_id = document.querySelector('[name="curso_id"]').value;
+                
+                if (!user_id || !curso_id) {
+                    alert('Por favor, seleccione un usuario y un curso antes de generar la vista previa.');
+                    return;
+                }
+
+                window.open(`/acuerdos-confidencialidad/preview-pdf?user_id=${user_id}&curso_id=${curso_id}`, '_blank');
+            });
         });
     </script>
     @endpush

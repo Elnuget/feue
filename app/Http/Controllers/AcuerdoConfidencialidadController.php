@@ -7,6 +7,7 @@ use App\Models\Curso;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use PDF;
 
 class AcuerdoConfidencialidadController extends Controller
 {
@@ -112,7 +113,23 @@ class AcuerdoConfidencialidadController extends Controller
         return redirect()->route('acuerdos-confidencialidad.index')
             ->with('success', 'Acuerdo de confidencialidad eliminado exitosamente.');
     }
-    
+
+    public function previewPdf(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'curso_id' => 'required|exists:cursos,id',
+        ]);
+
+        $usuario = User::findOrFail($request->user_id);
+        $curso = Curso::findOrFail($request->curso_id);
+
+        $pdf = PDF::loadView('acuerdos-confidencialidad.pdf', compact('usuario', 'curso'));
+        $pdf->setPaper('a4');
+
+        return $pdf->stream('acuerdo-confidencialidad.pdf');
+    }
+
     /**
      * Verifica si un usuario tiene acuerdos de confidencialidad
      * 
