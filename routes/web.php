@@ -247,6 +247,8 @@ Route::get('/credenciales-docentes-print', [CredencialesDocenteController::class
 Route::post('/credenciales-docentes/update-status', [CredencialesDocenteController::class, 'updateStatus'])->name('credenciales-docentes.updateStatus');
 
 // Rutas para acuerdos de confidencialidad
-Route::resource('acuerdos-confidencialidad', AcuerdoConfidencialidadController::class);
+Route::resource('acuerdos-confidencialidad', AcuerdoConfidencialidadController::class)->parameters([
+    'acuerdos-confidencialidad' => 'acuerdoConfidencialidad'
+]);
 
 require __DIR__.'/auth.php';

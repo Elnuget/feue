@@ -44,6 +44,8 @@ class AcuerdoConfidencialidadController extends Controller
 
     public function show(AcuerdoConfidencialidad $acuerdoConfidencialidad)
     {
+        // Cargar las relaciones user y curso antes de pasar a la vista
+        $acuerdoConfidencialidad->load(['user', 'curso']);
         return view('acuerdos-confidencialidad.show', compact('acuerdoConfidencialidad'));
     }
 
