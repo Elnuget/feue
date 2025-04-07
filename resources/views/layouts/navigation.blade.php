@@ -93,7 +93,10 @@
             </x-nav-link>
         @endif
 
-       
+        <!-- Acuerdos de Confidencialidad - Visible para todos -->
+        <x-nav-link :href="route('acuerdos-confidencialidad.index')" :active="request()->routeIs('acuerdos-confidencialidad.*')" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-200">
+            📄 {{ __('Acuerdos de Confidencialidad') }}
+        </x-nav-link>
 
         @if(auth()->user()->hasRole(1))
             <!-- Submenú "General" -->

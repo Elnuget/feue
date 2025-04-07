@@ -22,6 +22,7 @@ use App\Http\Controllers\TareaController;
 use App\Http\Controllers\EntregaController;
 use App\Http\Controllers\CredencialesDocenteController;
 use App\Http\Controllers\CertificadoController;
+use App\Http\Controllers\AcuerdoConfidencialidadController;
 
 /*
 |--------------------------------------------------------------------------
@@ -244,5 +245,8 @@ Route::get('/credenciales-docentes', [CredencialesDocenteController::class, 'ind
 Route::get('/credenciales-docentes/{id}', [CredencialesDocenteController::class, 'show'])->name('credenciales-docentes.show');
 Route::get('/credenciales-docentes-print', [CredencialesDocenteController::class, 'printCredentials'])->name('credenciales-docentes.print');
 Route::post('/credenciales-docentes/update-status', [CredencialesDocenteController::class, 'updateStatus'])->name('credenciales-docentes.updateStatus');
+
+// Rutas para acuerdos de confidencialidad
+Route::resource('acuerdos-confidencialidad', AcuerdoConfidencialidadController::class);
 
 require __DIR__.'/auth.php';
