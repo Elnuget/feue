@@ -64,6 +64,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('acuerdos-confidencialidad/preview-pdf', [AcuerdoConfidencialidadController::class, 'previewPdf'])
         ->name('acuerdos-confidencialidad.preview-pdf');
     
+    // Ruta para aprobar acuerdos de confidencialidad
+    Route::patch('acuerdos-confidencialidad/{acuerdoConfidencialidad}/aprobar', [AcuerdoConfidencialidadController::class, 'aprobar'])
+        ->name('acuerdos-confidencialidad.aprobar');
+    
     // Rutas para búsqueda de usuarios y obtención de información
     Route::get('/usuarios/search', [\App\Http\Controllers\UserController::class, 'search'])->name('usuarios.search');
     Route::get('/usuarios/{id}/info', [\App\Http\Controllers\UserController::class, 'getInfo'])->name('usuarios.info');

@@ -13,9 +13,20 @@
                         <a href="{{ route('acuerdos-confidencialidad.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2">
                             {{ __('Volver') }}
                         </a>
-                        <a href="{{ route('acuerdos-confidencialidad.edit', $acuerdoConfidencialidad->id) }}" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
-                            {{ __('Editar') }}
-                        </a>
+                        @if(auth()->user()->hasRole(1))
+                            @if($acuerdoConfidencialidad->estado !== 'Entregado')
+                            <form action="{{ route('acuerdos-confidencialidad.aprobar', $acuerdoConfidencialidad->id) }}" method="POST" class="inline mr-2">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                                    <i class="fas fa-check mr-2"></i>{{ __('Aprobar') }}
+                                </button>
+                            </form>
+                            <a href="{{ route('acuerdos-confidencialidad.edit', $acuerdoConfidencialidad->id) }}" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                                {{ __('Editar') }}
+                            </a>
+                        @endif
+                        @endif
                     </div>
 
                     @if(session('success'))

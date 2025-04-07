@@ -131,6 +131,24 @@ class AcuerdoConfidencialidadController extends Controller
     }
 
     /**
+     * Aprobar un acuerdo de confidencialidad.
+     *
+     * @param  \App\Models\AcuerdoConfidencialidad  $acuerdoConfidencialidad
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function aprobar(AcuerdoConfidencialidad $acuerdoConfidencialidad)
+    {
+        // Verificar si el usuario es administrador
+        if (!auth()->user()->hasRole(1)) {
+            abort(403, 'No tienes permiso para realizar esta acción.');
+        }
+
+        $acuerdoConfidencialidad->update(['estado' => 'Entregado']);
+
+        return redirect()->back()->with('success', 'Acuerdo aprobado exitosamente.');
+    }
+
+    /**
      * Verifica si un usuario tiene acuerdos de confidencialidad
      * 
      * @param int $userId ID del usuario
