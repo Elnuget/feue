@@ -4,59 +4,132 @@
     <meta charset="utf-8">
     <title>Acuerdo de Confidencialidad - Docente</title>
     <style>
+        @page {
+            size: portrait;
+            margin: 1.5cm;
+        }
         body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 2cm;
+            font-family: 'DejaVu Sans', sans-serif;
+            line-height: 1.4;
+            font-size: 11px;
+            margin: 0;
+            padding: 0;
         }
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 1rem;
+        }
+        .title {
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 0.3rem;
         }
         .content {
             text-align: justify;
-            margin-bottom: 30px;
+            margin-bottom: 1rem;
         }
-        .signature {
-            margin-top: 50px;
-            text-align: center;
+        .signatures-container {
+            width: 100%;
+            margin-top: 2rem;
+            position: relative;
+        }
+        .signature-left {
+            position: absolute;
+            left: 0;
+            width: 40%;
+        }
+        .signature-right {
+            position: absolute;
+            right: 0;
+            width: 40%;
         }
         .signature-line {
-            width: 200px;
             border-top: 1px solid black;
-            margin: 10px auto;
+            padding-top: 5px;
+            margin-top: 30px;
+        }
+        .cedula {
+            margin-bottom: 5px;
+        }
+        .date-line {
+            position: absolute;
+            left: 0;
+            margin-top: 80px;
+        }
+        .paragraph {
+            margin-bottom: 0.7rem;
+        }
+        .bold {
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>ACUERDO DE CONFIDENCIALIDAD PARA DOCENTES</h1>
+        <div class="title">ACUERDO DE CONFIDENCIALIDAD, NO DIVULGACIÓN Y PROTECCIÓN DE INFORMACIÓN</div>
+        <div class="title">DOCENTE</div>
     </div>
 
     <div class="content">
-        <p>En la ciudad de {{ $fecha['ciudad'] }}, a los {{ $fecha['dia'] }} días del mes de {{ $fecha['mes'] }} del año {{ $fecha['año'] }}.</p>
+        <p class="paragraph">
+            ENTRE: Centro de Capacitaciones Universitarias, con domicilio en la ciudad de Quito, representado por el Ab. Erik Josías Barba Ledesma, con RUC 1718239153001 en adelante "EL CENTRO" y el ciudadano {{ $usuario->name }} con número de identificación {{ $usuario->userProfile->cedula ?? '___________' }} domiciliado en {{ trim($usuario->userProfile->direccion_calle . ' ' . $usuario->userProfile->direccion_ciudad . ', ' . $usuario->userProfile->direccion_provincia) ?? '___________________' }}, en adelante "EL DOCENTE".
+        </p>
 
-        <p>Yo, <strong>{{ $usuario->name }}</strong>, con documento de identidad {{ $usuario->userProfile->cedula }}, 
-        en mi calidad de DOCENTE, me comprometo a:</p>
+        <p class="paragraph">
+            <span class="bold">CONSIDERANDO QUE:</span> EL DOCENTE prestará servicios de docencia en EL CENTRO, las partes acuerdan los términos siguientes:
+        </p>
 
-        <ol>
-            <li>Mantener absoluta confidencialidad sobre toda la información académica, administrativa y personal a la que tenga acceso durante mi desempeño como docente.</li>
-            <li>No divulgar información sensible relacionada con estudiantes, otros docentes, personal administrativo o procesos internos de la institución.</li>
-            <li>Proteger y mantener la confidencialidad de los materiales didácticos, evaluaciones y recursos educativos proporcionados o desarrollados.</li>
-            <li>No utilizar la información confidencial para beneficio personal o de terceros.</li>
-            <li>Reportar cualquier violación de confidencialidad de la que tenga conocimiento.</li>
-            <li>Asegurar que todos los documentos y materiales confidenciales sean manejados y almacenados de manera segura.</li>
-            <li>Devolver todos los materiales confidenciales al finalizar mi relación laboral con la institución.</li>
-        </ol>
+        <p class="paragraph">
+            <span class="bold">PRIMERO: Objeto del Acuerdo.</span> El presente Acuerdo tiene como finalidad proteger la confidencialidad de toda la información a la que EL DOCENTE tenga acceso durante su relación con EL CENTRO.
+        </p>
 
-        <p>Entiendo y acepto que este acuerdo de confidencialidad permanecerá vigente durante mi relación con la institución y después de su terminación. El incumplimiento de este acuerdo puede resultar en acciones disciplinarias y/o legales según corresponda.</p>
+        <p class="paragraph">
+            <span class="bold">SEGUNDO: Alcance de la Información Protegida.</span> Se considera Información Confidencial: materiales didácticos, evaluaciones, información de estudiantes, metodologías, estrategias educativas, y cualquier otra información relacionada con la actividad académica que no sea de dominio público.
+        </p>
+
+        <p class="paragraph">
+            <span class="bold">TERCERO: Obligaciones del Docente.</span> EL DOCENTE se compromete a:
+            a) Mantener absoluta confidencialidad sobre toda información académica y administrativa.
+            b) No divulgar información de estudiantes, otros docentes o procesos internos.
+            c) Proteger los materiales didácticos y evaluaciones.
+            d) No utilizar la información para beneficio personal o de terceros.
+            e) Reportar cualquier violación de confidencialidad.
+            f) Devolver todos los materiales al finalizar su relación con EL CENTRO.
+        </p>
+
+        <p class="paragraph">
+            <span class="bold">CUARTO: Excepciones.</span> Las obligaciones no aplicarán a información de dominio público o que deba ser revelada por mandato judicial, notificando previamente a EL CENTRO.
+        </p>
+
+        <p class="paragraph">
+            <span class="bold">QUINTO: Vigencia.</span> Las obligaciones permanecerán vigentes durante la relación con EL CENTRO y por 2 años adicionales tras su finalización.
+        </p>
+
+        <p class="paragraph">
+            <span class="bold">SEXTO: Consecuencias del Incumplimiento.</span> El incumplimiento obligará a indemnizar a EL CENTRO con 10 salarios básicos unificados por daños y perjuicios.
+        </p>
+
+        <p class="paragraph">
+            <span class="bold">SÉPTIMO: Legislación y Jurisdicción.</span> Este Acuerdo se rige por las leyes del Ecuador y las partes se someten a los tribunales de Quito.
+        </p>
     </div>
 
-    <div class="signature">
-        <div class="signature-line"></div>
-        <p>{{ $usuario->name }}</p>
-        <p>CI: {{ $usuario->userProfile->cedula }}</p>
-        <p>Fecha: {{ $fecha['dia'] }}/{{ $fecha['mes'] }}/{{ $fecha['año'] }}</p>
+    <div class="signatures-container">
+        <div class="signature-left">
+            <div class="signature-line">
+                <div class="cedula">C.C: 1718239153</div>
+                Ab. Erik Barba
+            </div>
+        </div>
+        <div class="signature-right">
+            <div class="signature-line">
+                <div class="cedula">C.C: {{ $usuario->userProfile->cedula ?? '___________' }}</div>
+                {{ $usuario->name }}
+            </div>
+        </div>
+        <div class="date-line">
+            FECHA: {{ \Carbon\Carbon::now()->format('d/m/Y') }}
+        </div>
     </div>
 </body>
 </html> 

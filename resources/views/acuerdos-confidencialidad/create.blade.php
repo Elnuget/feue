@@ -158,14 +158,18 @@
                 
                 // Abrir en nueva ventana
                 const user_id = document.querySelector('[name="user_id"]').value;
-                const curso_id = document.querySelector('[name="curso_id"]').value;
-                
-                if (!user_id || (!curso_id && !{{ $isDocente ? 'true' : 'false' }})) {
-                    alert('Por favor, complete todos los campos requeridos antes de generar la vista previa.');
-                    return;
-                }
+                let url = '/acuerdos-confidencialidad/preview-pdf?user_id=' + user_id;
 
-                window.open(`/acuerdos-confidencialidad/preview-pdf?user_id=${user_id}&curso_id=${curso_id}`, '_blank');
+                @if(!$isDocente)
+                    const curso_id = document.querySelector('[name="curso_id"]').value;
+                    if (!curso_id) {
+                        alert('Por favor, seleccione un curso antes de generar la vista previa.');
+                        return;
+                    }
+                    url += '&curso_id=' + curso_id;
+                @endif
+
+                window.open(url, '_blank');
             });
         });
     </script>

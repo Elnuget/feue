@@ -149,6 +149,7 @@ class AcuerdoConfidencialidadController extends Controller
             }
 
             $fechaActual = now();
+            setlocale(LC_TIME, 'es_ES.utf8');
             $datos = [
                 'usuario' => $usuario,
                 'fecha' => [
