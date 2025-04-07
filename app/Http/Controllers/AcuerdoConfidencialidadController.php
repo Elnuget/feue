@@ -21,21 +21,29 @@ class AcuerdoConfidencialidadController extends Controller
     {
         $cursos = Curso::all();
         $usuarios = null;
+        $isDocente = auth()->user()->hasRole('Docente');
         
         // Si el usuario es administrador, obtener todos los usuarios
         if (auth()->user()->hasRole('admin')) {
             $usuarios = User::all();
         }
         
-        return view('acuerdos-confidencialidad.create', compact('cursos', 'usuarios'));
+        return view('acuerdos-confidencialidad.create', compact('cursos', 'usuarios', 'isDocente'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'acuerdo' => 'required|file|mimes:pdf|max:10240',
-            'curso_id' => 'required|exists:cursos,id',
-        ]);
+        $isDocente = auth()->user()->hasRole('Docente');
+        
+        $validationRules = [
+            'acuerdo' => 'required|file|mimes:pdf,jpg,jpeg,png,gif|max:10240',
+        ];
+
+        if (!$isDocente) {
+            $validationRules['curso_id'] = 'required|exists:cursos,id';
+        }
+
+        $request->validate($validationRules);
 
         $archivo = $request->file('acuerdo');
         $ruta = $archivo->store('acuerdos-confidencialidad', 'public');
@@ -51,7 +59,7 @@ class AcuerdoConfidencialidadController extends Controller
         AcuerdoConfidencialidad::create([
             'estado' => 'Pendiente',
             'acuerdo' => $ruta,
-            'curso_id' => $request->curso_id,
+            'curso_id' => $isDocente ? null : $request->curso_id,
             'user_id' => $userId,
         ]);
 
@@ -81,7 +89,7 @@ class AcuerdoConfidencialidadController extends Controller
 
         if ($request->hasFile('acuerdo')) {
             $request->validate([
-                'acuerdo' => 'required|file|mimes:pdf|max:10240',
+                'acuerdo' => 'required|file|mimes:pdf,jpg,jpeg,png,gif|max:10240',
             ]);
 
             // Eliminar archivo anterior
@@ -116,17 +124,79 @@ class AcuerdoConfidencialidadController extends Controller
 
     public function previewPdf(Request $request)
     {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'curso_id' => 'required|exists:cursos,id',
-        ]);
+        // Verificar si el perfil está completo
+        $usuario = auth()->user();
+        if (!$usuario->profile || !$usuario->profile->isComplete()) {
+            return redirect()->route('profile.complete')
+                ->with('error', 'Debes completar tu perfil antes de descargar el acuerdo de confidencialidad.');
+        }
 
-        $usuario = User::with('userProfile')->findOrFail($request->user_id);
-        $curso = Curso::findOrFail($request->curso_id);
+        $isDocente = $usuario->hasRole('Docente');
+        
+        if ($isDocente) {
+            $usuario = $usuario->load(['userProfile', 'roles']);
+            
+            // Si el usuario no tiene perfil, creamos un array con datos vacíos
+            if (!$usuario->userProfile) {
+                $usuario->userProfile = (object)[
+                    'cedula' => 'N/A',
+                    'direccion_calle' => 'N/A',
+                    'direccion_numero' => 'N/A',
+                    'ciudad' => 'N/A',
+                    'provincia' => 'N/A',
+                    'telefono' => 'N/A'
+                ];
+            }
 
-        $pdf = PDF::loadView('acuerdos-confidencialidad.pdf', compact('usuario', 'curso'));
+            $fechaActual = now();
+            $datos = [
+                'usuario' => $usuario,
+                'fecha' => [
+                    'dia' => $fechaActual->format('d'),
+                    'mes' => ucfirst($fechaActual->formatLocalized('%B')),
+                    'año' => $fechaActual->format('Y'),
+                    'ciudad' => $usuario->userProfile->ciudad ?? 'Quito'
+                ]
+            ];
+
+            $pdf = PDF::loadView('acuerdos-confidencialidad.pdf-docente', $datos);
+        } else {
+            $request->validate([
+                'user_id' => 'required|exists:users,id',
+                'curso_id' => 'required|exists:cursos,id',
+            ]);
+
+            $usuario = User::with(['userProfile', 'roles'])->findOrFail($request->user_id);
+            
+            // Si el usuario no tiene perfil, creamos un array con datos vacíos
+            if (!$usuario->userProfile) {
+                $usuario->userProfile = (object)[
+                    'cedula' => 'N/A',
+                    'direccion_calle' => 'N/A',
+                    'direccion_numero' => 'N/A',
+                    'ciudad' => 'N/A',
+                    'provincia' => 'N/A',
+                    'telefono' => 'N/A'
+                ];
+            }
+
+            $curso = Curso::findOrFail($request->curso_id);
+            $fechaActual = now();
+            $datos = [
+                'usuario' => $usuario,
+                'curso' => $curso,
+                'fecha' => [
+                    'dia' => $fechaActual->format('d'),
+                    'mes' => ucfirst($fechaActual->formatLocalized('%B')),
+                    'año' => $fechaActual->format('Y'),
+                    'ciudad' => $usuario->userProfile->ciudad ?? 'Quito'
+                ]
+            ];
+
+            $pdf = PDF::loadView('acuerdos-confidencialidad.pdf', $datos);
+        }
+
         $pdf->setPaper('a4');
-
         return $pdf->stream('acuerdo-confidencialidad.pdf');
     }
 

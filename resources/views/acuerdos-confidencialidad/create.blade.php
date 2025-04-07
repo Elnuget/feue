@@ -33,6 +33,7 @@
                             <input type="hidden" name="user_id" value="{{ auth()->id() }}">
                         @endif
 
+                        @if(!$isDocente)
                         <div class="mb-4">
                             <label for="curso_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 {{ __('Curso') }}
@@ -49,18 +50,24 @@
                                 <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                             @enderror
                         </div>
+                        @endif
 
                         <div class="mb-4">
                             <label for="acuerdo" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {{ __('Archivo PDF') }}
+                                {{ __('Archivo (PDF o Imagen)') }}
                             </label>
-                            <input type="file" name="acuerdo" id="acuerdo" accept=".pdf" class="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400
+                            <input type="file" name="acuerdo" id="acuerdo" 
+                                accept=".pdf,.jpg,.jpeg,.png,.gif" 
+                                class="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400
                                 file:mr-4 file:py-2 file:px-4
                                 file:rounded-md file:border-0
                                 file:text-sm file:font-semibold
                                 file:bg-blue-50 file:text-blue-700
                                 dark:file:bg-blue-900 dark:file:text-blue-300
                                 hover:file:bg-blue-100 dark:hover:file:bg-blue-800">
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                {{ __('Formatos permitidos: PDF, JPG, JPEG, PNG, GIF. Tamaño máximo: 10MB') }}
+                            </p>
                             @error('acuerdo')
                                 <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                             @enderror
@@ -68,7 +75,7 @@
 
                         <div class="flex items-center justify-end mt-4 space-x-4">
                             <button type="button" id="previewPdfBtn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                                {{ __('Vista Previa PDF') }}
+                                <i class="fas fa-download mr-2"></i>{{ __('Descargar Acuerdo para Firmar') }}
                             </button>
                             <a href="{{ route('acuerdos-confidencialidad.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                                 {{ __('Cancelar') }}
@@ -141,6 +148,11 @@
 
             // Manejar la vista previa del PDF
             document.getElementById('previewPdfBtn').addEventListener('click', function() {
+                @if(!auth()->user()->profile || !auth()->user()->profile->isComplete())
+                    window.location.href = '{{ route('profile.complete') }}';
+                    return;
+                @endif
+
                 const formData = new FormData(document.getElementById('acuerdoForm'));
                 formData.append('preview', 'true');
                 
@@ -148,8 +160,8 @@
                 const user_id = document.querySelector('[name="user_id"]').value;
                 const curso_id = document.querySelector('[name="curso_id"]').value;
                 
-                if (!user_id || !curso_id) {
-                    alert('Por favor, seleccione un usuario y un curso antes de generar la vista previa.');
+                if (!user_id || (!curso_id && !{{ $isDocente ? 'true' : 'false' }})) {
+                    alert('Por favor, complete todos los campos requeridos antes de generar la vista previa.');
                     return;
                 }
 
