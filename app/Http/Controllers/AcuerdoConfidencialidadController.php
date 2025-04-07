@@ -13,13 +13,16 @@ class AcuerdoConfidencialidadController extends Controller
 {
     public function index()
     {
-        $acuerdos = AcuerdoConfidencialidad::with(['user', 'curso'])->get();
+        $acuerdos = AcuerdoConfidencialidad::with(['user', 'curso'])
+            ->orderBy('id', 'desc')
+            ->get();
+
         return view('acuerdos-confidencialidad.index', compact('acuerdos'));
     }
 
     public function create()
     {
-        $cursos = Curso::all();
+        $cursos = Curso::with('tipoCurso')->get();
         $usuarios = null;
         $isDocente = auth()->user()->hasRole('Docente');
         
