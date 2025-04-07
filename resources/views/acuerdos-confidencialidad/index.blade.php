@@ -57,7 +57,11 @@
                                                 {{ $acuerdo->user->name }}
                                             </td>
                                             <td class="px-6 py-4">
-                                                {{ $acuerdo->curso->nombre }}
+                                                @if($acuerdo->curso)
+                                                    {{ $acuerdo->curso->nombre }}
+                                                @else
+                                                    <span class="text-gray-500 dark:text-gray-400">{{ __('Docente') }}</span>
+                                                @endif
                                             </td>
                                             <td class="px-6 py-4">
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
@@ -108,7 +112,7 @@
                                                 </form>
                                             </td>
                                             @else
-                                            <td class="px-6 py-4 text-sm font-medium space-x-3">
+                                            <td class="px-6 py-4 text-sm font-medium">
                                                 @if($acuerdo->acuerdo)
                                                 <a href="{{ Storage::url($acuerdo->acuerdo) }}" 
                                                    target="_blank"
@@ -117,11 +121,6 @@
                                                     <i class="fas fa-file-pdf"></i> {{ __('PDF') }}
                                                 </a>
                                                 @endif
-                                                <a href="{{ route('acuerdos-confidencialidad.show', $acuerdo->id) }}" 
-                                                   class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                                                   title="{{ __('Ver detalles') }}">
-                                                    <i class="fas fa-eye"></i> {{ __('Ver') }}
-                                                </a>
                                             </td>
                                             @endif
                                         </tr>

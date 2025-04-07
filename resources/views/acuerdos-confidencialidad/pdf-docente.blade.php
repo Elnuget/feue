@@ -67,16 +67,16 @@
 <body>
     <div class="header">
         <div class="title">ACUERDO DE CONFIDENCIALIDAD, NO DIVULGACIÓN Y PROTECCIÓN DE INFORMACIÓN</div>
-        <div class="title">DOCENTE</div>
+        <div class="title">PERSONAL DOCENTE</div>
     </div>
 
     <div class="content">
         <p class="paragraph">
-            ENTRE: Centro de Capacitaciones Universitarias, con domicilio en la ciudad de Quito, representado por el Ab. Erik Josías Barba Ledesma, con RUC 1718239153001 en adelante "EL CENTRO" y el ciudadano {{ $usuario->name }} con número de identificación {{ $usuario->userProfile->cedula ?? '___________' }} domiciliado en {{ trim($usuario->userProfile->direccion_calle . ' ' . $usuario->userProfile->direccion_ciudad . ', ' . $usuario->userProfile->direccion_provincia) ?? '___________________' }}, en adelante "EL DOCENTE".
+            En la ciudad de {{ $fecha['ciudad'] }}, a los {{ $fecha['dia'] }} días del mes de {{ $fecha['mes'] }} del año {{ $fecha['año'] }}, comparecen a la celebración del presente acuerdo:
         </p>
 
         <p class="paragraph">
-            <span class="bold">CONSIDERANDO QUE:</span> EL DOCENTE prestará servicios de docencia en EL CENTRO, las partes acuerdan los términos siguientes:
+            Por una parte, el Centro de Capacitaciones Universitarias, con domicilio en la ciudad de Quito, representado por el Ab. Erik Josías Barba Ledesma, con RUC 1718239153001, en adelante "EL CENTRO"; y por otra parte, {{ $usuario->name }}, con número de identificación {{ $usuario->userProfile->cedula ?? '___________' }}, domiciliado en {{ trim($usuario->userProfile->direccion_calle . ' ' . ($usuario->userProfile->direccion_ciudad ?? '') . ', ' . ($usuario->userProfile->direccion_provincia ?? '')) ?? '___________________' }}, en adelante "EL DOCENTE".
         </p>
 
         <p class="paragraph">
@@ -112,23 +112,29 @@
         <p class="paragraph">
             <span class="bold">SÉPTIMO: Legislación y Jurisdicción.</span> Este Acuerdo se rige por las leyes del Ecuador y las partes se someten a los tribunales de Quito.
         </p>
+
+        <p class="paragraph">
+            En fe de lo acordado, las partes firman este documento en dos ejemplares de igual tenor y valor.
+        </p>
     </div>
 
     <div class="signatures-container">
         <div class="signature-left">
             <div class="signature-line">
                 <div class="cedula">C.C: 1718239153</div>
-                Ab. Erik Barba
+                Ab. Erik Barba<br>
+                REPRESENTANTE LEGAL
             </div>
         </div>
         <div class="signature-right">
             <div class="signature-line">
                 <div class="cedula">C.C: {{ $usuario->userProfile->cedula ?? '___________' }}</div>
-                {{ $usuario->name }}
+                {{ $usuario->name }}<br>
+                DOCENTE
             </div>
         </div>
         <div class="date-line">
-            FECHA: {{ \Carbon\Carbon::now()->format('d/m/Y') }}
+            FECHA: {{ $fecha['dia'] }}/{{ $fecha['mes'] }}/{{ $fecha['año'] }}
         </div>
     </div>
 </body>
