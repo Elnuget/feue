@@ -41,7 +41,7 @@
                                 <option value="">{{ __('Seleccione un curso') }}</option>
                                 @foreach($cursos as $curso)
                                     <option value="{{ $curso->id }}" {{ old('curso_id') == $curso->id ? 'selected' : '' }}>
-                                        {{ $curso->nombre }}
+                                        {{ $curso->nombre }} | {{ $curso->horario }}
                                     </option>
                                 @endforeach
                             </select>
