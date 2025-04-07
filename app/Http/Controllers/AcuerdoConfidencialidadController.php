@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AcuerdoConfidencialidad;
 use App\Models\Curso;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -18,7 +19,14 @@ class AcuerdoConfidencialidadController extends Controller
     public function create()
     {
         $cursos = Curso::all();
-        return view('acuerdos-confidencialidad.create', compact('cursos'));
+        $usuarios = null;
+        
+        // Si el usuario es administrador, obtener todos los usuarios
+        if (auth()->user()->hasRole('admin')) {
+            $usuarios = User::all();
+        }
+        
+        return view('acuerdos-confidencialidad.create', compact('cursos', 'usuarios'));
     }
 
     public function store(Request $request)
@@ -31,11 +39,19 @@ class AcuerdoConfidencialidadController extends Controller
         $archivo = $request->file('acuerdo');
         $ruta = $archivo->store('acuerdos-confidencialidad', 'public');
 
+        // Determinar el user_id según el rol del usuario autenticado
+        $userId = auth()->id();
+        
+        // Si el usuario es administrador y se proporciona un user_id, usar ese
+        if (auth()->user()->hasRole('admin') && $request->has('user_id')) {
+            $userId = $request->user_id;
+        }
+
         AcuerdoConfidencialidad::create([
             'estado' => 'Pendiente',
             'acuerdo' => $ruta,
             'curso_id' => $request->curso_id,
-            'user_id' => auth()->id(),
+            'user_id' => $userId,
         ]);
 
         return redirect()->route('acuerdos-confidencialidad.index')

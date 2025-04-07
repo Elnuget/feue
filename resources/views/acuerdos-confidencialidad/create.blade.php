@@ -12,11 +12,32 @@
                     <form action="{{ route('acuerdos-confidencialidad.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
+                        @if(auth()->user()->hasRole('admin'))
+                        <div class="mb-4">
+                            <label for="user_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {{ __('Usuario') }}
+                            </label>
+                            <select name="user_id" id="user_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm select2">
+                                <option value="">{{ __('Seleccione un usuario') }}</option>
+                                @foreach($usuarios as $usuario)
+                                    <option value="{{ $usuario->id }}" {{ old('user_id') == $usuario->id ? 'selected' : '' }}>
+                                        {{ $usuario->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('user_id')
+                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        @else
+                            <input type="hidden" name="user_id" value="{{ auth()->id() }}">
+                        @endif
+
                         <div class="mb-4">
                             <label for="curso_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 {{ __('Curso') }}
                             </label>
-                            <select name="curso_id" id="curso_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm">
+                            <select name="curso_id" id="curso_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm select2">
                                 <option value="">{{ __('Seleccione un curso') }}</option>
                                 @foreach($cursos as $curso)
                                     <option value="{{ $curso->id }}" {{ old('curso_id') == $curso->id ? 'selected' : '' }}>
@@ -58,4 +79,63 @@
             </div>
         </div>
     </div>
+
+    @push('styles')
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .select2-container--default .select2-selection--single {
+            height: 38px;
+            border-color: rgb(209 213 219);
+            border-radius: 0.375rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 38px;
+            padding-left: 0.75rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+        .dark .select2-container--default .select2-selection--single {
+            background-color: rgb(17 24 39);
+            border-color: rgb(55 65 81);
+            color: rgb(209 213 219);
+        }
+        .dark .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: rgb(209 213 219);
+        }
+        .dark .select2-dropdown {
+            background-color: rgb(17 24 39);
+            border-color: rgb(55 65 81);
+        }
+        .dark .select2-container--default .select2-results__option {
+            color: rgb(209 213 219);
+        }
+        .dark .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: rgb(55 65 81);
+        }
+        .dark .select2-search__field {
+            background-color: rgb(17 24 39);
+            color: rgb(209 213 219);
+        }
+    </style>
+    @endpush
+
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            $('.select2').select2({
+                placeholder: function() {
+                    return $(this).data('placeholder') || "{{ __('Buscar...') }}";
+                },
+                allowClear: true,
+                width: '100%'
+            });
+            
+            // Configurar placeholders específicos
+            $('#user_id').data('placeholder', "{{ __('Buscar usuario...') }}");
+            $('#curso_id').data('placeholder', "{{ __('Buscar curso...') }}");
+        });
+    </script>
+    @endpush
 </x-app-layout> 
