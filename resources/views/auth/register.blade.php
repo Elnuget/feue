@@ -47,6 +47,13 @@
                         Verificar
                     </button>
                 </div>
+                <!-- Checkbox para extranjeros -->
+                <div class="mt-2">
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" id="es_extranjero" name="es_extranjero" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        <span class="ml-2 text-sm text-gray-600">Soy extranjero (usar documento de identidad extranjero)</span>
+                    </label>
+                </div>
                 <div id="cedula-feedback" class="mt-2 text-sm"></div>
                 <x-input-error :messages="$errors->get('cedula')" class="mt-2" />
             </div>
@@ -389,10 +396,23 @@
             return digitoCalculado === digitoVerificador;
         }
 
+        /**
+         * Función para validar un documento de identidad extranjero.
+         * Solo verifica que tenga entre 5 y 20 caracteres alfanuméricos.
+         *
+         * @param {string} documento - El documento a validar.
+         * @return {boolean} - Retorna true si el documento es válido, de lo contrario false.
+         */
+        function validarDocumentoExtranjero(documento) {
+            // Permite números y letras, longitud entre 5 y 20 caracteres
+            return /^[A-Za-z0-9]{5,20}$/.test(documento);
+        }
+
         document.getElementById('verify-cedula').addEventListener('click', function() {
             const cedula = document.getElementById('cedula').value.trim();
+            const esExtranjero = document.getElementById('es_extranjero').checked;
             const feedback = document.getElementById('cedula-feedback');
-            const formFields = document.querySelectorAll('input:not([name="cedula"])');
+            const formFields = document.querySelectorAll('input:not([name="cedula"]):not([name="es_extranjero"])');
             const submitButton = document.querySelector('button[type="submit"]');
             const nextStepBtn = document.querySelector('.next-step-btn[data-next="2"]');
 
@@ -401,7 +421,7 @@
             feedback.classList.remove('text-red-500', 'text-green-500');
 
             if (!cedula) {
-                feedback.textContent = 'Por favor, ingresa una cédula.';
+                feedback.textContent = 'Por favor, ingresa un documento de identificación.';
                 feedback.classList.add('text-red-500');
                 formFields.forEach(field => field.disabled = true);
                 submitButton.disabled = true;
@@ -409,8 +429,15 @@
                 return;
             }
 
-            if (!validarCedulaEcuatoriana(cedula)) {
-                feedback.textContent = 'La cédula ingresada no es válida.';
+            // Validar según el tipo de documento
+            let documentoValido = esExtranjero ? 
+                validarDocumentoExtranjero(cedula) : 
+                validarCedulaEcuatoriana(cedula);
+
+            if (!documentoValido) {
+                feedback.textContent = esExtranjero ? 
+                    'El documento de identidad no es válido. Debe tener entre 5 y 20 caracteres alfanuméricos.' : 
+                    'La cédula ecuatoriana ingresada no es válida.';
                 feedback.classList.add('text-red-500');
                 formFields.forEach(field => field.disabled = true);
                 submitButton.disabled = true;
@@ -418,25 +445,28 @@
                 return;
             }
 
-            // Si la cédula es válida, proceder a verificar su disponibilidad en el servidor
+            // Si el documento es válido, proceder a verificar su disponibilidad en el servidor
             fetch('{{ route('user_profiles.checkCedula') }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                body: JSON.stringify({ cedula: cedula })
+                body: JSON.stringify({ 
+                    cedula: cedula,
+                    es_extranjero: esExtranjero
+                })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.exists) {
-                    feedback.textContent = 'La cédula ya está registrada.';
+                    feedback.textContent = 'El documento de identificación ya está registrado.';
                     feedback.classList.add('text-red-500');
                     formFields.forEach(field => field.disabled = true);
                     submitButton.disabled = true;
                     nextStepBtn.disabled = true;
                 } else {
-                    feedback.textContent = 'La cédula está disponible.';
+                    feedback.textContent = 'El documento de identificación está disponible.';
                     feedback.classList.add('text-green-500');
                     formFields.forEach(field => field.disabled = false);
                     submitButton.disabled = false;
@@ -444,7 +474,7 @@
                 }
             })
             .catch(error => {
-                feedback.textContent = 'Error al verificar la cédula.';
+                feedback.textContent = 'Error al verificar el documento de identificación.';
                 feedback.classList.add('text-red-500');
                 formFields.forEach(field => field.disabled = true);
                 submitButton.disabled = true;
