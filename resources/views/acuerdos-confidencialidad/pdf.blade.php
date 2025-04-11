@@ -14,6 +14,22 @@
             font-family: 'DejaVu Sans', sans-serif;
             line-height: 1.4;
             font-size: 11px;
+            position: relative;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 500px;
+            background-image: url("{{ public_path('favicon.png') }}");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: 0.1;
+            z-index: -1;
         }
         .header {
             text-align: center;
@@ -30,8 +46,9 @@
         }
         .signatures-container {
             width: 100%;
-            margin-top: 2rem;
+            margin-top: 1rem;
             position: relative;
+            page-break-inside: avoid;
         }
         .signature-left {
             position: absolute;
@@ -46,7 +63,7 @@
         .signature-line {
             border-top: 1px solid black;
             padding-top: 5px;
-            margin-top: 30px;
+            margin-top: 20px;
         }
         .cedula {
             margin-bottom: 5px;
@@ -54,7 +71,7 @@
         .date-line {
             position: absolute;
             left: 0;
-            margin-top: 80px;
+            margin-top: 60px;
         }
         .paragraph {
             margin-bottom: 0.7rem;
@@ -67,7 +84,7 @@
 <body>
     <div class="header">
         <div class="title">ACUERDO DE CONFIDENCIALIDAD, NO DIVULGACIÓN Y PROTECCIÓN DE INFORMACIÓN</div>
-        <div class="title">{{ strtoupper($curso->nombre) }}</div>
+        <div class="title">DE DATOS DE CURSOS DE FORMACIÓN CONTINUA</div>
     </div>
 
     <div class="content">
@@ -76,22 +93,24 @@
         </p>
 
         <p class="paragraph">
-            <span class="bold">CONSIDERANDO QUE:</span> EL CENTRO brindará capacitación en {{ $curso->nombre }}, y EL ESTUDIANTE se compromete a participar en dicho curso, ambas partes acuerdan los términos siguientes:
+            <span class="bold">CONSIDERANDO QUE:</span> EL CENTRO brindará capacitación en el curso de Auxiliar de Enfermería, y EL ESTUDIANTE se compromete a participar en dicho curso, con ética y probidad y siempre bajo el principio de buena fe y, ambas partes acuerdan los términos siguientes:
         </p>
 
         <p class="paragraph">
             <span class="bold">PRIMERO: Objeto del Acuerdo</span><br>
-            El presente Acuerdo tiene como finalidad proteger la confidencialidad de toda la información que EL CENTRO brinde a EL ESTUDIANTE durante {{ $curso->nombre }}, así como cualquier material, metodología, estrategia o contenido que no sea de dominio público.
+            El presente Acuerdo tiene como finalidad proteger la confidencialidad de toda la información que EL CENTRO brinde a EL ESTUDIANTE durante el curso de auxiliar de enfermería, así como cualquier material, metodología, estrategia o contenido que no sea de dominio público.
         </p>
 
         <p class="paragraph">
             <span class="bold">SEGUNDO: Alcance de la Información Protegida</span><br>
-            Para efectos de este Acuerdo, se entenderá por Información Confidencial: Todo el contenido del curso, incluyendo pero no limitado a materiales de estudio, presentaciones, grabaciones, y cualquier otra información relacionada con la capacitación. Cualquier información técnica o comercial que se considere confidencial o sensible y que no sea de dominio público.
+            Para efectos de este Acuerdo, se entenderá por Información Confidencial:<br>
+            Todo el contenido del curso, incluyendo pero no limitado a materiales de estudio, presentaciones, grabaciones, y cualquier otra información relacionada con la capacitación. Cualquier información técnica o comercial que se considere confidencial o sensible y que no sea de dominio público.
         </p>
 
         <p class="paragraph">
             <span class="bold">TERCERO: Obligaciones de Confidencialidad de EL ESTUDIANTE.</span><br>
-            EL ESTUDIANTE se obliga a no revelar, comunicar, distribuir o poner a disposición de terceros, por cualquier medio, la Información Confidencial de EL CENTRO, sin el consentimiento expreso y por escrito de EL CENTRO. EL ESTUDIANTE se compromete a tomar todas las precauciones necesarias para evitar la divulgación o el uso no autorizado de la Información Confidencial, incluso después de la finalización del curso. EL ESTUDIANTE se obliga a devolver cualquier material o información confidencial a EL CENTRO al finalizar el curso.
+            EL ESTUDIANTE se obliga a no revelar, comunicar, distribuir o poner a disposición de terceros, por cualquier medio, la Información Confidencial de EL CENTRO, sin el consentimiento expreso y por escrito de EL CENTRO.<br>
+            EL ESTUDIANTE se compromete a tomar todas las precauciones necesarias para evitar la divulgación o el uso no autorizado de la Información Confidencial, incluso después de la finalización del curso. EL ESTUDIANTE se obliga a devolver cualquier material o información confidencial a EL CENTRO al finalizar el curso y, subvencionar de manera pecuniaria y económica.
         </p>
 
         <p class="paragraph">
@@ -100,11 +119,11 @@
         </p>
 
         <p class="paragraph">
-            <span class="bold">QUINTO: Vigencia del Acuerdo.</span> Las obligaciones de confidencialidad permanecerán vigentes durante toda la duración del curso y continuarán vigentes por un período adicional de 2 años a partir de la finalización del mismo.
+            <span class="bold">QUINTO: Vigencia del Acuerdo.</span> Las obligaciones de confidencialidad permanecerán vigentes durante toda la duración del curso y continuarán vigentes por un período adicional de 5 años a partir de la finalización del mismo.
         </p>
 
         <p class="paragraph">
-            <span class="bold">SEXTO: Consecuencias del Incumplimiento.</span> En caso de incumplimiento de alguna de las obligaciones de confidencialidad, EL COLABORADOR se compromete a indemnizar a EL CENTRO por cualquier daño, perjuicio o pérdida que pueda derivarse del incumplimiento con 10 salarios básicos unificados.
+            <span class="bold">SEXTO: Consecuencias del Incumplimiento.</span> En caso de incumplimiento de alguna de las obligaciones de confidencialidad, EL ESTUDIANTE se compromete a indemnizar a EL CENTRO por cualquier daño, perjuicio o pérdida que pueda derivarse del incumplimiento con 100 salarios básicos unificados.
         </p>
 
         <p class="paragraph">
