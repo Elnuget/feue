@@ -66,8 +66,8 @@
 </head>
 <body>
     <div class="header">
-        <div class="title">ACUERDO DE CONFIDENCIALIDAD, NO DIVULGACIÓN Y PROTECCIÓN DE INFORMACIÓN</div>
-        <div class="title">PERSONAL DOCENTE</div>
+
+        <div class="title">ESTE ACUERDO AUN SE ESTA PREPARANDO NO FIRMAR NI SUBIR</div>
     </div>
 
     <div class="content">
@@ -75,48 +75,9 @@
             En la ciudad de {{ $fecha['ciudad'] }}, a los {{ $fecha['dia'] }} días del mes de {{ $fecha['mes'] }} del año {{ $fecha['año'] }}, comparecen a la celebración del presente acuerdo:
         </p>
 
-        <p class="paragraph">
-            Por una parte, el Centro de Capacitaciones Universitarias, con domicilio en la ciudad de Quito, representado por el Ab. Erik Josías Barba Ledesma, con RUC 1718239153001, en adelante "EL CENTRO"; y por otra parte, {{ $usuario->name }}, con número de identificación {{ $usuario->userProfile->cedula ?? '___________' }}, domiciliado en {{ trim($usuario->userProfile->direccion_calle . ' ' . ($usuario->userProfile->direccion_ciudad ?? '') . ', ' . ($usuario->userProfile->direccion_provincia ?? '')) ?? '___________________' }}, en adelante "EL DOCENTE".
-        </p>
+       
 
-        <p class="paragraph">
-            <span class="bold">PRIMERO: Objeto del Acuerdo.</span> El presente Acuerdo tiene como finalidad proteger la confidencialidad de toda la información a la que EL DOCENTE tenga acceso durante su relación con EL CENTRO.
-        </p>
-
-        <p class="paragraph">
-            <span class="bold">SEGUNDO: Alcance de la Información Protegida.</span> Se considera Información Confidencial: materiales didácticos, evaluaciones, información de estudiantes, metodologías, estrategias educativas, y cualquier otra información relacionada con la actividad académica que no sea de dominio público.
-        </p>
-
-        <p class="paragraph">
-            <span class="bold">TERCERO: Obligaciones del Docente.</span> EL DOCENTE se compromete a:
-            a) Mantener absoluta confidencialidad sobre toda información académica y administrativa.
-            b) No divulgar información de estudiantes, otros docentes o procesos internos.
-            c) Proteger los materiales didácticos y evaluaciones.
-            d) No utilizar la información para beneficio personal o de terceros.
-            e) Reportar cualquier violación de confidencialidad.
-            f) Devolver todos los materiales al finalizar su relación con EL CENTRO.
-        </p>
-
-        <p class="paragraph">
-            <span class="bold">CUARTO: Excepciones.</span> Las obligaciones no aplicarán a información de dominio público o que deba ser revelada por mandato judicial, notificando previamente a EL CENTRO.
-        </p>
-
-        <p class="paragraph">
-            <span class="bold">QUINTO: Vigencia.</span> Las obligaciones permanecerán vigentes durante la relación con EL CENTRO y por 2 años adicionales tras su finalización.
-        </p>
-
-        <p class="paragraph">
-            <span class="bold">SEXTO: Consecuencias del Incumplimiento.</span> El incumplimiento obligará a indemnizar a EL CENTRO con 10 salarios básicos unificados por daños y perjuicios.
-        </p>
-
-        <p class="paragraph">
-            <span class="bold">SÉPTIMO: Legislación y Jurisdicción.</span> Este Acuerdo se rige por las leyes del Ecuador y las partes se someten a los tribunales de Quito.
-        </p>
-
-        <p class="paragraph">
-            En fe de lo acordado, las partes firman este documento en dos ejemplares de igual tenor y valor.
-        </p>
-    </div>
+       
 
     <div class="signatures-container">
         <div class="signature-left">

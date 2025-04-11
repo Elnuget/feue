@@ -72,7 +72,7 @@
 
     <div class="content">
         <p class="paragraph">
-            ENTRE: Centro de Capacitaciones Universitarias, con domicilio en la ciudad de Quito, representado por el Ab. Erik Josías Barba Ledesma, con RUC 1718239153001 en adelante "EL CENTRO" y el ciudadano {{ $usuario->name }} con número de identificación {{ $usuario->userProfile->cedula ?? '___________' }} domiciliado en {{ trim($usuario->userProfile->direccion_calle . ' ' . $usuario->userProfile->direccion_ciudad . ', ' . $usuario->userProfile->direccion_provincia) ?? '___________________' }}, en adelante "ESTUDIANTE".
+            ENTRE: Innovakap, con domicilio en la ciudad de Quito, con RUC 1793225297001 en adelante "EL CENTRO" y el ciudadano {{ $usuario->name }} con número de identificación {{ $usuario->userProfile->cedula ?? '___________' }} domiciliado en {{ trim($usuario->userProfile->direccion_calle . ' ' . $usuario->userProfile->direccion_ciudad . ', ' . $usuario->userProfile->direccion_provincia) ?? '___________________' }}, en adelante "ESTUDIANTE".
         </p>
 
         <p class="paragraph">
@@ -123,8 +123,8 @@
     <div class="signatures-container">
         <div class="signature-left">
             <div class="signature-line">
-                <div class="cedula">C.C: 1718239153</div>
-                Ab. Erik Barba
+                <div class="cedula">RUC: 1793225297001</div>
+                Innovakap
             </div>
         </div>
         <div class="signature-right">
