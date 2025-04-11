@@ -137,7 +137,7 @@
                     </div>
                 @endif
                 
-                @if(Auth::check() && !\App\Http\Controllers\AcuerdoConfidencialidadController::tieneAcuerdoConfidencialidad(Auth::id()) && !Auth::user()->hasRole('admin'))
+                @if(Auth::check() && !\App\Http\Controllers\AcuerdoConfidencialidadController::tieneAcuerdoConfidencialidad(Auth::id()) && !Auth::user()->hasRole('admin') && !Auth::user()->hasRole('Docente'))
                     <div class="bg-yellow-500 text-white p-4 rounded mb-4 dark:bg-yellow-700">
                         <div class="flex items-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

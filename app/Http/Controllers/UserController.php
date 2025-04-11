@@ -32,20 +32,48 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6',
-            'role_id' => 'nullable|exists:roles,id',
-        ]);
+        try {
+            $validator = validator($request->all(), [
+                'name' => 'required',
+                'email' => 'required|email|unique:users',
+                'password' => 'required|min:6',
+                'role_id' => 'nullable|exists:roles,id',
+            ], [
+                'email.unique' => 'Este correo electrónico ya está registrado.',
+                'password.min' => 'La contraseña debe tener al menos 6 caracteres.',
+            ]);
 
-        $user = User::create($request->only('name', 'email', 'password'));
-        if ($request->filled('role_id')) {
-            $role = Role::findById($request->role_id);
-            $user->assignRole($role);
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $user = User::create($request->only('name', 'email', 'password'));
+            
+            if ($request->filled('role_id')) {
+                $role = Role::findById($request->role_id);
+                $user->assignRole($role);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Usuario creado exitosamente',
+                'redirect' => route('users.index')
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error al crear usuario: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear el usuario',
+                'errors' => [
+                    'general' => [$e->getMessage()]
+                ]
+            ], 500);
         }
-
-        return redirect()->route('users.index');
     }
 
     public function edit(User $user)
