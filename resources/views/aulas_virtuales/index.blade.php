@@ -55,9 +55,9 @@
                         @endif
                     </div>
 
-                    <!-- Campo de búsqueda -->
-                    <div class="mb-6">
-                        <div class="relative">
+                    <!-- Filtros y búsqueda -->
+                    <div class="mb-6 flex flex-col sm:flex-row gap-4">
+                        <div class="relative flex-1">
                             <input type="text" 
                                    id="searchInput" 
                                    class="w-full px-4 py-2 pl-10 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
@@ -67,12 +67,23 @@
                                 <i class="fas fa-search text-gray-400"></i>
                             </div>
                         </div>
+                        
+                        @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
+                        <div class="flex items-center gap-2">
+                            <a href="{{ route('aulas_virtuales.index', ['show_all' => !$showAll]) }}" 
+                               class="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <i class="fas {{ $showAll ? 'fa-eye-slash' : 'fa-eye' }} mr-2"></i>
+                                {{ $showAll ? 'Mostrar solo mis aulas' : 'Mostrar todas las aulas' }}
+                            </a>
+                        </div>
+                        @endif
                     </div>
 
                     <!-- Grid de tarjetas -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="aulasGrid">
                         @foreach ($aulasVirtuales as $aula)
-                            <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                            <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+                                 data-is-associated="{{ $aula->usuarios->contains(auth()->id()) ? 'true' : 'false' }}">
                                 <div class="p-6">
                                     <div class="flex justify-between items-center mb-4">
                                         <div class="flex items-center gap-3">
@@ -107,6 +118,22 @@
                                     <p class="text-gray-600 dark:text-gray-300 mb-4">
                                         {{ $aula->descripcion ?? 'Sin descripción' }}
                                     </p>
+
+                                    <!-- Usuarios asociados -->
+                                    @if($aula->usuarios->isNotEmpty())
+                                    <div class="mb-4">
+                                        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                            Docentes/Administradores:
+                                        </h4>
+                                        <div class="flex flex-wrap gap-2">
+                                            @foreach($aula->usuarios as $usuario)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                    {{ $usuario->name }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    @endif
                                     
                                     @if($aula->cursos->count() > 0)
                                         <div class="mt-4">
@@ -169,18 +196,19 @@
     <script>
         function filterCards() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const showAll = {{ $showAll ? 'true' : 'false' }};
             const cards = document.querySelectorAll('#aulasGrid > div');
             
             cards.forEach(card => {
                 const title = card.querySelector('h3').textContent.toLowerCase();
                 const description = card.querySelector('p').textContent.toLowerCase();
-                const cursos = Array.from(card.querySelectorAll('.bg-blue-100')).map(span => span.textContent.toLowerCase()).join(' ');
+                const isAssociated = card.dataset.isAssociated === 'true';
                 
                 const matchesSearch = title.includes(searchTerm) || 
-                                    description.includes(searchTerm) ||
-                                    cursos.includes(searchTerm);
+                                    description.includes(searchTerm);
+                const matchesFilter = showAll || isAssociated;
                 
-                card.style.display = matchesSearch ? 'block' : 'none';
+                card.style.display = (matchesSearch && matchesFilter) ? 'block' : 'none';
             });
         }
 

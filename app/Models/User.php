@@ -51,6 +51,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->roles->pluck('name')->first();
     }
 
+    /**
+     * Obtener las aulas virtuales asociadas al usuario.
+     */
+    public function aulasVirtuales()
+    {
+        return $this->belongsToMany(AulaVirtual::class, 'aula_virtual_usuario');
+    }
+
     public function documentos()
     {
         return $this->hasMany(Documento::class);

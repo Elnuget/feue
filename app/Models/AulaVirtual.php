@@ -25,6 +25,22 @@ class AulaVirtual extends Model
         return $this->belongsToMany(Curso::class, 'aula_virtual_curso');
     }
 
+    /**
+     * Obtener los usuarios (docentes/administradores) asociados al aula virtual.
+     */
+    public function usuarios()
+    {
+        return $this->belongsToMany(User::class, 'aula_virtual_usuario')
+                    ->where(function($query) {
+                        $query->whereHas('roles', function($q) {
+                            $q->where('name', 'Docente');
+                        })
+                        ->orWhereHas('roles', function($q) {
+                            $q->where('id', 1); // Administrador
+                        });
+                    });
+    }
+
     public function contenidos()
     {
         return $this->hasMany(AulaVirtualContenido::class);

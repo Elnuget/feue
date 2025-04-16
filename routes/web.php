@@ -23,6 +23,7 @@ use App\Http\Controllers\EntregaController;
 use App\Http\Controllers\CredencialesDocenteController;
 use App\Http\Controllers\CertificadoController;
 use App\Http\Controllers\AcuerdoConfidencialidadController;
+use App\Http\Controllers\AulaVirtualUsuarioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -171,6 +172,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
          ->name('cuestionarios.preguntas.index');
 
     Route::get('/asistencias/usuario/{user}', [AsistenciaController::class, 'usuarioAsistencias'])->name('asistencias.usuario');
+
+    // Rutas para gestión de usuarios en aulas virtuales
+    Route::post('aulas_virtuales/{aulaVirtual}/usuarios/associate', [AulaVirtualUsuarioController::class, 'associate'])
+        ->name('aulas_virtuales.usuarios.associate');
+    Route::post('aulas_virtuales/{aulaVirtual}/usuarios/disassociate', [AulaVirtualUsuarioController::class, 'disassociate'])
+        ->name('aulas_virtuales.usuarios.disassociate');
 });
 
 // Rutas para cuestionarios

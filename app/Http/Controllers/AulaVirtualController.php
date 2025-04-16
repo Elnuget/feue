@@ -10,14 +10,36 @@ use Illuminate\Support\Facades\Storage;
 
 class AulaVirtualController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        if (auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente')) {
-            // Administrador y Docente ven todas las aulas virtuales
-            $aulasVirtuales = AulaVirtual::with(['cursos', 'contenidos'])->orderBy('id', 'desc')->get();
+        $user = auth()->user();
+        $showAll = $request->get('show_all', false);
+
+        if ($user->hasRole(1)) {
+            // Administrador ve todas las aulas virtuales o solo las asociadas según el filtro
+            $query = AulaVirtual::with(['cursos', 'contenidos', 'usuarios']);
+            
+            if (!$showAll) {
+                $query->whereHas('usuarios', function($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                });
+            }
+            
+            $aulasVirtuales = $query->orderBy('id', 'desc')->get();
+        } elseif ($user->hasRole('Docente')) {
+            // Docente ve sus aulas virtuales o todas según el filtro
+            $query = AulaVirtual::with(['cursos', 'contenidos', 'usuarios']);
+            
+            if (!$showAll) {
+                $query->whereHas('usuarios', function($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                });
+            }
+            
+            $aulasVirtuales = $query->orderBy('id', 'desc')->get();
         } else {
             // Usuario normal solo ve las aulas virtuales de los cursos en los que está matriculado
-            $userId = auth()->id();
+            $userId = $user->id;
             $aulasVirtuales = AulaVirtual::whereHas('cursos.matriculas', function($query) use ($userId) {
                 $query->where('usuario_id', $userId);
             })
@@ -29,7 +51,8 @@ class AulaVirtualController extends Controller
             ->orderBy('id', 'desc')
             ->get();
         }
-        return view('aulas_virtuales.index', compact('aulasVirtuales'));
+
+        return view('aulas_virtuales.index', compact('aulasVirtuales', 'showAll'));
     }
 
     public function create()
