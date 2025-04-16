@@ -9,7 +9,7 @@
         <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <div class="mb-6">
+                    <div class="mb-6"
                         <div class="flex justify-end space-x-4">
                             <a href="{{ route('acuerdos-confidencialidad.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                                 <i class="fas fa-sync-alt mr-2"></i>{{ __('Mostrar Todos') }}
@@ -18,6 +18,11 @@
                                 <i class="fas fa-plus mr-2"></i>{{ __('Nuevo Acuerdo') }}
                             </a>
                         </div>
+                    </div>
+
+                    <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+                        <p class="font-bold">Importante</p>
+                        <p>Debes agregar un acuerdo de confidencialidad solo si estás en un curso de Auxiliar de Enfermería.</p>
                     </div>
 
                     @if(auth()->user()->hasRole('admin'))
