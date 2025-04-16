@@ -53,7 +53,7 @@
             line-height: 0.7;
             margin-bottom: 0px;
         }
-        .registro-senescyt {
+        .registro-S {
             position: absolute;
             bottom: 40px;
             left: 0;
@@ -103,8 +103,8 @@
                     Dado en la ciudad de Quito el {{ \Carbon\Carbon::parse($certificado->fecha_emision)->locale('es')->isoFormat('D [de] MMMM [del] YYYY') }}.
                 </p>
 
-                <div class="registro-senescyt">
-                    Registro No. SENESCYT-CGAJ-DAJ-{{ $certificado->numero_certificado }}
+                <div class="registro-S">
+                    Registro No. S-CGAJ-DAJ-{{ $certificado->numero_certificado }}
                 </div>
 
                 <div class="qr-container">
