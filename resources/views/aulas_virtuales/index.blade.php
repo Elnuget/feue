@@ -40,6 +40,26 @@
                 </div>
             @endif
 
+            <!-- Alerta de vista actual -->
+            @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
+                <div class="mb-4 bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative flex justify-between items-center">
+                    <div class="flex items-center">
+                        <i class="fas {{ $showAll ? 'fa-globe' : 'fa-user-circle' }} mr-2"></i>
+                        <span class="block sm:inline font-medium">
+                            {{ $showAll ? 'Mostrando todas las aulas virtuales' : 'Mostrando solo mis aulas virtuales' }}
+                        </span>
+                    </div>
+                    <a href="{{ route('aulas_virtuales.index', ['show_all' => !$showAll]) }}" 
+                       class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white font-bold rounded transition">
+                        @if($showAll)
+                            <i class="fas fa-user-circle mr-2"></i> Mostrar solo mis aulas
+                        @else
+                            <i class="fas fa-globe mr-2"></i> Mostrar todas las aulas
+                        @endif
+                    </a>
+                </div>
+            @endif
+
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-md sm:rounded-lg">
                 <div class="p-6">
                     <!-- Encabezado de la sección -->
@@ -67,16 +87,6 @@
                                 <i class="fas fa-search text-gray-400"></i>
                             </div>
                         </div>
-                        
-                        @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
-                        <div class="flex items-center gap-2">
-                            <a href="{{ route('aulas_virtuales.index', ['show_all' => !$showAll]) }}" 
-                               class="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                <i class="fas {{ $showAll ? 'fa-eye-slash' : 'fa-eye' }} mr-2"></i>
-                                {{ $showAll ? 'Mostrar solo mis aulas' : 'Mostrar todas las aulas' }}
-                            </a>
-                        </div>
-                        @endif
                     </div>
 
                     <!-- Grid de tarjetas -->
