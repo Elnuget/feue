@@ -110,13 +110,18 @@
                                     
                                     @if($aula->cursos->count() > 0)
                                         <div class="mt-4">
-                                            <button onclick="openModal('modal-{{ $aula->id }}')" 
-                                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition flex items-center gap-2">
-                                                <span class="bg-white text-blue-500 rounded-full w-6 h-6 flex items-center justify-center">
-                                                    {{ $aula->cursos->count() }}
-                                                </span>
-                                                Ver Cursos
-                                            </button>
+                                            @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
+                                                <button onclick="openModal('modal-{{ $aula->id }}')" 
+                                                        class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center gap-2 group">
+                                                    <span class="bg-white text-blue-600 rounded-full w-6 h-6 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-300">
+                                                        {{ $aula->cursos->count() }}
+                                                    </span>
+                                                    <span class="flex items-center gap-1">
+                                                        <i class="fas fa-book-open text-sm"></i>
+                                                        Ver Cursos
+                                                    </span>
+                                                </button>
+                                            @endif
                                         </div>
 
                                         <!-- Modal para mostrar cursos -->
