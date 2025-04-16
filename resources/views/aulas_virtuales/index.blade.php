@@ -119,70 +119,132 @@
                                         {{ $aula->descripcion ?? 'Sin descripción' }}
                                     </p>
 
-                                    <!-- Usuarios asociados -->
-                                    @if($aula->usuarios->isNotEmpty())
-                                    <div class="mb-4">
-                                        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                            Docentes/Administradores:
-                                        </h4>
-                                        <div class="flex flex-wrap gap-2">
-                                            @foreach($aula->usuarios as $usuario)
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                                    {{ $usuario->name }}
-                                                </span>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                    @endif
-                                    
-                                    @if($aula->cursos->count() > 0)
-                                        <div class="mt-4">
-                                            @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
-                                                <button onclick="openModal('modal-{{ $aula->id }}')" 
-                                                        class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center gap-2 group">
-                                                    <span class="bg-white text-blue-600 rounded-full w-6 h-6 flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-300">
-                                                        {{ $aula->cursos->count() }}
-                                                    </span>
-                                                    <span class="flex items-center gap-1">
-                                                        <i class="fas fa-book-open text-sm"></i>
-                                                        Ver Cursos
-                                                    </span>
-                                                </button>
-                                            @endif
-                                        </div>
+                                    <!-- Botones en una sola fila -->
+                                    <div class="grid grid-cols-3 gap-2">
+                                        <!-- Botón de docentes -->
+                                        @if($aula->usuarios->isNotEmpty())
+                                        <button onclick="openModal('modal-docentes-{{ $aula->id }}')" 
+                                                class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition flex items-center justify-center">
+                                            <i class="fas fa-users mr-1"></i> 
+                                            <span>{{ $aula->usuarios->count() }}</span>
+                                        </button>
 
-                                        <!-- Modal para mostrar cursos -->
-                                        <div id="modal-{{ $aula->id }}" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 overflow-y-auto">
+                                        <!-- Modal para mostrar docentes/administradores -->
+                                        <div id="modal-docentes-{{ $aula->id }}" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 overflow-y-auto">
                                             <div class="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 max-w-2xl w-full mx-4 my-8 max-h-[90vh] overflow-y-auto">
                                                 <div class="flex justify-between items-center mb-4 sticky top-0 bg-white dark:bg-gray-800 py-2">
                                                     <h3 class="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200">
-                                                        Cursos Asociados
+                                                        Docentes y Administradores Asociados
                                                     </h3>
-                                                    <button onclick="closeModal('modal-{{ $aula->id }}')" 
+                                                    <button onclick="closeModal('modal-docentes-{{ $aula->id }}')" 
                                                             class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                                         <i class="fas fa-times"></i>
                                                     </button>
                                                 </div>
                                                 <div class="space-y-3 sm:space-y-4">
-                                                    @foreach($aula->cursos as $curso)
+                                                    @foreach($aula->usuarios as $usuario)
                                                         <div class="bg-gray-100 dark:bg-gray-700 p-3 sm:p-4 rounded-lg">
-                                                            <h4 class="font-semibold text-gray-800 dark:text-gray-200 text-sm sm:text-base">
-                                                                {{ $curso->nombre }}
-                                                            </h4>
-                                                            <div class="mt-2 space-y-1">
-                                                                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
-                                                                    <span class="font-medium">Tipo:</span> {{ $curso->tipoCurso->nombre ?? 'Sin sede' }}
-                                                                </p>
-                                                                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
-                                                                    <span class="font-medium">Horario:</span> {{ $curso->horario ?? 'Sin horario' }}
-                                                                </p>
+                                                            <div class="flex items-center">
+                                                                <div class="flex-shrink-0">
+                                                                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+                                                                        {{ substr($usuario->name, 0, 1) }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="ml-4">
+                                                                    <h4 class="font-semibold text-gray-800 dark:text-gray-200 text-sm sm:text-base">
+                                                                        {{ $usuario->name }}
+                                                                    </h4>
+                                                                    <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                                                                        {{ $usuario->email }}
+                                                                    </p>
+                                                                    <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                                                                        <span class="font-medium">Rol:</span> {{ $usuario->getRoleNameAttribute() }}
+                                                                    </p>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     @endforeach
                                                 </div>
                                             </div>
                                         </div>
-                                    @endif
+                                        @else
+                                        <button class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition flex items-center justify-center opacity-50 cursor-not-allowed">
+                                            <i class="fas fa-users mr-1"></i> 
+                                            <span>0</span>
+                                        </button>
+                                        @endif
+                                        
+                                        <!-- Botón de asociar/desasociar -->
+                                        @if(auth()->user()->hasRole(1) || auth()->user()->hasRole('Docente'))
+                                            @if($aula->usuarios->contains(auth()->id()))
+                                                <form action="{{ route('aulas_virtuales.usuarios.disassociate', $aula) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <input type="hidden" name="user_ids[]" value="{{ auth()->id() }}">
+                                                    <button type="submit" 
+                                                            class="w-full bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition flex items-center justify-center">
+                                                        <i class="fas fa-user-minus mr-1"></i> Dejar
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <form action="{{ route('aulas_virtuales.usuarios.associate', $aula) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <input type="hidden" name="user_ids[]" value="{{ auth()->id() }}">
+                                                    <button type="submit" 
+                                                            class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition flex items-center justify-center">
+                                                        <i class="fas fa-user-plus mr-1"></i> Tomar
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        @else
+                                            <div class="col-span-1"></div>
+                                        @endif
+
+                                        <!-- Botón de cursos -->
+                                        @if($aula->cursos->count() > 0)
+                                            <button onclick="openModal('modal-{{ $aula->id }}')" 
+                                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition flex items-center justify-center">
+                                                <i class="fas fa-book-open mr-1"></i>
+                                                <span>{{ $aula->cursos->count() }}</span>
+                                            </button>
+
+                                            <!-- Modal para mostrar cursos -->
+                                            <div id="modal-{{ $aula->id }}" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 overflow-y-auto">
+                                                <div class="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 max-w-2xl w-full mx-4 my-8 max-h-[90vh] overflow-y-auto">
+                                                    <div class="flex justify-between items-center mb-4 sticky top-0 bg-white dark:bg-gray-800 py-2">
+                                                        <h3 class="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200">
+                                                            Cursos Asociados
+                                                        </h3>
+                                                        <button onclick="closeModal('modal-{{ $aula->id }}')" 
+                                                                class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="space-y-3 sm:space-y-4">
+                                                        @foreach($aula->cursos as $curso)
+                                                            <div class="bg-gray-100 dark:bg-gray-700 p-3 sm:p-4 rounded-lg">
+                                                                <h4 class="font-semibold text-gray-800 dark:text-gray-200 text-sm sm:text-base">
+                                                                    {{ $curso->nombre }}
+                                                                </h4>
+                                                                <div class="mt-2 space-y-1">
+                                                                    <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                                                                        <span class="font-medium">Tipo:</span> {{ $curso->tipoCurso->nombre ?? 'Sin sede' }}
+                                                                    </p>
+                                                                    <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                                                                        <span class="font-medium">Horario:</span> {{ $curso->horario ?? 'Sin horario' }}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition flex items-center justify-center opacity-50 cursor-not-allowed">
+                                                <i class="fas fa-book-open mr-1"></i>
+                                                <span>0</span>
+                                            </button>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
