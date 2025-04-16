@@ -663,4 +663,23 @@ class CuestionarioController extends Controller
             ], 500);
         }
     }
+
+    public function actualizarBasico(Request $request, Cuestionario $cuestionario)
+    {
+        if (!auth()->user()->hasRole(1) && !auth()->user()->hasRole('Docente')) {
+            abort(403, 'No tienes permiso para realizar esta acción.');
+        }
+
+        $validated = $request->validate([
+            'titulo' => 'required|string|max:255',
+            'descripcion' => 'nullable|string'
+        ]);
+
+        $cuestionario->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Información básica actualizada correctamente'
+        ]);
+    }
 } 

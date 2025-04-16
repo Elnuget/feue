@@ -285,14 +285,13 @@
             const form = document.getElementById('formBasico');
             const formData = new FormData();
 
-            // Agregar los campos básicos
+            // Agregar solo los campos básicos
             formData.append('titulo', form.titulo.value);
             formData.append('descripcion', form.descripcion.value);
             formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
-            formData.append('_method', 'PUT');
 
             try {
-                const response = await fetch(`/cuestionarios/{{ $cuestionario->id }}`, {
+                const response = await fetch(`{{ route('cuestionarios.actualizar-basico', $cuestionario) }}`, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,

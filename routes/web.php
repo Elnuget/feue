@@ -207,6 +207,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cuestionarios/{cuestionario}/actualizar-config', [CuestionarioController::class, 'actualizarConfig'])
          ->name('cuestionarios.actualizar-config');
     
+    Route::post('/cuestionarios/{cuestionario}/actualizar-basico', [CuestionarioController::class, 'actualizarBasico'])
+         ->name('cuestionarios.actualizar-basico');
+    
     Route::post('/cuestionarios/{cuestionario}/programar', [CuestionarioController::class, 'programar'])
          ->name('cuestionarios.programar');
     
