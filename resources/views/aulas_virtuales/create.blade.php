@@ -10,6 +10,9 @@
                     <form action="{{ route('aulas_virtuales.store') }}" method="POST">
                         @csrf
                         
+                        <!-- Campo oculto para el ID del usuario actual -->
+                        <input type="hidden" name="user_id" value="{{ auth()->id() }}">
+                        
                         <div class="mb-6">
                             <label for="nombre" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Nombre del Aula Virtual

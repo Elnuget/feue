@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\AulaVirtual;
 use App\Models\Curso;
 use App\Models\AulaVirtualContenido;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class AulaVirtualController extends Controller
 {
@@ -75,22 +77,39 @@ class AulaVirtualController extends Controller
             'descripcion' => 'nullable|string',
             'curso_id' => 'required|exists:cursos,id',
             'cursos' => 'nullable|array',
-            'cursos.*' => 'exists:cursos,id'
+            'cursos.*' => 'exists:cursos,id',
+            'user_id' => 'required|exists:users,id'
         ]);
 
-        $aulaVirtual = AulaVirtual::create([
-            'nombre' => $validated['nombre'],
-            'descripcion' => $validated['descripcion'],
-            'curso_id' => $validated['curso_id']
-        ]);
-        
-        if ($request->has('cursos')) {
-            $aulaVirtual->cursos()->sync($request->cursos);
+        try {
+            DB::beginTransaction();
+            
+            $aulaVirtual = AulaVirtual::create([
+                'nombre' => $validated['nombre'],
+                'descripcion' => $validated['descripcion'],
+                'curso_id' => $validated['curso_id']
+            ]);
+            
+            if ($request->has('cursos')) {
+                $aulaVirtual->cursos()->sync($request->cursos);
+            }
+            
+            // Asociar automáticamente al usuario que crea el aula virtual
+            $user = User::findOrFail($validated['user_id']);
+            $aulaVirtual->usuarios()->attach($user);
+            
+            DB::commit();
+            
+            return redirect()
+                ->route('aulas_virtuales.index')
+                ->with('success', 'Aula virtual creada exitosamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()
+                ->back()
+                ->with('error', 'Error al crear el aula virtual: ' . $e->getMessage())
+                ->withInput();
         }
-
-        return redirect()
-            ->route('aulas_virtuales.index')
-            ->with('success', 'Aula virtual creada exitosamente.');
     }
 
     public function edit(AulaVirtual $aulasVirtuale)
