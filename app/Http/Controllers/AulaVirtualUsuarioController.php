@@ -37,7 +37,18 @@ class AulaVirtualUsuarioController extends Controller
                 return back()->with('error', 'No se encontraron usuarios con los roles especificados');
             }
 
-            $aulaVirtual->usuarios()->sync($users);
+            // Verificar si alguno de los usuarios ya está asociado
+            $existingUsers = $aulaVirtual->usuarios()
+                ->whereIn('users.id', $users->pluck('id'))
+                ->get();
+
+            if ($existingUsers->isNotEmpty()) {
+                $userNames = $existingUsers->pluck('name')->join(', ');
+                return back()->with('warning', "Los siguientes usuarios ya están asociados: {$userNames}");
+            }
+
+            // Usar attach en lugar de sync para mantener las asociaciones existentes
+            $aulaVirtual->usuarios()->attach($users);
 
             DB::commit();
             return back()->with('success', 'Usuarios asociados correctamente al aula virtual');
