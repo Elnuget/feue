@@ -497,7 +497,7 @@
                     cursosOrdenados.forEach(curso => {
                         if (curso.estado === 'Activo') {
                             // Creamos opciones más simples para el combobox
-                            const option = new Option(curso.nombre, curso.id);
+                            const option = new Option(`${curso.nombre} - ${curso.horario || 'Horario no disponible'}`, curso.id);
                             option.dataset.precio = curso.precio;
                             option.dataset.horario = curso.horario || 'Horario no disponible';
                             option.dataset.nombre = curso.nombre;
