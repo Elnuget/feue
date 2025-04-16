@@ -110,15 +110,44 @@
                                     
                                     @if($aula->cursos->count() > 0)
                                         <div class="mt-4">
-                                            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Cursos asociados:
-                                            </h4>
-                                            <div class="flex flex-wrap gap-2">
-                                                @foreach($aula->cursos as $curso)
-                                                    <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full dark:bg-blue-900 dark:text-blue-200">
-                                                        {{ $curso->nombre }} | {{ $curso->tipoCurso->nombre ?? 'Sin sede' }} | {{ $curso->horario ?? 'Sin horario' }}
-                                                    </span>
-                                                @endforeach
+                                            <button onclick="openModal('modal-{{ $aula->id }}')" 
+                                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition flex items-center gap-2">
+                                                <span class="bg-white text-blue-500 rounded-full w-6 h-6 flex items-center justify-center">
+                                                    {{ $aula->cursos->count() }}
+                                                </span>
+                                                Ver Cursos
+                                            </button>
+                                        </div>
+
+                                        <!-- Modal para mostrar cursos -->
+                                        <div id="modal-{{ $aula->id }}" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 overflow-y-auto">
+                                            <div class="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 max-w-2xl w-full mx-4 my-8 max-h-[90vh] overflow-y-auto">
+                                                <div class="flex justify-between items-center mb-4 sticky top-0 bg-white dark:bg-gray-800 py-2">
+                                                    <h3 class="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200">
+                                                        Cursos Asociados
+                                                    </h3>
+                                                    <button onclick="closeModal('modal-{{ $aula->id }}')" 
+                                                            class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="space-y-3 sm:space-y-4">
+                                                    @foreach($aula->cursos as $curso)
+                                                        <div class="bg-gray-100 dark:bg-gray-700 p-3 sm:p-4 rounded-lg">
+                                                            <h4 class="font-semibold text-gray-800 dark:text-gray-200 text-sm sm:text-base">
+                                                                {{ $curso->nombre }}
+                                                            </h4>
+                                                            <div class="mt-2 space-y-1">
+                                                                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                                                                    <span class="font-medium">Tipo:</span> {{ $curso->tipoCurso->nombre ?? 'Sin sede' }}
+                                                                </p>
+                                                                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                                                                    <span class="font-medium">Horario:</span> {{ $curso->horario ?? 'Sin horario' }}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
                                             </div>
                                         </div>
                                     @endif
@@ -131,7 +160,7 @@
         </div>
     </div>
 
-    <!-- Script para el filtrado -->
+    <!-- Script para el filtrado y modales -->
     <script>
         function filterCards() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -148,6 +177,24 @@
                 
                 card.style.display = matchesSearch ? 'block' : 'none';
             });
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+            document.getElementById(modalId).classList.add('flex');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.getElementById(modalId).classList.remove('flex');
+        }
+
+        // Cerrar modal al hacer clic fuera del contenido
+        window.onclick = function(event) {
+            if (event.target.classList.contains('fixed')) {
+                event.target.classList.add('hidden');
+                event.target.classList.remove('flex');
+            }
         }
     </script>
 </x-app-layout>
