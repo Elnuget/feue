@@ -134,24 +134,35 @@
                                 >
                                     📸 Foto <span class="text-red-500">*</span>
                                 </label>
-                                <input
-                                    type="file"
-                                    name="photo"
-                                    id="photo"
-                                    class="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition duration-150"
-                                    accept="image/jpeg,image/png"
-                                    onchange="uploadFile('photo')"
-                                    @if(!isset($profile->photo)) required @endif
-                                >
-                                @if(isset($profile->photo))
-                                    <img
-                                        src="{{ Storage::disk('public')->exists($profile->photo) 
-                                            ? Storage::url($profile->photo) 
-                                            : asset('default-profile.png') }}"
-                                        alt="Profile Photo"
-                                        class="mt-2 w-32 h-32 rounded-full object-cover shadow"
+                                <div class="mt-1">
+                                    <input
+                                        type="file"
+                                        name="photo"
+                                        id="photo"
+                                        class="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition duration-150"
+                                        accept="image/jpeg,image/png,image/jpg,image/gif,image/webp,image/bmp"
+                                        onchange="handleFileSelect(this)"
+                                        @if(!isset($profile->photo)) required @endif
                                     >
-                                @endif
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        Formatos permitidos: JPEG, PNG, JPG, GIF, WEBP, BMP. Tamaño máximo: 10MB.
+                                    </p>
+                                    @if(isset($profile->photo))
+                                        <div class="mt-2">
+                                            <img
+                                                src="{{ Storage::disk('public')->exists($profile->photo) 
+                                                    ? Storage::url($profile->photo) 
+                                                    : asset('default-profile.png') }}"
+                                                alt="Profile Photo"
+                                                class="mt-2 w-32 h-32 rounded-full object-cover shadow"
+                                            >
+                                        </div>
+                                    @endif
+                                </div>
+                                <div id="fileError" class="mt-2 text-sm text-red-600 hidden"></div>
+                                <div id="filePreview" class="mt-2 hidden">
+                                    <img id="imagePreview" class="max-w-xs hidden" alt="Vista previa">
+                                </div>
                             </div>
 
                             <!-- Dirección Calle -->
@@ -270,31 +281,69 @@
 </x-app-layout>
 
 <script>
-    function uploadFile(inputId) {
-        const input = document.getElementById(inputId);
-        const formData = new FormData();
-        formData.append(inputId, input.files[0]);
+    function handleFileSelect(input) {
+        const fileError = document.getElementById('fileError');
+        const filePreview = document.getElementById('filePreview');
+        const imagePreview = document.getElementById('imagePreview');
 
-        fetch('{{ route('profile.storeComplete') }}', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        fileError.classList.add('hidden');
+        imagePreview.classList.add('hidden');
+        filePreview.classList.add('hidden');
+
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            
+            // Validar tamaño (máximo 10MB)
+            const maxSize = 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+                fileError.textContent = 'El archivo es demasiado grande. Máximo 10MB permitido.';
+                fileError.classList.remove('hidden');
+                input.value = '';
+                return;
             }
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => { throw new Error(text) });
+
+            // Validar tipo de archivo
+            const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp', 'image/bmp'];
+            if (!validTypes.includes(file.type)) {
+                fileError.textContent = 'Tipo de archivo no válido. Formatos permitidos: JPEG, PNG, JPG, GIF, WEBP, BMP.';
+                fileError.classList.remove('hidden');
+                input.value = '';
+                return;
             }
-            return response.json();
-        })
-        .then(data => {
-            if (!data.success) {
-                console.error('Error al subir el archivo:', data);
-            }
-        })
-        .catch(error => {
-            console.error('Error al subir el archivo:', error);
-        });
+
+            // Mostrar vista previa
+            filePreview.classList.remove('hidden');
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+
+            // Preparar y enviar el archivo
+            const formData = new FormData();
+            formData.append('photo', file);
+            formData.append('_token', '{{ csrf_token() }}');
+
+            fetch('{{ route('profile.storeComplete') }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al subir la imagen');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.message || 'Error al procesar la imagen');
+                }
+            })
+            .catch(error => {
+                fileError.textContent = error.message;
+                fileError.classList.remove('hidden');
+            });
+        }
     }
 </script>

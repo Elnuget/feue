@@ -85,7 +85,7 @@ class UserProfileController extends Controller
             'phone' => 'nullable|string|max:20',
             'birth_date' => 'nullable|date',
             'gender' => 'nullable|in:Masculino,Femenino,Otro',
-            'photo' => 'nullable|image|mimes:jpeg,png|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,bmp|max:10240',
             'cedula' => 'nullable|string|max:20',
             'direccion_calle' => 'nullable|string|max:255',
             'direccion_ciudad' => 'nullable|string|max:100',
