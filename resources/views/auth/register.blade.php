@@ -183,7 +183,7 @@
             <!-- Tipo de Pago -->
             <div class="mt-4">
                 <x-input-label for="tipo_pago" :value="__('Tipo de Pago')"/> 💳
-                <select name="tipo_pago" id="tipo_pago" class="block mt-1 w-full" onchange="handleTipoPagoChange()">
+                <select name="tipo_pago" id="tipo_pago" class="block mt-1 w-full" onchange="handleTipoPagoChange()" required>
                     <option value="">Selecciona un tipo de pago</option>
                     <option value="Pago Único">Pago Único</option>
                     <option value="Mensual">Mensual</option>
